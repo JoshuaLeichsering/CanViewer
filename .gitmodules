@@ -1,0 +1,8 @@
+[submodule "third_party/opendbc"]
+	path = third_party/opendbc
+	url = https://github.com/commaai/opendbc.git
+	shallow = true
+[submodule "third_party/model3dbc"]
+	path = third_party/model3dbc
+	url = https://github.com/joshwardell/model3dbc.git
+	shallow = true
