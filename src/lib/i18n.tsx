@@ -12,7 +12,6 @@ const STORAGE_KEY = 'canviewer.lang';
 const en = {
   // toolbar / app shell
   openDbc: 'Open DBC…',
-  loadDemo: 'Load demo',
   version: 'version',
   messagesWord: 'messages',
   signalsWord: 'signals',
@@ -23,8 +22,8 @@ const en = {
   language: 'Language',
   welcomeTagline: 'A viewer for DBC CAN database files.',
   welcomeOpen: 'Open DBC file…',
-  welcomeDemo: 'Explore the demo database',
   welcomeDrop: '…or drag & drop a .dbc file anywhere in this window',
+  welcomeExampleHint: 'An example database ships with the repository:',
   dropOverlay: 'Drop DBC file to open',
 
   // sidebar
@@ -164,7 +163,6 @@ export type MsgKey = keyof typeof en;
 
 const de: Record<MsgKey, string> = {
   openDbc: 'DBC öffnen…',
-  loadDemo: 'Demo laden',
   version: 'Version',
   messagesWord: 'Botschaften',
   signalsWord: 'Signale',
@@ -175,8 +173,8 @@ const de: Record<MsgKey, string> = {
   language: 'Sprache',
   welcomeTagline: 'Ein Viewer für DBC-CAN-Datenbanken.',
   welcomeOpen: 'DBC-Datei öffnen…',
-  welcomeDemo: 'Demo-Datenbank erkunden',
   welcomeDrop: '…oder eine .dbc-Datei einfach in dieses Fenster ziehen',
+  welcomeExampleHint: 'Eine Beispiel-Datenbank liegt im Repository:',
   dropOverlay: 'DBC-Datei zum Öffnen loslassen',
 
   searchPlaceholder: 'Botschaften, Signale, Knoten suchen…',

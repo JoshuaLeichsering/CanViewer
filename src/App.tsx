@@ -3,7 +3,6 @@ import { parseDbc } from './lib/dbc/parser';
 import { findMessageByOccurrence } from './lib/dbc/identity';
 import type { DbcDatabase } from './lib/dbc/types';
 import { useI18n } from './lib/i18n';
-import demoDbcText from './sample/demo.dbc?raw';
 import { Sidebar } from './components/Sidebar';
 import { MessageDetail } from './components/MessageDetail';
 import { NodeDetail } from './components/NodeDetail';
@@ -78,17 +77,15 @@ export function App() {
   const initialHash = useRef(window.location.hash);
   const restoredOnce = useRef(false);
 
-  const loadText = useCallback((name: string, text: string, persist = true) => {
+  const loadText = useCallback((name: string, text: string) => {
     setDb(parseDbc(text));
     setFileName(name);
     setSelection({ kind: 'overview' });
     setSearch('');
-    if (persist) {
-      try {
-        localStorage.setItem('canviewer.file', JSON.stringify({ name, text }));
-      } catch {
-        // File too large for localStorage — reopening after reload just won't restore it.
-      }
+    try {
+      localStorage.setItem('canviewer.file', JSON.stringify({ name, text }));
+    } catch {
+      // File too large for localStorage — reopening after reload just won't restore it.
     }
   }, []);
 
@@ -99,41 +96,21 @@ export function App() {
     [loadText],
   );
 
-  // Restore the last opened file on startup (also honours ?demo to preload
-  // the sample). Guarded by a ref so StrictMode's double effect run cannot
-  // restore twice with diverging results.
+  // Restore the last opened file on startup. Guarded by a ref so StrictMode's
+  // double effect run cannot restore twice with diverging results.
   useEffect(() => {
     if (restoredOnce.current) return;
     restoredOnce.current = true;
 
-    const params = new URLSearchParams(window.location.search);
-    let restored = false;
-    if (params.has('demo')) {
-      // Don't persist: a shared ?demo link must not overwrite the user's
-      // saved file. Also strip the param so a later reload restores normally.
-      loadText('demo.dbc', demoDbcText, false);
-      params.delete('demo');
-      const query = params.toString();
-      history.replaceState(
-        null,
-        '',
-        window.location.pathname + (query ? `?${query}` : '') + initialHash.current,
-      );
-      restored = true;
-    } else {
-      try {
-        const saved = localStorage.getItem('canviewer.file');
-        if (saved) {
-          const { name, text } = JSON.parse(saved) as { name: string; text: string };
-          loadText(name, text);
-          restored = true;
-        }
-      } catch {
-        // Corrupt storage — start empty.
+    try {
+      const saved = localStorage.getItem('canviewer.file');
+      if (saved) {
+        const { name, text } = JSON.parse(saved) as { name: string; text: string };
+        loadText(name, text);
+        if (initialHash.current) setSelection(hashToSelection(initialHash.current));
       }
-    }
-    if (restored && initialHash.current) {
-      setSelection(hashToSelection(initialHash.current));
+    } catch {
+      // Corrupt storage — start empty.
     }
   }, [loadText]);
 
@@ -183,9 +160,6 @@ export function App() {
         <button className="btn primary" onClick={() => fileInputRef.current?.click()}>
           {t('openDbc')}
         </button>
-        <button className="btn" onClick={() => loadText('demo.dbc', demoDbcText)}>
-          {t('loadDemo')}
-        </button>
         <input
           ref={fileInputRef}
           type="file"
@@ -229,11 +203,11 @@ export function App() {
               <button className="btn primary" onClick={() => fileInputRef.current?.click()}>
                 {t('welcomeOpen')}
               </button>
-              <button className="btn" onClick={() => loadText('demo.dbc', demoDbcText)}>
-                {t('welcomeDemo')}
-              </button>
             </div>
             <div className="dropzone">{t('welcomeDrop')}</div>
+            <p className="muted" style={{ marginTop: 18 }}>
+              {t('welcomeExampleHint')} <code>examples/demo.dbc</code>
+            </p>
           </div>
         </div>
       ) : (

@@ -42,8 +42,9 @@ npm test           # parser + bit-layout unit tests
 npm run build      # typecheck + production build (dist/)
 ```
 
-Open the app and click **Load demo** to explore the bundled example database
-([src/sample/demo.dbc](src/sample/demo.dbc)).
+An example database ships with the repository: open
+[examples/demo.dbc](examples/demo.dbc) via **Open DBC…** or drag & drop it into
+the window.
 
 ## Tested against real-world files
 
