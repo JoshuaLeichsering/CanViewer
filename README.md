@@ -18,6 +18,9 @@ No data leaves your machine — files are parsed locally.
 - **CAN FD aware**: FD badge (via payload size or Vector's `VFrameFormat` attribute,
   J1939 PGs exempt), frame-size validity hints (12/16/20/24/32/48/64 bytes, padding
   note for odd sizes), bit matrix collapses the unused tail of large frames
+- **J1939 aware**: in J1939 databases (ProtocolType attribute or `J1939PG` messages),
+  extended IDs are decomposed into priority / PGN / PDU type / destination / source
+  address with well-known SAE PGN and address names; the overview gains a PGN column
 - **Node view**: transmitted messages and received signals per ECU
 - **ECU network graph**: interactive sender→receiver topology — arrows per direction,
   line width scales with message count, click nodes/connections to drill into the

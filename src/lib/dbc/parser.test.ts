@@ -21,7 +21,7 @@ describe('parseDbc on demo database', () => {
   });
 
   it('reads messages', () => {
-    expect(db.messages).toHaveLength(7);
+    expect(db.messages).toHaveLength(9);
     const engine = db.messages.find((m) => m.name === 'EngineData')!;
     expect(engine.id).toBe(256);
     expect(engine.dlc).toBe(8);

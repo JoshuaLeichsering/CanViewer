@@ -2,6 +2,7 @@ import type { DbcDatabase } from '../lib/dbc/types';
 import type { Selection } from '../App';
 import { occurrenceOf } from '../lib/dbc/identity';
 import { isCanFd } from '../lib/dbc/canfd';
+import { decomposeJ1939Id, isJ1939Database, PGN_NAMES } from '../lib/dbc/j1939';
 import { hexId } from '../lib/format';
 import { AttributesCard } from './AttributesCard';
 
@@ -17,6 +18,7 @@ export function Overview({
 }) {
   const totalSignals = db.messages.reduce((n, m) => n + m.signals.length, 0);
   const skippedEntries = Object.entries(db.skipped);
+  const j1939Db = isJ1939Database(db);
 
   return (
     <div>
@@ -94,6 +96,7 @@ export function Overview({
             <thead>
               <tr>
                 <th>ID</th>
+                {j1939Db && <th className="num">PGN</th>}
                 <th>Name</th>
                 <th className="num">DLC</th>
                 <th className="num">Signals</th>
@@ -128,6 +131,14 @@ export function Overview({
                         </>
                       )}
                     </td>
+                    {j1939Db && (
+                      <td
+                        className="num"
+                        title={m.isExtended ? PGN_NAMES[decomposeJ1939Id(m.id).pgn] : undefined}
+                      >
+                        {m.isExtended ? decomposeJ1939Id(m.id).pgn : ''}
+                      </td>
+                    )}
                     <td>
                       <b>{m.name}</b>
                     </td>

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { DbcDatabase, DbcMessage, DbcSignal } from '../lib/dbc/types';
 import { decodeFrame, parseHexBytes, signalOutOfBounds, signalsConflict } from '../lib/dbc/bits';
 import { declaredFrameFormat, isCanFd, isJ1939Pg, isValidFrameSize, paddedFdSize } from '../lib/dbc/canfd';
+import { ADDRESS_NAMES, decomposeJ1939Id, isJ1939Database, PGN_NAMES } from '../lib/dbc/j1939';
 import { fmtNum, hexId, muxLabel } from '../lib/format';
 import { BitMatrix, paletteIndex } from './BitMatrix';
 import { AttributesCard } from './AttributesCard';
@@ -63,8 +64,19 @@ export function MessageDetail({
     return notes;
   }, [db, message]);
 
+  // J1939 identifier breakdown for extended frames in J1939 contexts.
+  const j1939 = useMemo(
+    () =>
+      message.isExtended && (isJ1939Pg(db, message) || isJ1939Database(db))
+        ? decomposeJ1939Id(message.id)
+        : null,
+    [db, message],
+  );
+
   const cycleTime = message.attributes.GenMsgCycleTime;
   const sendType = message.attributes.GenMsgSendType;
+
+  const hexByte = (n: number) => '0x' + n.toString(16).toUpperCase().padStart(2, '0');
 
   return (
     <div>
@@ -99,6 +111,41 @@ export function MessageDetail({
             Signals <b>{message.signals.length}</b>
           </span>
         </div>
+        {j1939 && (
+          <div className="meta-row">
+            <span>
+              Priority <b>{j1939.priority}</b>
+            </span>
+            <span>
+              PGN <b className="mono">{j1939.pgn}</b>{' '}
+              <span className="mono muted">
+                (0x{j1939.pgn.toString(16).toUpperCase()})
+              </span>
+              {PGN_NAMES[j1939.pgn] && <> — <b>{PGN_NAMES[j1939.pgn]}</b></>}
+            </span>
+            {j1939.pduType === 'PDU1' ? (
+              <span>
+                Destination <b className="mono">{hexByte(j1939.destinationAddress!)}</b>
+                {ADDRESS_NAMES[j1939.destinationAddress!] && (
+                  <> ({ADDRESS_NAMES[j1939.destinationAddress!]})</>
+                )}
+              </span>
+            ) : (
+              <span>
+                PDU2 <span className="muted">(broadcast)</span>
+              </span>
+            )}
+            <span>
+              Source <b className="mono">{hexByte(j1939.sourceAddress)}</b>
+              {ADDRESS_NAMES[j1939.sourceAddress] && <> ({ADDRESS_NAMES[j1939.sourceAddress]})</>}
+            </span>
+            {j1939.dataPage > 0 && (
+              <span>
+                Data page <b>{j1939.dataPage}</b>
+              </span>
+            )}
+          </div>
+        )}
         {warnings.map((warning) => (
           <div key={warning} className="comment-box" style={{ borderLeftColor: 'var(--danger)' }}>
             ⚠ {warning}

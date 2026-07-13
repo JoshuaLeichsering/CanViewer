@@ -72,6 +72,15 @@ BO_ 2364539904 J1939_EEC1: 8 ECM
  SG_ ActualEnginePercentTorque : 16|8@1+ (1,-125) [-125|125] "%"  Vector__XXX
  SG_ EngineSpeedJ1939 : 24|16@1+ (0.125,0) [0|8031.875] "rpm"  Vector__XXX
 
+BO_ 2566844672 J1939_CCVS1: 8 ECM
+ SG_ ParkingBrakeSwitch : 2|2@1+ (1,0) [0|3] ""  IC
+ SG_ WheelBasedVehicleSpeed : 8|16@1+ (0.00390625,0) [0|250.996] "km/h"  IC
+ SG_ CruiseCtrlActive : 24|2@1+ (1,0) [0|3] ""  IC
+
+BO_ 2348810243 J1939_TSC1: 8 TCM
+ SG_ EngOverrideCtrlMode : 0|2@1+ (1,0) [0|3] ""  ECM
+ SG_ EngRequestedSpeed : 8|16@1+ (0.125,0) [0|8031.875] "rpm"  ECM
+
 BO_ 1536 AdasObjects: 24 ECM
  SG_ ObjCount : 0|4@1+ (1,0) [0|15] ""  IC
  SG_ Obj1Dist : 8|16@1+ (0.01,0) [0|655.35] "m"  IC,ABS
@@ -118,6 +127,10 @@ BA_ "GenSigStartValue" SG_ 256 EngineSpeed 0;
 BA_ "GenMsgCycleTime" BO_ 1536 50;
 BA_ "VFrameFormat" BO_ 1536 14;
 BA_ "VFrameFormat" BO_ 2364539904 3;
+BA_ "VFrameFormat" BO_ 2566844672 3;
+BA_ "VFrameFormat" BO_ 2348810243 3;
+BA_ "GenMsgCycleTime" BO_ 2566844672 100;
+BA_ "GenMsgCycleTime" BO_ 2348810243 10;
 
 VAL_ 512 GearPosition 15 "Reverse" 0 "Neutral" 1 "Gear 1" 2 "Gear 2" 3 "Gear 3" 4 "Gear 4" 5 "Gear 5" 6 "Gear 6" ;
 VAL_ 256 EngineRunning 0 "Stopped" 1 "Running" ;

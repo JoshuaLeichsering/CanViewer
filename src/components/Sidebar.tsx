@@ -3,6 +3,7 @@ import type { DbcDatabase, DbcMessage } from '../lib/dbc/types';
 import type { Selection } from '../App';
 import { occurrenceOf } from '../lib/dbc/identity';
 import { isCanFd } from '../lib/dbc/canfd';
+import { decomposeJ1939Id, isJ1939Database } from '../lib/dbc/j1939';
 import { hexId } from '../lib/format';
 
 function messageMatches(message: DbcMessage, query: string): boolean {
@@ -55,6 +56,8 @@ export function Sidebar({
     [db, query],
   );
 
+  const j1939Db = useMemo(() => isJ1939Database(db), [db]);
+
   return (
     <div className="sidebar">
       <div className="search-box">
@@ -97,7 +100,9 @@ export function Sidebar({
               key={`${m.rawId}.${occ}`}
               className={`tree-item ${active ? 'active' : ''}`}
               onClick={() => onSelect({ kind: 'message', rawId: m.rawId, occ })}
-              title={`${hexId(m.id, m.isExtended)} ${m.name} — ${m.signals.length} signals`}
+              title={`${hexId(m.id, m.isExtended)} ${m.name} — ${m.signals.length} signals${
+                j1939Db && m.isExtended ? ` · PGN ${decomposeJ1939Id(m.id).pgn}` : ''
+              }`}
             >
               <span className="id">{hexId(m.id, m.isExtended)}</span>
               <span className="name">{m.name}</span>
