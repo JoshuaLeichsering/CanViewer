@@ -30,6 +30,8 @@ No data leaves your machine — files are parsed locally.
 - **Robust parsing**: malformed lines are collected as warnings instead of failing the
   whole file; Latin-1 fallback for files from Vector tools
 - Last opened file is restored on reload; views are deep-linkable (`#msg=…`, `#node=…`)
+- **UI language switch** (English/German) in the settings menu, persisted; defaults to
+  the browser language
 
 ## Development
 

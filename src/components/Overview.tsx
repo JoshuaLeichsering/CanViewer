@@ -3,6 +3,7 @@ import type { Selection } from '../App';
 import { occurrenceOf } from '../lib/dbc/identity';
 import { isCanFd } from '../lib/dbc/canfd';
 import { decomposeJ1939Id, isJ1939Database, PGN_NAMES } from '../lib/dbc/j1939';
+import { useI18n } from '../lib/i18n';
 import { hexId } from '../lib/format';
 import { AttributesCard } from './AttributesCard';
 
@@ -16,56 +17,64 @@ export function Overview({
   db: DbcDatabase;
   onSelect: (s: Selection) => void;
 }) {
+  const { t } = useI18n();
   const totalSignals = db.messages.reduce((n, m) => n + m.signals.length, 0);
   const skippedEntries = Object.entries(db.skipped);
   const j1939Db = isJ1939Database(db);
+
+  const appliesTo = {
+    '': t('appliesNetwork'),
+    BU_: t('appliesNode'),
+    BO_: t('appliesMessage'),
+    SG_: t('appliesSignal'),
+    EV_: t('appliesEnvVar'),
+  };
 
   return (
     <div>
       <div className="stat-row">
         <div className="stat">
           <div className="value">{db.messages.length}</div>
-          <div className="label">Messages</div>
+          <div className="label">{t('statMessages')}</div>
         </div>
         <div className="stat">
           <div className="value">{totalSignals}</div>
-          <div className="label">Signals</div>
+          <div className="label">{t('statSignals')}</div>
         </div>
         <div className="stat">
           <div className="value">{db.nodes.length}</div>
-          <div className="label">Nodes</div>
+          <div className="label">{t('statNodes')}</div>
         </div>
         <div className="stat">
           <div className="value">{db.valueTables.length}</div>
-          <div className="label">Value tables</div>
+          <div className="label">{t('statValueTables')}</div>
         </div>
         <div className="stat">
           <div className="value">{db.attributeDefinitions.length}</div>
-          <div className="label">Attribute defs</div>
+          <div className="label">{t('statAttrDefs')}</div>
         </div>
       </div>
 
       {db.comment && (
         <div className="card">
-          <h2>Database comment</h2>
+          <h2>{t('dbComment')}</h2>
           <div className="comment-box">{db.comment}</div>
         </div>
       )}
 
       {db.problems.length > 0 && (
         <div className="card" style={{ borderColor: 'var(--danger)' }}>
-          <h2>⚠ Parse problems ({db.problems.length})</h2>
+          <h2>{t('parseProblemsTitle', { n: db.problems.length })}</h2>
           <p className="muted" style={{ marginTop: 0 }}>
-            These lines could not be understood and were skipped — the rest of the file is
-            loaded normally.
+            {t('parseProblemsHint')}
           </p>
           <div style={{ overflowX: 'auto' }}>
             <table className="grid">
               <thead>
                 <tr>
-                  <th className="num">Line</th>
-                  <th>Reason</th>
-                  <th>Content</th>
+                  <th className="num">{t('thLine')}</th>
+                  <th>{t('thReason')}</th>
+                  <th>{t('thContent')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -83,26 +92,26 @@ export function Overview({
           </div>
           {db.problems.length > MAX_PROBLEM_ROWS && (
             <div className="muted" style={{ marginTop: 8 }}>
-              … and {db.problems.length - MAX_PROBLEM_ROWS} more problems not shown.
+              {t('moreProblems', { n: db.problems.length - MAX_PROBLEM_ROWS })}
             </div>
           )}
         </div>
       )}
 
       <div className="card">
-        <h2>Messages</h2>
+        <h2>{t('statMessages')}</h2>
         <div style={{ overflowX: 'auto' }}>
           <table className="grid">
             <thead>
               <tr>
-                <th>ID</th>
+                <th>{t('thId')}</th>
                 {j1939Db && <th className="num">PGN</th>}
-                <th>Name</th>
-                <th className="num">DLC</th>
-                <th className="num">Signals</th>
-                <th>Sender</th>
-                <th className="num">Cycle (ms)</th>
-                <th>Comment</th>
+                <th>{t('thName')}</th>
+                <th className="num">{t('dlc')}</th>
+                <th className="num">{t('thSignals')}</th>
+                <th>{t('thSender')}</th>
+                <th className="num">{t('thCycle')}</th>
+                <th>{t('thComment')}</th>
               </tr>
             </thead>
             <tbody>
@@ -162,18 +171,18 @@ export function Overview({
 
       {db.attributeDefinitions.length > 0 && (
         <div className="card">
-          <h2>Attribute definitions</h2>
+          <h2>{t('attrDefsTitle')}</h2>
           <div style={{ overflowX: 'auto' }}>
             <table className="grid">
               <thead>
                 <tr>
-                  <th>Name</th>
-                  <th>Applies to</th>
-                  <th>Type</th>
+                  <th>{t('thName')}</th>
+                  <th>{t('thAppliesTo')}</th>
+                  <th>{t('thType')}</th>
                   <th className="num">Min</th>
                   <th className="num">Max</th>
-                  <th>Default</th>
-                  <th>Enum values</th>
+                  <th>{t('thDefault')}</th>
+                  <th>{t('thEnumValues')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -182,11 +191,7 @@ export function Overview({
                     <td>
                       <b>{d.name}</b>
                     </td>
-                    <td>
-                      {{ '': 'Network', BU_: 'Node', BO_: 'Message', SG_: 'Signal', EV_: 'Env var' }[
-                        d.objectType
-                      ]}
-                    </td>
+                    <td>{appliesTo[d.objectType]}</td>
                     <td>{d.valueType}</td>
                     <td className="num">{d.min ?? ''}</td>
                     <td className="num">{d.max ?? ''}</td>
@@ -200,11 +205,11 @@ export function Overview({
         </div>
       )}
 
-      <AttributesCard title="Network attributes" attributes={db.attributes} />
+      <AttributesCard title={t('networkAttributes')} attributes={db.attributes} />
 
       {skippedEntries.length > 0 && (
         <div className="card">
-          <h3>Not displayed (parsed &amp; skipped)</h3>
+          <h3>{t('skippedTitle')}</h3>
           <div className="muted">
             {skippedEntries.map(([kw, count]) => `${kw} (${count}×)`).join(' · ')}
           </div>

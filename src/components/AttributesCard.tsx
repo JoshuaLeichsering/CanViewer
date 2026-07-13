@@ -4,14 +4,14 @@ export function AttributesCard({
   title,
   attributes,
 }: {
-  title?: string;
+  title: string;
   attributes: Record<string, AttrValue>;
 }) {
   const entries = Object.entries(attributes);
   if (entries.length === 0) return null;
   return (
     <div className="card">
-      <h3>{title ?? 'Attributes'}</h3>
+      <h3>{title}</h3>
       <table className="grid">
         <tbody>
           {entries.map(([name, value]) => (

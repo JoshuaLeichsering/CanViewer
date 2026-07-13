@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import type { DbcMessage } from '../lib/dbc/types';
 import { canCoexist, signalBitPositions } from '../lib/dbc/bits';
+import { useI18n } from '../lib/i18n';
 
 export const paletteIndex = (signalIndex: number) => signalIndex % 12;
 
@@ -23,6 +24,7 @@ export function BitMatrix({
   selectedSignal?: string;
   onSelectSignal: (name: string | undefined) => void;
 }) {
+  const { t } = useI18n();
   const { cells, visibleRows, collapsedRows } = useMemo(() => {
     const cellMap = new Map<number, CellInfo>();
     let maxByte = message.dlc - 1;
@@ -107,10 +109,10 @@ export function BitMatrix({
                     className={classes}
                     title={
                       conflict
-                        ? `CONFLICT: ${names.join(', ')}`
+                        ? t('conflictTooltip', { names: names.join(', ') })
                         : names.length > 1
-                          ? `${names.join(' | ')} (bit ${pos}, mux alternatives)`
-                          : `${signal.name} (bit ${pos})`
+                          ? t('muxAltTooltip', { names: names.join(' | '), pos })
+                          : t('bitTooltip', { name: signal.name, pos })
                     }
                     onClick={() =>
                       onSelectSignal(isSelected ? undefined : signal.name)
@@ -124,7 +126,7 @@ export function BitMatrix({
             <tr>
               <td className="byte-label" />
               <td className="collapse-note" colSpan={8}>
-                ⋯ bytes {visibleRows}–{visibleRows + collapsedRows - 1} unused
+                {t('bytesUnused', { from: visibleRows, to: visibleRows + collapsedRows - 1 })}
               </td>
             </tr>
           )}

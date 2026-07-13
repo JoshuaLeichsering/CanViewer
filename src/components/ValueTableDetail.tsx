@@ -1,20 +1,22 @@
 import type { DbcValueTable } from '../lib/dbc/types';
+import { useI18n } from '../lib/i18n';
 
 export function ValueTableDetail({ table }: { table: DbcValueTable }) {
+  const { t } = useI18n();
   return (
     <div>
       <div className="card">
         <div className="detail-header">
           <h1>{table.name}</h1>
-          <span className="pill node">Value table</span>
+          <span className="pill node">{t('pillValueTable')}</span>
         </div>
       </div>
       <div className="card">
         <table className="grid">
           <thead>
             <tr>
-              <th className="num">Raw value</th>
-              <th>Meaning</th>
+              <th className="num">{t('thRawValue')}</th>
+              <th>{t('thMeaning')}</th>
             </tr>
           </thead>
           <tbody>

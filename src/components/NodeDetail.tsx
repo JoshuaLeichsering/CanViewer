@@ -2,6 +2,7 @@ import type { DbcDatabase, DbcNode } from '../lib/dbc/types';
 import type { Selection } from '../App';
 import { occurrenceOf } from '../lib/dbc/identity';
 import { isCanFd } from '../lib/dbc/canfd';
+import { useI18n } from '../lib/i18n';
 import { hexId } from '../lib/format';
 import { AttributesCard } from './AttributesCard';
 
@@ -14,6 +15,7 @@ export function NodeDetail({
   node: DbcNode;
   onSelect: (s: Selection) => void;
 }) {
+  const { t } = useI18n();
   const txMessages = db.messages.filter(
     (m) => m.sender === node.name || m.transmitters.includes(node.name),
   );
@@ -28,32 +30,32 @@ export function NodeDetail({
       <div className="card">
         <div className="detail-header">
           <h1>{node.name}</h1>
-          <span className="pill node">Node</span>
+          <span className="pill node">{t('pillNode')}</span>
         </div>
         <div className="meta-row">
           <span>
-            Transmits <b>{txMessages.length}</b> messages
+            {t('transmitsPrefix')} <b>{txMessages.length}</b> {t('messagesSuffix')}
           </span>
           <span>
-            Receives <b>{rxRows.length}</b> signals
+            {t('receivesPrefix')} <b>{rxRows.length}</b> {t('signalsSuffix')}
           </span>
         </div>
         {node.comment && <div className="comment-box">{node.comment}</div>}
       </div>
 
       <div className="card">
-        <h2>Transmitted messages</h2>
+        <h2>{t('txTitle')}</h2>
         {txMessages.length === 0 ? (
-          <div className="muted">This node transmits no messages.</div>
+          <div className="muted">{t('txNone')}</div>
         ) : (
           <table className="grid">
             <thead>
               <tr>
-                <th>ID</th>
-                <th>Message</th>
-                <th className="num">DLC</th>
-                <th className="num">Signals</th>
-                <th className="num">Cycle (ms)</th>
+                <th>{t('thId')}</th>
+                <th>{t('thMessage')}</th>
+                <th className="num">{t('dlc')}</th>
+                <th className="num">{t('thSignals')}</th>
+                <th className="num">{t('thCycle')}</th>
               </tr>
             </thead>
             <tbody>
@@ -96,18 +98,18 @@ export function NodeDetail({
       </div>
 
       <div className="card">
-        <h2>Received signals</h2>
+        <h2>{t('rxTitle')}</h2>
         {rxRows.length === 0 ? (
-          <div className="muted">This node receives no signals.</div>
+          <div className="muted">{t('rxNone')}</div>
         ) : (
           <table className="grid">
             <thead>
               <tr>
-                <th>Signal</th>
-                <th>In message</th>
-                <th>ID</th>
-                <th>Unit</th>
-                <th>From</th>
+                <th>{t('thSignal')}</th>
+                <th>{t('thInMessage')}</th>
+                <th>{t('thId')}</th>
+                <th>{t('thUnit')}</th>
+                <th>{t('thFrom')}</th>
               </tr>
             </thead>
             <tbody>
@@ -138,7 +140,7 @@ export function NodeDetail({
         )}
       </div>
 
-      <AttributesCard title="Node attributes" attributes={node.attributes} />
+      <AttributesCard title={t('nodeAttributes')} attributes={node.attributes} />
     </div>
   );
 }

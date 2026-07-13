@@ -3,6 +3,7 @@ import type { DbcDatabase, DbcMessage, DbcSignal } from '../lib/dbc/types';
 import { decodeFrame, parseHexBytes, signalOutOfBounds, signalsConflict } from '../lib/dbc/bits';
 import { declaredFrameFormat, isCanFd, isJ1939Pg, isValidFrameSize, paddedFdSize } from '../lib/dbc/canfd';
 import { ADDRESS_NAMES, decomposeJ1939Id, isJ1939Database, PGN_NAMES } from '../lib/dbc/j1939';
+import { useI18n } from '../lib/i18n';
 import { fmtNum, hexId, muxLabel } from '../lib/format';
 import { BitMatrix, paletteIndex } from './BitMatrix';
 import { AttributesCard } from './AttributesCard';
@@ -18,13 +19,14 @@ export function MessageDetail({
   selectedSignal?: string;
   onSelectSignal: (name: string | undefined) => void;
 }) {
+  const { t } = useI18n();
   const selected = message.signals.find((s) => s.name === selectedSignal);
 
   const warnings = useMemo(() => {
     const list: string[] = [];
     for (const signal of message.signals) {
       if (signalOutOfBounds(signal, message.dlc)) {
-        list.push(`Signal “${signal.name}” exceeds the ${message.dlc}-byte data area.`);
+        list.push(t('warnExceeds', { name: signal.name, n: message.dlc }));
       }
     }
     for (let i = 0; i < message.signals.length; i++) {
@@ -32,12 +34,12 @@ export function MessageDetail({
         const a = message.signals[i];
         const b = message.signals[j];
         if (signalsConflict(a, b)) {
-          list.push(`Signals “${a.name}” and “${b.name}” overlap.`);
+          list.push(t('warnOverlap', { a: a.name, b: b.name }));
         }
       }
     }
     return list;
-  }, [message]);
+  }, [message, t]);
 
   // Frame-size sanity notes (informational, not errors like the ones above).
   const sizeNotes = useMemo(() => {
@@ -48,21 +50,17 @@ export function MessageDetail({
       // Explicitly classic frames can never carry more than 8 bytes — an
       // FD padding hint would be wrong here, this is a plain contradiction.
       if (message.dlc > 8) {
-        notes.push(
-          `VFrameFormat declares this message classic CAN, but DLC ${message.dlc} exceeds the classic 8-byte maximum.`,
-        );
+        notes.push(t('noteClassicTooBig', { n: message.dlc }));
       }
       return notes;
     }
     if (message.dlc > 64) {
-      notes.push(`DLC ${message.dlc} exceeds the 64-byte CAN FD maximum.`);
+      notes.push(t('noteDlcExceedsFd', { n: message.dlc }));
     } else if (message.dlc > 8 && !isValidFrameSize(message.dlc)) {
-      notes.push(
-        `${message.dlc} bytes is not a valid CAN FD frame size — on the wire the frame will be padded to ${paddedFdSize(message.dlc)} bytes.`,
-      );
+      notes.push(t('noteInvalidFdSize', { n: message.dlc, p: paddedFdSize(message.dlc)! }));
     }
     return notes;
-  }, [db, message]);
+  }, [db, message, t]);
 
   // J1939 identifier breakdown for extended frames in J1939 contexts.
   const j1939 = useMemo(
@@ -85,36 +83,36 @@ export function MessageDetail({
           <h1>{message.name}</h1>
           <span className="mono">{hexId(message.id, message.isExtended)}</span>
           <span className="mono muted">({message.id})</span>
-          {message.isExtended && <span className="pill ext">Extended 29-bit</span>}
+          {message.isExtended && <span className="pill ext">{t('pillExtended')}</span>}
           {isCanFd(db, message) && <span className="pill fd">CAN FD</span>}
           {isJ1939Pg(db, message) && <span className="pill node">J1939 PG</span>}
         </div>
         <div className="meta-row">
           <span>
-            DLC <b>{message.dlc}</b>
+            {t('dlc')} <b>{message.dlc}</b>
           </span>
           <span>
-            Sender <b>{message.sender || '—'}</b>
+            {t('sender')} <b>{message.sender || '—'}</b>
             {message.transmitters.length > 0 && <> +{message.transmitters.join(', ')}</>}
           </span>
           {cycleTime !== undefined && (
             <span>
-              Cycle time <b>{String(cycleTime)} ms</b>
+              {t('cycleTime')} <b>{String(cycleTime)} ms</b>
             </span>
           )}
           {sendType !== undefined && (
             <span>
-              Send type <b>{String(sendType)}</b>
+              {t('sendType')} <b>{String(sendType)}</b>
             </span>
           )}
           <span>
-            Signals <b>{message.signals.length}</b>
+            {t('signalsTitle')} <b>{message.signals.length}</b>
           </span>
         </div>
         {j1939 && (
           <div className="meta-row">
             <span>
-              Priority <b>{j1939.priority}</b>
+              {t('priority')} <b>{j1939.priority}</b>
             </span>
             <span>
               PGN <b className="mono">{j1939.pgn}</b>{' '}
@@ -125,23 +123,23 @@ export function MessageDetail({
             </span>
             {j1939.pduType === 'PDU1' ? (
               <span>
-                Destination <b className="mono">{hexByte(j1939.destinationAddress!)}</b>
+                {t('destination')} <b className="mono">{hexByte(j1939.destinationAddress!)}</b>
                 {ADDRESS_NAMES[j1939.destinationAddress!] && (
                   <> ({ADDRESS_NAMES[j1939.destinationAddress!]})</>
                 )}
               </span>
             ) : (
               <span>
-                PDU2 <span className="muted">(broadcast)</span>
+                PDU2 <span className="muted">{t('broadcast')}</span>
               </span>
             )}
             <span>
-              Source <b className="mono">{hexByte(j1939.sourceAddress)}</b>
+              {t('source')} <b className="mono">{hexByte(j1939.sourceAddress)}</b>
               {ADDRESS_NAMES[j1939.sourceAddress] && <> ({ADDRESS_NAMES[j1939.sourceAddress]})</>}
             </span>
             {j1939.dataPage > 0 && (
               <span>
-                Data page <b>{j1939.dataPage}</b>
+                {t('dataPage')} <b>{j1939.dataPage}</b>
               </span>
             )}
           </div>
@@ -160,23 +158,23 @@ export function MessageDetail({
       </div>
 
       <div className="card">
-        <h2>Signals</h2>
+        <h2>{t('signalsTitle')}</h2>
         <div style={{ overflowX: 'auto' }}>
           <table className="grid">
             <thead>
               <tr>
-                <th>Name</th>
-                <th>Mux</th>
-                <th className="num">Start</th>
-                <th className="num">Length</th>
-                <th>Byte order</th>
-                <th>Type</th>
-                <th className="num">Factor</th>
-                <th className="num">Offset</th>
+                <th>{t('thName')}</th>
+                <th>{t('thMux')}</th>
+                <th className="num">{t('thStart')}</th>
+                <th className="num">{t('thLength')}</th>
+                <th>{t('thByteOrder')}</th>
+                <th>{t('thType')}</th>
+                <th className="num">{t('thFactor')}</th>
+                <th className="num">{t('thOffset')}</th>
                 <th className="num">Min</th>
                 <th className="num">Max</th>
-                <th>Unit</th>
-                <th>Receivers</th>
+                <th>{t('thUnit')}</th>
+                <th>{t('thReceivers')}</th>
               </tr>
             </thead>
             <tbody>
@@ -218,7 +216,7 @@ export function MessageDetail({
 
       <div className="detail-grid">
         <div className="card">
-          <h2>Bit layout</h2>
+          <h2>{t('bitLayout')}</h2>
           <BitMatrix
             message={message}
             selectedSignal={selectedSignal}
@@ -229,20 +227,19 @@ export function MessageDetail({
           {selected ? (
             <SignalDetails signal={selected} />
           ) : (
-            <div className="card muted">
-              Select a signal in the table or bit matrix to see its details.
-            </div>
+            <div className="card muted">{t('selectSignalHint')}</div>
           )}
           <DecodePanel message={message} />
         </div>
       </div>
 
-      <AttributesCard title="Message attributes" attributes={message.attributes} />
+      <AttributesCard title={t('messageAttributes')} attributes={message.attributes} />
     </div>
   );
 }
 
 function SignalDetails({ signal }: { signal: DbcSignal }) {
+  const { t } = useI18n();
   const valueEntries = Object.entries(signal.values ?? {});
   return (
     <div className="card">
@@ -251,21 +248,21 @@ function SignalDetails({ signal }: { signal: DbcSignal }) {
       </h2>
       <div className="meta-row">
         <span>
-          Physical ={' '}
+          {t('physicalEquals')}{' '}
           <b className="mono">
-            raw × {fmtNum(signal.factor)} + {fmtNum(signal.offset)}
+            {t('rawWord')} × {fmtNum(signal.factor)} + {fmtNum(signal.offset)}
           </b>
         </span>
         {signal.unit && (
           <span>
-            Unit <b>{signal.unit}</b>
+            {t('unitLabel')} <b>{signal.unit}</b>
           </span>
         )}
       </div>
       {signal.multiplex.extended && (
         <div className="meta-row">
           <span>
-            Active when <b>{signal.multiplex.extended.switchName}</b> ∈{' '}
+            {t('activeWhen')} <b>{signal.multiplex.extended.switchName}</b> ∈{' '}
             <b className="mono">
               {signal.multiplex.extended.ranges
                 .map(([lo, hi]) => (lo === hi ? String(lo) : `${lo}–${hi}`))
@@ -278,12 +275,12 @@ function SignalDetails({ signal }: { signal: DbcSignal }) {
 
       {valueEntries.length > 0 && (
         <>
-          <h3 style={{ marginTop: 14 }}>Value descriptions</h3>
+          <h3 style={{ marginTop: 14 }}>{t('valueDescriptions')}</h3>
           <table className="grid">
             <thead>
               <tr>
-                <th className="num">Raw</th>
-                <th>Meaning</th>
+                <th className="num">{t('thRaw')}</th>
+                <th>{t('thMeaning')}</th>
               </tr>
             </thead>
             <tbody>
@@ -304,7 +301,7 @@ function SignalDetails({ signal }: { signal: DbcSignal }) {
 
       {Object.keys(signal.attributes).length > 0 && (
         <>
-          <h3 style={{ marginTop: 14 }}>Attributes</h3>
+          <h3 style={{ marginTop: 14 }}>{t('attributes')}</h3>
           <table className="grid">
             <tbody>
               {Object.entries(signal.attributes).map(([name, value]) => (
@@ -322,6 +319,7 @@ function SignalDetails({ signal }: { signal: DbcSignal }) {
 }
 
 function DecodePanel({ message }: { message: DbcMessage }) {
+  const { t } = useI18n();
   const [input, setInput] = useState('');
   // Clear the entered bytes when switching messages — stale bytes would
   // silently decode misleading values for the newly selected message.
@@ -334,20 +332,22 @@ function DecodePanel({ message }: { message: DbcMessage }) {
 
   return (
     <div className="card">
-      <h2>Decode frame</h2>
+      <h2>{t('decodeFrame')}</h2>
       <input
         className={`decode-input ${bytes === null ? 'invalid' : ''}`}
         placeholder={
           message.dlc <= 8
-            ? `Hex data, e.g. ${Array.from({ length: message.dlc }, () => '00').join(' ')}`
-            : `Hex data, up to ${message.dlc} bytes — missing bytes are zero-padded`
+            ? t('decodePlaceholderShort', {
+                ex: Array.from({ length: message.dlc }, () => '00').join(' '),
+              })
+            : t('decodePlaceholderLong', { n: message.dlc })
         }
         value={input}
         onChange={(e) => setInput(e.target.value)}
         spellCheck={false}
       />
       {bytes === null ? (
-        <div className="muted">Enter full bytes as hex (e.g. “12 AB 00” or “0x12AB”).</div>
+        <div className="muted">{t('decodeInvalid')}</div>
       ) : (
         <>
           <div className="mono muted" style={{ marginBottom: 8 }}>
@@ -356,11 +356,11 @@ function DecodePanel({ message }: { message: DbcMessage }) {
           <table className="grid">
             <thead>
               <tr>
-                <th>Signal</th>
-                <th className="num">Raw</th>
-                <th className="num">Physical</th>
-                <th>Unit</th>
-                <th>Meaning</th>
+                <th>{t('thSignal')}</th>
+                <th className="num">{t('thRaw')}</th>
+                <th className="num">{t('thPhysical')}</th>
+                <th>{t('thUnit')}</th>
+                <th>{t('thMeaning')}</th>
               </tr>
             </thead>
             <tbody>
@@ -372,7 +372,7 @@ function DecodePanel({ message }: { message: DbcMessage }) {
                     <b>{fmtNum(physical)}</b>
                   </td>
                   <td>{signal.unit}</td>
-                  <td>{active ? label ?? '' : <span className="muted">mux inactive</span>}</td>
+                  <td>{active ? label ?? '' : <span className="muted">{t('muxInactive')}</span>}</td>
                 </tr>
               ))}
             </tbody>

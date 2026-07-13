@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { parseDbc } from './lib/dbc/parser';
 import { findMessageByOccurrence } from './lib/dbc/identity';
 import type { DbcDatabase } from './lib/dbc/types';
+import { useI18n } from './lib/i18n';
 import demoDbcText from './sample/demo.dbc?raw';
 import { Sidebar } from './components/Sidebar';
 import { MessageDetail } from './components/MessageDetail';
@@ -9,6 +10,7 @@ import { NodeDetail } from './components/NodeDetail';
 import { ValueTableDetail } from './components/ValueTableDetail';
 import { Overview } from './components/Overview';
 import { NetworkGraph } from './components/NetworkGraph';
+import { SettingsMenu } from './components/SettingsMenu';
 
 export type Selection =
   | { kind: 'overview' }
@@ -65,6 +67,7 @@ async function readFileText(file: File): Promise<string> {
 }
 
 export function App() {
+  const { t, tn } = useI18n();
   const [db, setDb] = useState<DbcDatabase | null>(null);
   const [fileName, setFileName] = useState('');
   const [selection, setSelection] = useState<Selection>({ kind: 'overview' });
@@ -171,17 +174,17 @@ export function App() {
       }}
       onDrop={onDrop}
     >
-      {dragging && <div className="drop-overlay">Drop DBC file to open</div>}
+      {dragging && <div className="drop-overlay">{t('dropOverlay')}</div>}
 
       <div className="toolbar">
         <div className="brand">
           Can<span>Viewer</span>
         </div>
         <button className="btn primary" onClick={() => fileInputRef.current?.click()}>
-          Open DBC…
+          {t('openDbc')}
         </button>
         <button className="btn" onClick={() => loadText('demo.dbc', demoDbcText)}>
-          Load demo
+          {t('loadDemo')}
         </button>
         <input
           ref={fileInputRef}
@@ -197,9 +200,9 @@ export function App() {
         {db && (
           <div className="file-info">
             <b>{fileName}</b>
-            {db.version && <> · version “{db.version}”</>} · {db.messages.length} messages ·{' '}
-            {db.messages.reduce((n, m) => n + m.signals.length, 0)} signals · {db.nodes.length}{' '}
-            nodes
+            {db.version && <> · {t('version')} “{db.version}”</>} · {db.messages.length}{' '}
+            {t('messagesWord')} · {db.messages.reduce((n, m) => n + m.signals.length, 0)}{' '}
+            {t('signalsWord')} · {db.nodes.length} {t('nodesWord')}
           </div>
         )}
         <div className="spacer" />
@@ -209,9 +212,10 @@ export function App() {
             style={{ borderColor: 'var(--danger)', color: 'var(--danger)' }}
             onClick={() => setSelection({ kind: 'overview' })}
           >
-            ⚠ {db.problems.length} parse problem{db.problems.length > 1 ? 's' : ''}
+            {tn('parseProblemOne', 'parseProblemMany', db.problems.length)}
           </button>
         )}
+        <SettingsMenu />
       </div>
 
       {!db ? (
@@ -220,16 +224,16 @@ export function App() {
             <h1>
               Can<span style={{ color: 'var(--accent)' }}>Viewer</span>
             </h1>
-            <p>A viewer for DBC CAN database files.</p>
+            <p>{t('welcomeTagline')}</p>
             <div className="actions">
               <button className="btn primary" onClick={() => fileInputRef.current?.click()}>
-                Open DBC file…
+                {t('welcomeOpen')}
               </button>
               <button className="btn" onClick={() => loadText('demo.dbc', demoDbcText)}>
-                Explore the demo database
+                {t('welcomeDemo')}
               </button>
             </div>
-            <div className="dropzone">…or drag &amp; drop a .dbc file anywhere in this window</div>
+            <div className="dropzone">{t('welcomeDrop')}</div>
           </div>
         </div>
       ) : (

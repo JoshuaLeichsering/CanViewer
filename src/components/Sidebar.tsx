@@ -4,6 +4,7 @@ import type { Selection } from '../App';
 import { occurrenceOf } from '../lib/dbc/identity';
 import { isCanFd } from '../lib/dbc/canfd';
 import { decomposeJ1939Id, isJ1939Database } from '../lib/dbc/j1939';
+import { useI18n } from '../lib/i18n';
 import { hexId } from '../lib/format';
 
 function messageMatches(message: DbcMessage, query: string): boolean {
@@ -33,6 +34,7 @@ export function Sidebar({
   search: string;
   onSearch: (q: string) => void;
 }) {
+  const { t } = useI18n();
   const query = search.trim();
 
   const messages = useMemo(() => {
@@ -52,7 +54,7 @@ export function Sidebar({
     () =>
       query === ''
         ? db.valueTables
-        : db.valueTables.filter((t) => t.name.toLowerCase().includes(query.toLowerCase())),
+        : db.valueTables.filter((tbl) => tbl.name.toLowerCase().includes(query.toLowerCase())),
     [db, query],
   );
 
@@ -63,32 +65,32 @@ export function Sidebar({
       <div className="search-box">
         <input
           type="search"
-          placeholder="Search messages, signals, nodes…"
+          placeholder={t('searchPlaceholder')}
           value={search}
           onChange={(e) => onSearch(e.target.value)}
         />
       </div>
 
       <div className="tree-section">
-        <div className="tree-header">Network</div>
+        <div className="tree-header">{t('network')}</div>
         <button
           className={`tree-item ${selection.kind === 'overview' ? 'active' : ''}`}
           onClick={() => onSelect({ kind: 'overview' })}
         >
-          <span className="name">Overview</span>
+          <span className="name">{t('overview')}</span>
           {db.problems.length > 0 && <span className="pill warn">{db.problems.length}</span>}
         </button>
         <button
           className={`tree-item ${selection.kind === 'graph' ? 'active' : ''}`}
           onClick={() => onSelect({ kind: 'graph' })}
         >
-          <span className="name">ECU network</span>
+          <span className="name">{t('ecuNetwork')}</span>
         </button>
       </div>
 
       <div className="tree-section">
         <div className="tree-header">
-          Messages ({messages.length}
+          {t('sidebarMessages')} ({messages.length}
           {query !== '' ? ` / ${db.messages.length}` : ''})
         </div>
         {messages.map((m) => {
@@ -100,7 +102,7 @@ export function Sidebar({
               key={`${m.rawId}.${occ}`}
               className={`tree-item ${active ? 'active' : ''}`}
               onClick={() => onSelect({ kind: 'message', rawId: m.rawId, occ })}
-              title={`${hexId(m.id, m.isExtended)} ${m.name} — ${m.signals.length} signals${
+              title={`${hexId(m.id, m.isExtended)} ${m.name} — ${m.signals.length} ${t('signalsWord')}${
                 j1939Db && m.isExtended ? ` · PGN ${decomposeJ1939Id(m.id).pgn}` : ''
               }`}
             >
@@ -112,11 +114,13 @@ export function Sidebar({
             </button>
           );
         })}
-        {messages.length === 0 && <div className="tree-empty">no matches</div>}
+        {messages.length === 0 && <div className="tree-empty">{t('noMatches')}</div>}
       </div>
 
       <div className="tree-section">
-        <div className="tree-header">Nodes ({nodes.length})</div>
+        <div className="tree-header">
+          {t('sidebarNodes')} ({nodes.length})
+        </div>
         {nodes.map((n) => (
           <button
             key={n.name}
@@ -128,25 +132,27 @@ export function Sidebar({
             <span className="name">{n.name}</span>
           </button>
         ))}
-        {nodes.length === 0 && <div className="tree-empty">no matches</div>}
+        {nodes.length === 0 && <div className="tree-empty">{t('noMatches')}</div>}
       </div>
 
       {db.valueTables.length > 0 && (
         <div className="tree-section">
-          <div className="tree-header">Value tables ({valueTables.length})</div>
-          {valueTables.map((t) => (
+          <div className="tree-header">
+            {t('sidebarValueTables')} ({valueTables.length})
+          </div>
+          {valueTables.map((tbl) => (
             <button
-              key={t.name}
+              key={tbl.name}
               className={`tree-item ${
-                selection.kind === 'valueTable' && selection.name === t.name ? 'active' : ''
+                selection.kind === 'valueTable' && selection.name === tbl.name ? 'active' : ''
               }`}
-              onClick={() => onSelect({ kind: 'valueTable', name: t.name })}
+              onClick={() => onSelect({ kind: 'valueTable', name: tbl.name })}
             >
-              <span className="name">{t.name}</span>
-              <span className="count">{Object.keys(t.values).length}</span>
+              <span className="name">{tbl.name}</span>
+              <span className="count">{Object.keys(tbl.values).length}</span>
             </button>
           ))}
-          {valueTables.length === 0 && <div className="tree-empty">no matches</div>}
+          {valueTables.length === 0 && <div className="tree-empty">{t('noMatches')}</div>}
         </div>
       )}
     </div>
