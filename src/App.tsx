@@ -265,6 +265,7 @@ function MainView({
       if (!message) return <Overview db={db} onSelect={onSelect} />;
       return (
         <MessageDetail
+          db={db}
           message={message}
           selectedSignal={selection.signal}
           onSelectSignal={(signal) =>

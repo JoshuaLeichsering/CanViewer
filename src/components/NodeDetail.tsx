@@ -1,6 +1,7 @@
 import type { DbcDatabase, DbcNode } from '../lib/dbc/types';
 import type { Selection } from '../App';
 import { occurrenceOf } from '../lib/dbc/identity';
+import { isCanFd } from '../lib/dbc/canfd';
 import { hexId } from '../lib/format';
 import { AttributesCard } from './AttributesCard';
 
@@ -71,6 +72,12 @@ export function NodeDetail({
                       <>
                         {' '}
                         <span className="pill ext">EXT</span>
+                      </>
+                    )}
+                    {isCanFd(db, m) && (
+                      <>
+                        {' '}
+                        <span className="pill fd">FD</span>
                       </>
                     )}
                   </td>

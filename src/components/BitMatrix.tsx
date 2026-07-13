@@ -23,14 +23,16 @@ export function BitMatrix({
   selectedSignal?: string;
   onSelectSignal: (name: string | undefined) => void;
 }) {
-  const { cells, rows } = useMemo(() => {
+  const { cells, visibleRows, collapsedRows } = useMemo(() => {
     const cellMap = new Map<number, CellInfo>();
     let maxByte = message.dlc - 1;
+    let lastOccupied = -1;
     message.signals.forEach((signal, index) => {
       const positions = signalBitPositions(signal);
       positions.forEach((pos, i) => {
         if (pos < 0) return;
         maxByte = Math.max(maxByte, pos >> 3);
+        lastOccupied = Math.max(lastOccupied, pos >> 3);
         const cell = cellMap.get(pos) ?? { signalIndexes: [], isStart: false };
         cell.signalIndexes.push(index);
         // The visual "start" marker sits on the DBC start bit.
@@ -43,12 +45,17 @@ export function BitMatrix({
         cellMap.set(pos, cell);
       });
     });
-    return { cells: cellMap, rows: Math.min(maxByte + 1, 64) };
+    // Large CAN FD frames: collapse the unused tail bytes instead of drawing
+    // dozens of empty rows (classic 8-byte messages always render in full).
+    const totalRows = Math.min(maxByte + 1, 64);
+    const visible =
+      totalRows > 20 ? Math.min(totalRows, Math.max(lastOccupied + 1, 8)) : totalRows;
+    return { cells: cellMap, visibleRows: visible, collapsedRows: totalRows - visible };
   }, [message]);
 
   return (
     <div>
-      <table className="bitmatrix">
+      <table className={`bitmatrix ${visibleRows > 24 ? 'compact' : ''}`}>
         <thead>
           <tr>
             <th />
@@ -58,7 +65,7 @@ export function BitMatrix({
           </tr>
         </thead>
         <tbody>
-          {Array.from({ length: rows }, (_, byte) => (
+          {Array.from({ length: visibleRows }, (_, byte) => (
             <tr key={byte}>
               <td className="byte-label">
                 {byte} {byte >= message.dlc ? '⚠' : ''}
@@ -113,6 +120,14 @@ export function BitMatrix({
               })}
             </tr>
           ))}
+          {collapsedRows > 0 && (
+            <tr>
+              <td className="byte-label" />
+              <td className="collapse-note" colSpan={8}>
+                ⋯ bytes {visibleRows}–{visibleRows + collapsedRows - 1} unused
+              </td>
+            </tr>
+          )}
         </tbody>
       </table>
 

@@ -232,6 +232,11 @@ body {
   color: #334155;
 }
 
+.pill.fd {
+  background: #ccfbf1;
+  color: #115e59;
+}
+
 .pill.warn {
   background: var(--danger-soft);
   color: var(--danger);
@@ -436,6 +441,20 @@ table.grid th.num {
 
 .bitmatrix td.bit.dimmed {
   opacity: 0.32;
+}
+
+.bitmatrix td.collapse-note {
+  padding: 6px 8px;
+  color: var(--text-muted);
+  font-style: italic;
+  border: 1px dashed var(--border);
+  text-align: center;
+}
+
+/* Very tall CAN FD matrices render with smaller cells. */
+.bitmatrix.compact td.bit {
+  width: 26px;
+  height: 20px;
 }
 
 .bitmatrix td.bit.overlap {

@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import type { DbcDatabase, DbcMessage } from '../lib/dbc/types';
 import type { Selection } from '../App';
 import { occurrenceOf } from '../lib/dbc/identity';
+import { isCanFd } from '../lib/dbc/canfd';
 import { hexId } from '../lib/format';
 
 function messageMatches(message: DbcMessage, query: string): boolean {
@@ -101,6 +102,7 @@ export function Sidebar({
               <span className="id">{hexId(m.id, m.isExtended)}</span>
               <span className="name">{m.name}</span>
               {m.isExtended && <span className="pill ext">EXT</span>}
+              {isCanFd(db, m) && <span className="pill fd">FD</span>}
               <span className="count">{m.signals.length}</span>
             </button>
           );

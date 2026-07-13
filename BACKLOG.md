@@ -5,7 +5,7 @@ move items up/down freely and check them off when done.
 
 ## Viewer
 
-- [ ] CAN FD polish: verify bit matrix, decoder and warnings for messages with
+- [x] CAN FD polish: verify bit matrix, decoder and warnings for messages with
       DLC > 8 (up to 64 bytes); show FD indicator on messages
 - [ ] J1939 view: decompose 29-bit IDs into priority / PGN / source address,
       show PGN in the message list for extended frames

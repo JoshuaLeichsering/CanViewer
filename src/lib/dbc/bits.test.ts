@@ -125,6 +125,18 @@ describe('extractRawValue', () => {
     const s = makeSignal({ startBit: 0, length: 16 });
     expect(extractRawValue(s, new Uint8Array([0x01]))).toBeNull();
   });
+
+  it('decodes signals across a full 64-byte CAN FD frame', () => {
+    // Signal in the last two bytes of a 64-byte frame (bits 496..511).
+    const s = makeSignal({ startBit: 496, length: 16, factor: 0.5 });
+    const data = new Uint8Array(64);
+    data[62] = 0x10; // little endian: raw = 0x2710 = 10000
+    data[63] = 0x27;
+    expect(extractRawValue(s, data)).toBe(10000);
+    expect(toPhysical(s, 10000)).toBe(5000);
+    expect(signalOutOfBounds(s, 64)).toBe(false);
+    expect(signalOutOfBounds(s, 63)).toBe(true);
+  });
 });
 
 describe('decodeFrame multiplexing', () => {

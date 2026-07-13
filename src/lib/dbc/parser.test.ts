@@ -21,7 +21,7 @@ describe('parseDbc on demo database', () => {
   });
 
   it('reads messages', () => {
-    expect(db.messages).toHaveLength(6);
+    expect(db.messages).toHaveLength(7);
     const engine = db.messages.find((m) => m.name === 'EngineData')!;
     expect(engine.id).toBe(256);
     expect(engine.dlc).toBe(8);
@@ -104,6 +104,15 @@ describe('parseDbc on demo database', () => {
     const cycle = db.attributeDefinitions.find((d) => d.name === 'GenMsgCycleTime')!;
     expect(cycle.min).toBe(0);
     expect(cycle.max).toBe(10000);
+  });
+
+  it('parses the CAN FD demo message with VFrameFormat attributes', () => {
+    const fd = db.messages.find((m) => m.name === 'AdasObjects')!;
+    expect(fd.dlc).toBe(24);
+    expect(fd.signals).toHaveLength(6);
+    expect(fd.attributes.VFrameFormat).toBe('StandardCAN_FD');
+    const j1939 = db.messages.find((m) => m.name === 'J1939_EEC1')!;
+    expect(j1939.attributes.VFrameFormat).toBe('J1939PG');
   });
 
   it('applies SIG_VALTYPE_ float', () => {

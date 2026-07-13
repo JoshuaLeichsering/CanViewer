@@ -1,15 +1,18 @@
 import { useEffect, useMemo, useState } from 'react';
-import type { DbcMessage, DbcSignal } from '../lib/dbc/types';
+import type { DbcDatabase, DbcMessage, DbcSignal } from '../lib/dbc/types';
 import { decodeFrame, parseHexBytes, signalOutOfBounds, signalsConflict } from '../lib/dbc/bits';
+import { declaredFrameFormat, isCanFd, isJ1939Pg, isValidFrameSize, paddedFdSize } from '../lib/dbc/canfd';
 import { fmtNum, hexId, muxLabel } from '../lib/format';
 import { BitMatrix, paletteIndex } from './BitMatrix';
 import { AttributesCard } from './AttributesCard';
 
 export function MessageDetail({
+  db,
   message,
   selectedSignal,
   onSelectSignal,
 }: {
+  db: DbcDatabase;
   message: DbcMessage;
   selectedSignal?: string;
   onSelectSignal: (name: string | undefined) => void;
@@ -35,6 +38,31 @@ export function MessageDetail({
     return list;
   }, [message]);
 
+  // Frame-size sanity notes (informational, not errors like the ones above).
+  const sizeNotes = useMemo(() => {
+    const notes: string[] = [];
+    const declared = declaredFrameFormat(db, message);
+    if (declared === 'j1939pg') return notes; // J1939 PGs legitimately exceed CAN limits
+    if (declared === 'classic') {
+      // Explicitly classic frames can never carry more than 8 bytes — an
+      // FD padding hint would be wrong here, this is a plain contradiction.
+      if (message.dlc > 8) {
+        notes.push(
+          `VFrameFormat declares this message classic CAN, but DLC ${message.dlc} exceeds the classic 8-byte maximum.`,
+        );
+      }
+      return notes;
+    }
+    if (message.dlc > 64) {
+      notes.push(`DLC ${message.dlc} exceeds the 64-byte CAN FD maximum.`);
+    } else if (message.dlc > 8 && !isValidFrameSize(message.dlc)) {
+      notes.push(
+        `${message.dlc} bytes is not a valid CAN FD frame size — on the wire the frame will be padded to ${paddedFdSize(message.dlc)} bytes.`,
+      );
+    }
+    return notes;
+  }, [db, message]);
+
   const cycleTime = message.attributes.GenMsgCycleTime;
   const sendType = message.attributes.GenMsgSendType;
 
@@ -46,6 +74,8 @@ export function MessageDetail({
           <span className="mono">{hexId(message.id, message.isExtended)}</span>
           <span className="mono muted">({message.id})</span>
           {message.isExtended && <span className="pill ext">Extended 29-bit</span>}
+          {isCanFd(db, message) && <span className="pill fd">CAN FD</span>}
+          {isJ1939Pg(db, message) && <span className="pill node">J1939 PG</span>}
         </div>
         <div className="meta-row">
           <span>
@@ -72,6 +102,11 @@ export function MessageDetail({
         {warnings.map((warning) => (
           <div key={warning} className="comment-box" style={{ borderLeftColor: 'var(--danger)' }}>
             ⚠ {warning}
+          </div>
+        ))}
+        {sizeNotes.map((note) => (
+          <div key={note} className="comment-box" style={{ borderLeftColor: '#f59e0b' }}>
+            ⚠ {note}
           </div>
         ))}
         {message.comment && <div className="comment-box">{message.comment}</div>}
@@ -255,7 +290,11 @@ function DecodePanel({ message }: { message: DbcMessage }) {
       <h2>Decode frame</h2>
       <input
         className={`decode-input ${bytes === null ? 'invalid' : ''}`}
-        placeholder={`Hex data, e.g. ${Array.from({ length: message.dlc }, () => '00').join(' ')}`}
+        placeholder={
+          message.dlc <= 8
+            ? `Hex data, e.g. ${Array.from({ length: message.dlc }, () => '00').join(' ')}`
+            : `Hex data, up to ${message.dlc} bytes — missing bytes are zero-padded`
+        }
         value={input}
         onChange={(e) => setInput(e.target.value)}
         spellCheck={false}

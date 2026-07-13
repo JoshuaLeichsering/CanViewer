@@ -72,6 +72,14 @@ BO_ 2364539904 J1939_EEC1: 8 ECM
  SG_ ActualEnginePercentTorque : 16|8@1+ (1,-125) [-125|125] "%"  Vector__XXX
  SG_ EngineSpeedJ1939 : 24|16@1+ (0.125,0) [0|8031.875] "rpm"  Vector__XXX
 
+BO_ 1536 AdasObjects: 24 ECM
+ SG_ ObjCount : 0|4@1+ (1,0) [0|15] ""  IC
+ SG_ Obj1Dist : 8|16@1+ (0.01,0) [0|655.35] "m"  IC,ABS
+ SG_ Obj1Speed : 24|16@1- (0.01,0) [-327.68|327.67] "m/s"  ABS
+ SG_ Obj1Angle : 40|16@1- (0.1,0) [-3276.8|3276.7] "deg"  IC
+ SG_ Obj2Dist : 56|16@1+ (0.01,0) [0|655.35] "m"  IC,ABS
+ SG_ Obj2Speed : 72|16@1- (0.01,0) [-327.68|327.67] "m/s"  ABS
+
 BO_TX_BU_ 512 : TCM,ECM;
 
 CM_ "CanViewer demo database with typical powertrain messages.";
@@ -84,12 +92,15 @@ CM_ SG_ 256 EngineSpeed "Crankshaft rotational speed.";
 CM_ BO_ 1024 "Diagnostic data message.
 Second line of this comment.";
 CM_ SG_ 768 BrakePressure "Master cylinder pressure.";
+CM_ BO_ 1536 "ADAS object list broadcast (CAN FD, 24-byte payload).";
 
 BA_DEF_ BO_ "GenMsgCycleTime" INT 0 10000;
 BA_DEF_ BO_ "GenMsgSendType" ENUM "Cyclic","Event","IfActive","NoMsgSendType";
 BA_DEF_ SG_ "GenSigStartValue" FLOAT 0 100000;
 BA_DEF_ BU_ "NodeAddress" HEX 0 255;
 BA_DEF_ "BusType" STRING;
+BA_DEF_ BO_ "VFrameFormat" ENUM "StandardCAN","ExtendedCAN","reserved","J1939PG","reserved","reserved","reserved","reserved","reserved","reserved","reserved","reserved","reserved","reserved","StandardCAN_FD","ExtendedCAN_FD";
+BA_DEF_DEF_ "VFrameFormat" 0;
 BA_DEF_DEF_ "GenMsgCycleTime" 0;
 BA_DEF_DEF_ "GenMsgSendType" 3;
 BA_DEF_DEF_ "GenSigStartValue" 0;
@@ -104,6 +115,9 @@ BA_ "GenMsgSendType" BO_ 1024 1;
 BA_ "NodeAddress" BU_ ECM 16;
 BA_ "NodeAddress" BU_ TCM 24;
 BA_ "GenSigStartValue" SG_ 256 EngineSpeed 0;
+BA_ "GenMsgCycleTime" BO_ 1536 50;
+BA_ "VFrameFormat" BO_ 1536 14;
+BA_ "VFrameFormat" BO_ 2364539904 3;
 
 VAL_ 512 GearPosition 15 "Reverse" 0 "Neutral" 1 "Gear 1" 2 "Gear 2" 3 "Gear 3" 4 "Gear 4" 5 "Gear 5" 6 "Gear 6" ;
 VAL_ 256 EngineRunning 0 "Stopped" 1 "Running" ;
