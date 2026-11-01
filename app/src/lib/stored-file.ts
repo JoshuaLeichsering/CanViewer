@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /**
  * The last opened file, kept in the browser's localStorage so that it opens
  * again on the next start. Settings (language, theme) are stored separately

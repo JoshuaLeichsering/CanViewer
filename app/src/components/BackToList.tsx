@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 import { useI18n, type MsgKey } from '../lib/i18n';
 import { Icon } from './Icon';
 

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 import type { KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { describe, expect, it } from 'vitest';
 import { activateProps, isSearchShortcut, isTypingTarget, listKeyTarget } from './keyboard';

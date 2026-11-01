@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 import { Component, useEffect, useRef, type ErrorInfo, type ReactNode } from 'react';
 import { useI18n } from '../lib/i18n';
 import { clearStoredFile } from '../lib/stored-file';

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { clearStoredFile, readStoredFile, STORED_FILE_KEY } from './stored-file';
 

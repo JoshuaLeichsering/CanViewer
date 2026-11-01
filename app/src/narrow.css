@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-or-later */
 /*
  * Narrow screens. Below 840 px the list pane and the detail take turns instead
  * of standing side by side (App sets .rgh-pane-list or .rgh-pane-detail, and

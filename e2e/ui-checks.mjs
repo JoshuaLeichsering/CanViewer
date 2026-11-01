@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 // UI checks in Chromium against a production build:
 // - accessibility: axe-core finds no serious or critical issue in any view, at
 //   desktop and 390 px wide, in both themes and both languages;

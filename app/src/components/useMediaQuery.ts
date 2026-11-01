@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 import { useCallback, useSyncExternalStore } from 'react';
 
 /** Whether a CSS media query matches; the component renders again when that changes. */
