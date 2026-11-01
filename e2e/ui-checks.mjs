@@ -1,21 +1,24 @@
 // UI checks in Chromium against a production build:
 // - accessibility: axe-core finds no serious or critical issue in any view, at
 //   desktop and 390 px wide, in both themes and both languages;
-// - keyboard: "/" focuses the message search, the arrow keys, Home and End move
-//   through the lists, and table rows and network nodes open with Enter;
+// - keyboard: "/" focuses the message search (and closes the settings menu),
+//   the arrow keys, Home and End move through the lists, table rows and network
+//   nodes open with Enter, and the focus order follows the layout;
+// - the search field: the "/" hint never cuts the placeholder off;
 // - the error boundary: a view that throws shows a recovery screen, and its
 //   "Reset stored file" button ends the crash loop of a file restored on start;
-// - the narrow layout: nothing scrolls sideways at 390 px, and the list and the
-//   detail take turns;
+// - the narrow layout: nothing scrolls sideways at 390 px, comments keep a
+//   readable width, and the list and the detail take turns;
 // - deep links pasted into the open app, and the favicon.
 // Every check also fails on a page error or a failed same-origin request.
 //
 // Usage (Playwright is not a dependency of the app; see network-check.mjs):
 //   npm run build
 //   NODE_PATH=$(npm root -g) node e2e/ui-checks.mjs [app-url]
-// Without an app URL the script serves dist/ itself with Vite's preview server.
+// Without an app URL the script serves dist/ itself with Vite's preview server,
+// from whichever directory it is started.
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { after, before, describe, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
@@ -25,7 +28,9 @@ const require = createRequire(import.meta.url);
 const { chromium } = require('playwright');
 const AXE_SOURCE = readFileSync(require.resolve('axe-core/axe.min.js'), 'utf8');
 
-const DEMO = readFileSync(fileURLToPath(new URL('../examples/demo.dbc', import.meta.url)), 'utf8');
+/** A path in the repository, independent of the directory the script is started from. */
+const repoPath = (path) => fileURLToPath(new URL(`../${path}`, import.meta.url));
+const DEMO = readFileSync(repoPath('examples/demo.dbc'), 'utf8');
 /** demo.dbc with a comment on a signal that does not exist, which is one parse problem. */
 const DEMO_WITH_PROBLEM = `${DEMO}\nCM_ SG_ 256 NoSuchSignal "A comment on a signal that is not there.";\n`;
 
@@ -39,8 +44,13 @@ let browser;
 
 before(async () => {
   if (!base) {
+    if (!existsSync(repoPath('dist/index.html'))) {
+      throw new Error('There is no build in dist/: run "npm run build" first, or pass the URL of a running app.');
+    }
     const { preview } = await import('vite');
-    server = await preview({ logLevel: 'warn', preview: { port: 4180 } });
+    // The repository's config says where the build is; without it Vite would
+    // look for a config, and for dist/, in the current directory.
+    server = await preview({ configFile: repoPath('vite.config.ts'), logLevel: 'warn', preview: { port: 4180 } });
     base = server.resolvedUrls.local[0];
   }
   // As in the network check, no hostname but localhost resolves.
@@ -114,6 +124,35 @@ async function seriousIssues(page) {
   return violations
     .filter((v) => v.impact === 'serious' || v.impact === 'critical')
     .map((v) => `${v.id} (${v.impact}, ${v.nodes.length}×): ${v.help}; e.g. ${v.nodes[0].target.join(' ')}`);
+}
+
+/** Waits until the page has rendered a few frames, e.g. after a resize. */
+const frames = (page) =>
+  page.evaluate(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(() => requestAnimationFrame(done)))));
+
+/** The names of the first `count` elements that Tab reaches, from the start of the page. */
+async function tabOrder(page, count) {
+  // blur() would not do: Tab goes on from the element that had the focus last.
+  // Start from a focusable element (but not a Tab stop) at the top instead.
+  await page.evaluate(() => {
+    const start = document.createElement('div');
+    start.tabIndex = -1;
+    start.dataset.tabStart = '';
+    document.body.prepend(start);
+    start.focus();
+  });
+  const names = [];
+  for (let i = 0; i < count; i++) {
+    await page.keyboard.press('Tab');
+    names.push(
+      await page.evaluate(() => {
+        const el = document.activeElement;
+        return el?.querySelector('.label')?.textContent ?? el?.getAttribute('aria-label') ?? el?.textContent?.trim();
+      }),
+    );
+  }
+  await page.evaluate(() => document.querySelector('[data-tab-start]')?.remove());
+  return names;
 }
 
 /** The width by which the page, or its main pane, scrolls sideways (0 when it does not). */
@@ -197,6 +236,29 @@ describe('keyboard', () => {
     await context.close();
   });
 
+  test('"/" closes the settings menu on its way to the search', async () => {
+    const { context, page, problems } = await openApp();
+    await openFile(page, 'demo.dbc', DEMO);
+    const menuButton = page.locator('.rail-icon-btn[aria-expanded]');
+    await menuButton.click();
+    assert.equal(await page.locator('.menu-popover').count(), 1);
+    assert.equal((await activeElement(page)).text, 'English', 'the menu has the focus');
+    await page.keyboard.press('/');
+    assert.equal((await activeElement(page)).type, 'search');
+    assert.equal(await page.locator('.menu-popover').count(), 0, 'the menu is closed');
+    assert.equal(await menuButton.getAttribute('aria-expanded'), 'false');
+
+    // Moving the focus inside the menu, or clicking an item, still works.
+    await menuButton.click();
+    await page.keyboard.press('ArrowDown');
+    assert.equal((await activeElement(page)).text, 'Deutsch');
+    assert.equal(await page.locator('.menu-popover').count(), 1);
+    await page.locator('.menu-item', { hasText: 'Deutsch' }).click();
+    assert.equal(await page.evaluate(() => document.documentElement.lang), 'de');
+    assert.deepEqual(problems, []);
+    await context.close();
+  });
+
   test('the arrow keys, Home and End move through the message list', async () => {
     const { context, page, problems } = await openApp();
     await openFile(page, 'demo.dbc', DEMO);
@@ -273,6 +335,88 @@ describe('keyboard', () => {
   });
 });
 
+describe('focus order', () => {
+  test('Tab follows the layout: below 600 px the theme toggle is in the top bar', async () => {
+    const { context, page, problems } = await openApp({ viewport: 'narrow' });
+    await openFile(page, 'demo.dbc', DEMO);
+    // Top bar (menu, open file, theme), then the navigation bar at the bottom.
+    assert.deepEqual(await tabOrder(page, 8), [
+      'Settings',
+      'Open file',
+      'Switch to dark theme',
+      'Overview',
+      'Messages',
+      'Network',
+      'Nodes',
+      'Tables',
+    ]);
+    const theme = await page.locator('.rail-icon-btn[aria-label="Switch to dark theme"]').boundingBox();
+    assert.ok(theme.y < 56, 'the theme toggle is in the top bar');
+
+    // In the rail it is at the bottom, after the destinations, in both senses.
+    await page.setViewportSize(VIEWPORTS.desktop);
+    await frames(page);
+    assert.deepEqual(await tabOrder(page, 8), [
+      'Settings',
+      'Open file',
+      'Overview',
+      'Messages',
+      'Network',
+      'Nodes',
+      'Tables',
+      'Switch to dark theme',
+    ]);
+    const railTheme = await page.locator('.rail-icon-btn[aria-label="Switch to dark theme"]').boundingBox();
+    assert.ok(railTheme.y > VIEWPORTS.desktop.height / 2, 'the theme toggle is at the bottom of the rail');
+    assert.deepEqual(problems, []);
+    await context.close();
+  });
+});
+
+describe('search field', () => {
+  /**
+   * Whether the "/" hint shows, and whether the whole placeholder fits in the
+   * empty search field. An input's scrollWidth grows with its value but not
+   * with its placeholder, so the placeholder goes in as the value for the
+   * measurement, set directly, without an input event, so the app does not react.
+   */
+  const searchState = (page) =>
+    page.locator('.list-pane input[type=search]').evaluate((input) => {
+      const hint = input.parentElement.querySelector('.rgh-kbd');
+      const style = hint && getComputedStyle(hint);
+      const hintShown = !!style && style.display !== 'none' && style.visibility === 'visible';
+      input.value = input.placeholder;
+      const placeholderFits = input.scrollWidth <= input.clientWidth;
+      input.value = '';
+      return { hintShown, placeholderFits };
+    });
+
+  for (const lang of ['de', 'en']) {
+    test(`the "/" hint never cuts the placeholder off (${lang})`, async () => {
+      const { context, page, problems } = await openApp({ lang });
+      await openFile(page, 'demo.dbc', DEMO);
+      await rail(page, 'messages');
+      await page.evaluate(() => document.fonts.ready);
+      // At desktop width, the list pane has room for both.
+      assert.deepEqual(await searchState(page), { hintShown: true, placeholderFits: true });
+      // Where it has not, the hint gives way.
+      for (const width of [1100, 840, 390, 320]) {
+        await page.setViewportSize({ width, height: VIEWPORTS.narrow.height });
+        await showList(page);
+        await frames(page);
+        const state = await searchState(page);
+        assert.ok(!state.hintShown || state.placeholderFits, `at ${width} px the hint cuts the placeholder off`);
+      }
+      // And comes back when the room is there again.
+      await page.setViewportSize(VIEWPORTS.desktop);
+      await frames(page);
+      assert.deepEqual(await searchState(page), { hintShown: true, placeholderFits: true });
+      assert.deepEqual(problems, []);
+      await context.close();
+    });
+  }
+});
+
 describe('deep links', () => {
   test('a link pasted into the open app shows its target', async () => {
     const { context, page, problems } = await openApp();
@@ -316,12 +460,18 @@ describe('error boundary', () => {
     const screen = page.locator('[data-testid=rgh-crash]');
     await screen.waitFor();
     assert.equal(await screen.locator('h1').textContent(), 'Etwas ist schiefgelaufen');
+    // The focus moves to the recovery screen, rather than falling back to <body>,
+    // and Tab goes on to its first button.
+    assert.deepEqual(await activeElement(page), { tag: 'h1', type: null, text: 'Etwas ist schiefgelaufen' });
+    await page.keyboard.press('Tab');
+    assert.equal((await activeElement(page)).text, 'Gespeicherte Datei zurücksetzen');
     assert.match(await screen.locator('details pre').textContent(), /Injected failure for rgh-crash files/);
     assert.deepEqual(await seriousIssues(page), [], 'the recovery screen passes axe');
 
     // The file is stored and restored on start, so a reload crashes again.
     await page.reload();
     await screen.waitFor();
+    assert.equal((await activeElement(page)).tag, 'h1');
     assert.match(await page.evaluate(() => localStorage.getItem('canviewer.file')), /rgh-crash\.dbc/);
 
     await screen.locator('button', { hasText: 'Gespeicherte Datei zurücksetzen' }).click();
@@ -376,6 +526,13 @@ describe('narrow layout (390 px)', () => {
 
     await openFile(page, 'demo.dbc', DEMO_WITH_PROBLEM);
     await measure('overview');
+    // Comments and value lists keep a readable width (the table scrolls sideways
+    // in its card instead), rather than a narrow column of very tall rows.
+    const commentWidths = await page.locator('.main td.comment').evaluateAll((cells) =>
+      cells.map((td) => Math.round(td.getBoundingClientRect().width)),
+    );
+    assert.ok(commentWidths.length > 0);
+    assert.ok(Math.min(...commentWidths) >= 240, `comment cells are ${commentWidths.join(', ')} px wide`);
     await rail(page, 'messages');
     await measure('message list');
     for (const name of ['EngineData', 'AdasObjects', 'J1939_EEC1']) {
