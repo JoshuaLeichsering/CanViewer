@@ -306,7 +306,7 @@ const de: Record<MsgKey, string> = {
   receivesFromLabel: 'Empfängt von',
   msgCount: '{n} Botschaft(en)',
 
-  searchPlaceholder: 'Botschaften, Signale, IDs suchen',
+  searchPlaceholder: 'Botschaft, Signal, ID suchen',
   ecuNetwork: 'ECU-Netzwerk',
 
   statMessages: 'Botschaften',

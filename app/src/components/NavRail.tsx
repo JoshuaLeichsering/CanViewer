@@ -4,6 +4,7 @@ import { useI18n, type Lang, type MsgKey } from '../lib/i18n';
 import { useTheme } from '../lib/theme';
 import { Icon } from './Icon';
 import type { IconName } from './icon-paths';
+import { useMediaQuery } from './useMediaQuery';
 
 export type Destination = 'overview' | 'messages' | 'network' | 'nodes' | 'tables';
 
@@ -22,7 +23,8 @@ const LANGUAGES: Array<[Lang, string]> = [
 
 /**
  * Material 3 navigation rail: settings menu, the "open file" FAB, the five
- * destinations and the theme toggle.
+ * destinations and the theme toggle. Below 600 px it becomes a navigation bar
+ * at the bottom and a top bar (narrow.css).
  */
 export function NavRail({
   active,
@@ -43,6 +45,10 @@ export function NavRail({
   const menuRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const languageHeading = useId();
+  // In the top bar (below 600 px, the breakpoint in narrow.css) the theme toggle
+  // sits beside the menu and open buttons, so it follows them in the focus order
+  // as well; in the rail it stays at the bottom, after the destinations.
+  const compact = useMediaQuery('(max-width: 599px)');
 
   // Menu keyboard pattern: opening focuses the checked item, the arrow keys,
   // Home and End move between the items, Escape and Tab close the menu.
@@ -77,9 +83,28 @@ export function NavRail({
     };
   }, [menuOpen]);
 
+  // The focus moved to an element outside the menu, e.g. "/" focused the search:
+  // close the menu. Without a related target the focus went nowhere, as on a
+  // click in Safari, which does not focus the button clicked; the mousedown and
+  // click handlers decide then.
+  const onMenuBlur = (e: React.FocusEvent) => {
+    if (e.relatedTarget && !e.currentTarget.contains(e.relatedTarget)) setMenuOpen(false);
+  };
+
+  const themeButton = (
+    <button
+      className="rail-icon-btn state"
+      title={theme === 'dark' ? t('themeToLight') : t('themeToDark')}
+      aria-label={theme === 'dark' ? t('themeToLight') : t('themeToDark')}
+      onClick={toggle}
+    >
+      <Icon name={theme === 'dark' ? 'light_mode' : 'dark_mode'} />
+    </button>
+  );
+
   return (
     <nav className="rail" aria-label="CanViewer">
-      <div ref={menuRef}>
+      <div ref={menuRef} onBlur={onMenuBlur}>
         <button
           ref={menuButtonRef}
           className="rail-icon-btn state"
@@ -124,6 +149,7 @@ export function NavRail({
       <button className="rail-fab state" title={t('openFile')} aria-label={t('openFile')} onClick={onOpenFile}>
         <Icon name="upload_file" />
       </button>
+      {compact && themeButton}
 
       {DESTINATIONS.map((d) => {
         const isActive = active === d.key;
@@ -146,14 +172,7 @@ export function NavRail({
       })}
 
       <div className="rail-spacer" />
-      <button
-        className="rail-icon-btn state"
-        title={theme === 'dark' ? t('themeToLight') : t('themeToDark')}
-        aria-label={theme === 'dark' ? t('themeToLight') : t('themeToDark')}
-        onClick={toggle}
-      >
-        <Icon name={theme === 'dark' ? 'light_mode' : 'dark_mode'} />
-      </button>
+      {!compact && themeButton}
     </nav>
   );
 }

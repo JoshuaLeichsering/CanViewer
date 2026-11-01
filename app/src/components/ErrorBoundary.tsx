@@ -1,4 +1,4 @@
-import { Component, type ErrorInfo, type ReactNode } from 'react';
+import { Component, useEffect, useRef, type ErrorInfo, type ReactNode } from 'react';
 import { useI18n } from '../lib/i18n';
 import { clearStoredFile } from '../lib/stored-file';
 import { Icon } from './Icon';
@@ -27,6 +27,10 @@ export class ErrorBoundary extends Component<{ children: ReactNode }, { error: E
 
 function CrashScreen({ error }: { error: Error }) {
   const { t } = useI18n();
+  // The element that had the focus is gone with the app: move the focus to the
+  // heading, so that keyboard and screen reader users start on this screen.
+  const heading = useRef<HTMLHeadingElement>(null);
+  useEffect(() => heading.current?.focus(), []);
   const reset = () => {
     clearStoredFile();
     // A deep link points into the file that is gone now.
@@ -40,7 +44,9 @@ function CrashScreen({ error }: { error: Error }) {
     <main className="welcome" data-testid="rgh-crash">
       <div className="welcome-card rgh-crash">
         <Icon name="error" size={40} className="rgh-crash-icon" />
-        <h1>{t('rghCrashTitle')}</h1>
+        <h1 ref={heading} tabIndex={-1}>
+          {t('rghCrashTitle')}
+        </h1>
         <p>{t('rghCrashText')}</p>
         <div className="actions">
           <button className="btn filled with-icon state" onClick={reset}>

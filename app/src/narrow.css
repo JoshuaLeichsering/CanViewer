@@ -118,6 +118,11 @@
   table.m3 .wrap-anywhere {
     min-width: 240px;
   }
+  /* So do comments and lists (enum values, receivers), the last column of
+     their tables, instead of a narrow column of very tall rows. */
+  table.m3 td.comment {
+    min-width: 240px;
+  }
 
   /* The graph keeps a readable size and scrolls sideways inside its card. */
   .graph-card {

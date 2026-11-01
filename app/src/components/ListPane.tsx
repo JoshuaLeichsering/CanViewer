@@ -9,6 +9,7 @@ import { hexId } from '../lib/format';
 import { onListKeyDown } from '../lib/keyboard';
 import { Icon } from './Icon';
 import { messageTag, MessageTag } from './MessageTag';
+import { useHintFits } from './useHintFits';
 
 export type MessageFilter = 'all' | 'ext' | 'fd';
 
@@ -74,6 +75,8 @@ function MessageList({
   }, [db, query, filter]);
 
   const searchRef = useRef<HTMLInputElement>(null);
+  const hintRef = useRef<HTMLElement>(null);
+  const hintFits = useHintFits(searchRef, hintRef, t('searchPlaceholder'), search === '');
   const scrollRef = useRef<HTMLDivElement>(null);
   const selectionOf = (m: DbcMessage): Selection => ({ kind: 'message', rawId: m.rawId, occ: occurrenceOf(db, m) });
   const activeIndex = messages.findIndex(
@@ -112,7 +115,7 @@ function MessageList({
             onKeyDown={onSearchKeyDown}
           />
           {search === '' && (
-            <kbd className="rgh-kbd" aria-hidden="true">
+            <kbd ref={hintRef} className={hintFits ? 'rgh-kbd' : 'rgh-kbd rgh-kbd-off'} aria-hidden="true">
               /
             </kbd>
           )}

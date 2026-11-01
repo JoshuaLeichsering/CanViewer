@@ -366,8 +366,15 @@ h3 {
   text-align: center;
   color: var(--on-surface-var);
 }
+/* Hidden, not removed, so that the input keeps its width while it is focused. */
 .search-field:focus-within .rgh-kbd {
-  display: none;
+  visibility: hidden;
+}
+/* Where the hint would cut the placeholder off, it gives way, out of the flow
+   but with its size kept for measuring (useHintFits). */
+.rgh-kbd-off {
+  position: absolute;
+  visibility: hidden;
 }
 @media (hover: none) {
   .rgh-kbd {
@@ -1387,6 +1394,10 @@ tr.selected .sig-chip {
   margin-top: 12px;
   font-size: 24px;
   line-height: 32px;
+}
+/* The heading takes the focus only so that the screen starts there; it is not a control. */
+.rgh-crash h1:focus-visible {
+  outline: none;
 }
 .rgh-crash .actions {
   display: flex;
