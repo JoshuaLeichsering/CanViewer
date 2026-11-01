@@ -12,7 +12,7 @@ import { shouldVirtualize } from '../lib/virtual-window';
 import { Icon } from './Icon';
 import { messageTag, MessageTag } from './MessageTag';
 import { useHintFits } from './useHintFits';
-import { VirtualList } from './VirtualList';
+import { VirtualList, type VirtualListHandle } from './VirtualList';
 
 export type MessageFilter = 'all' | 'ext' | 'fd';
 
@@ -84,7 +84,7 @@ function MessageList({
   const searchRef = useRef<HTMLInputElement>(null);
   const hintRef = useRef<HTMLElement>(null);
   const hintFits = useHintFits(searchRef, hintRef, t('searchPlaceholder'), search === '');
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<VirtualListHandle>(null);
   const selectionOf = (m: DbcMessage): Selection => ({ kind: 'message', rawId: m.rawId, occ: occurrenceOf(db, m) });
   // From the search field, ↓ goes to the selected message (or the first match)
   // and Enter opens it.
@@ -94,7 +94,8 @@ function MessageList({
     const index = Math.max(activeIndex, 0);
     if (e.key === 'Enter') return onSelect(selectionOf(messages[index]));
     if (activeIndex < 0) onBrowse(selectionOf(messages[0]));
-    scrollRef.current?.querySelector<HTMLElement>(`[data-rgh-index="${index}"]`)?.focus();
+    // The row may be out of view, and in a long list not rendered yet.
+    listRef.current?.focusRow(index);
   };
 
   const filters: Array<[MessageFilter, string]> = [
@@ -150,7 +151,7 @@ function MessageList({
         })}
       </div>
       <VirtualList
-        containerRef={scrollRef}
+        handleRef={listRef}
         className="list-scroll"
         items={messages}
         virtual={shouldVirtualize(db.messages.length)}
@@ -158,7 +159,16 @@ function MessageList({
         activeKey={selection.kind === 'message' ? `${selection.rawId}.${selection.occ}` : undefined}
         activeIndex={activeIndex}
         onKeyDown={(e) =>
-          onListKeyDown(e, messages.length, (i) => onBrowse(selectionOf(messages[i])), () => searchRef.current?.focus())
+          onListKeyDown(
+            e,
+            messages.length,
+            (i) => {
+              onBrowse(selectionOf(messages[i]));
+              // Home and End in a long list go to rows that are not rendered yet.
+              listRef.current?.focusRow(i);
+            },
+            () => searchRef.current?.focus(),
+          )
         }
         renderItem={(m, i) => {
           const occ = occurrenceOf(db, m);

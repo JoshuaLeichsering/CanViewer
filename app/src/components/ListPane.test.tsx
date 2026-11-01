@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // @vitest-environment jsdom
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, screen, within } from '@testing-library/react';
 import { useState } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -296,5 +296,62 @@ describe('ListPane: the message list above 1000 messages', () => {
     const active = [...html.matchAll(/<button class="list-item state active"[^>]*>.*?<span class="title">([^<]*)</g)];
     expect(active.map(([, title]) => title)).toEqual(['Msg_0003']);
     expect(html).toContain('aria-current="true"');
+  });
+});
+
+describe('ListPane: the keyboard in a message list above 1000 messages', () => {
+  // jsdom has no layout: the list keeps its estimated row height of 60 px and
+  // a viewport of 0 px, so it renders the rows around scrollTop (overscan).
+  // Its rows element does move up as the list scrolls, as in a browser.
+  beforeEach(() => {
+    Element.prototype.scrollIntoView = vi.fn();
+    const rect = Element.prototype.getBoundingClientRect;
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (this: Element) {
+      if (!this.classList.contains('tbl-virtual-rows')) return rect.call(this);
+      return DOMRect.fromRect({ y: -(this.parentElement?.scrollTop ?? 0) });
+    });
+  });
+  afterEach(() => {
+    delete (Element.prototype as Partial<Element>).scrollIntoView;
+    vi.restoreAllMocks();
+  });
+
+  const row = (name: string) => screen.queryByText(name)?.closest('button') ?? null;
+
+  it('moves the focus with End and Home to rows that were not rendered', () => {
+    const onSelect = vi.fn();
+    renderWithProviders(<Harness db={generated(2000)} kind="messages" onSelect={onSelect} />);
+    expect(row('Msg_1999')).toBeNull();
+    row('Msg_0000')!.focus();
+
+    fireEvent.keyDown(document.activeElement!, { key: 'End' });
+    expect(onSelect).toHaveBeenLastCalledWith({ kind: 'message', rawId: 1999, occ: 0 });
+    expect(document.activeElement).toBe(row('Msg_1999'));
+    expect(document.activeElement!.getAttribute('aria-current')).toBe('true');
+
+    fireEvent.keyDown(document.activeElement!, { key: 'Home' });
+    expect(onSelect).toHaveBeenLastCalledWith({ kind: 'message', rawId: 0, occ: 0 });
+    expect(document.activeElement).toBe(row('Msg_0000'));
+
+    // ↓ and ↑ reach the neighbours, which are rendered with the focused row.
+    fireEvent.keyDown(document.activeElement!, { key: 'ArrowDown' });
+    expect(document.activeElement).toBe(row('Msg_0001'));
+    fireEvent.keyDown(document.activeElement!, { key: 'ArrowUp' });
+    expect(document.activeElement).toBe(row('Msg_0000'));
+  });
+
+  it('goes from the search field to the selected message after it was scrolled out of view', () => {
+    renderWithProviders(
+      <Harness db={generated(2000)} kind="messages" initial={{ kind: 'message', rawId: 1500, occ: 0 }} />,
+    );
+    // Opening it scrolled the list to it; scroll back to the top.
+    const scroller = screen.getByTestId('tbl-virtual-list');
+    expect(row('Msg_1500')).not.toBeNull();
+    scroller.scrollTop = 0;
+    fireEvent.scroll(scroller);
+    expect(row('Msg_1500')).toBeNull();
+
+    fireEvent.keyDown(screen.getByPlaceholderText(/Search/), { key: 'ArrowDown' });
+    expect(document.activeElement).toBe(row('Msg_1500'));
   });
 });

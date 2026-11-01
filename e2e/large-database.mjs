@@ -13,7 +13,9 @@
 //   jump      jump to positions across the list; time until the second frame
 //             after the jump, and that the right message is at the top
 //   focus     focus a row and scroll it out of view with the wheel: the row
-//             keeps the focus, and Tab and Shift+Tab move on to its neighbours
+//             keeps the focus, and Tab and Shift+Tab move on to its neighbours;
+//             End and Home move the focus to the last and the first row, which
+//             were not rendered before the key
 //   search    type searches key by key; time from each key press to the frame
 //             after it (in the page), plus the browser's own Event Timing entries
 //   chips     switch the Extended, CAN FD and All filter chips the same way
@@ -323,6 +325,22 @@ check(focusAway.focused === 'Msg_0003' && !focusAway.inView, 'the focused row ke
 check(focusAway.renderedRows <= BUDGET.renderedRows, `at most ${BUDGET.renderedRows} rows rendered with a focused row out of view`);
 check(focusTab.focused === 'Msg_0004' && focusTab.inView, 'Tab moves from the focused row to the next one and scrolls it into view');
 check(focusBack.focused === 'Msg_0003' && focusBack.inView, 'Shift+Tab moves to the previous row and scrolls it into view');
+
+// End and Home (W6's list keys) reach rows the virtual list had not rendered.
+await page.waitForTimeout(100);
+await page.locator('.list-scroll .list-item', { hasText: 'Msg_0003' }).focus();
+await page.keyboard.press('End');
+await page.waitForTimeout(100);
+const focusEnd = await focusState();
+await page.keyboard.press('Home');
+await page.waitForTimeout(100);
+const focusHome = await focusState();
+results.focus.end = focusEnd;
+results.focus.home = focusHome;
+say(`focus: End ${JSON.stringify(focusEnd)}; Home ${JSON.stringify(focusHome)}`);
+check(focusEnd.focused === `Msg_${pad(COUNT - 1)}` && focusEnd.inView, 'End moves the focus to the last row and scrolls it into view');
+check(focusEnd.renderedRows <= BUDGET.renderedRows, `at most ${BUDGET.renderedRows} rows rendered after End`);
+check(focusHome.focused === 'Msg_0000' && focusHome.inView, 'Home moves the focus to the first row and scrolls it into view');
 
 // --- search and chips: time from each key press or click to the frame after it ---
 await page.evaluate(() => {

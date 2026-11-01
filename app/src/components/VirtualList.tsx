@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 import {
   useCallback,
+  useImperativeHandle,
   useLayoutEffect,
   useRef,
   useState,
   type FocusEvent,
   type KeyboardEventHandler,
-  type MutableRefObject,
   type ReactNode,
+  type Ref,
 } from 'react';
 import { flushSync } from 'react-dom';
 import { revealScrollTop, rowSegments, rowWindow } from '../lib/virtual-window';
@@ -16,6 +17,16 @@ import { revealScrollTop, rowSegments, rowWindow } from '../lib/virtual-window';
 const OVERSCAN = 10;
 /** Rows rendered before the first layout tells how many fit. */
 const INITIAL_ROWS = 40;
+
+/** What a VirtualList lets its owner do, through `handleRef`. */
+export interface VirtualListHandle {
+  /**
+   * Moves the keyboard focus to the row of item `index` and scrolls it into
+   * view. A row the virtual list has not rendered is rendered first, so that
+   * keys such as End reach rows far out of view.
+   */
+  focusRow(index: number): void;
+}
 
 /**
  * A scroll container that renders only the rows in view when `virtual` is
@@ -30,7 +41,7 @@ const INITIAL_ROWS = 40;
  * was not rendered. A row with the keyboard focus stays rendered, with its two
  * neighbours, while it is scrolled out of view: the focus stays on it, and Tab
  * and Shift+Tab move on to the rows next to it, as in a list without
- * virtualization.
+ * virtualization. `handleRef` moves the focus to any row (VirtualListHandle).
  */
 export function VirtualList<T>({
   items,
@@ -40,7 +51,7 @@ export function VirtualList<T>({
   activeKey,
   activeIndex,
   className,
-  containerRef,
+  handleRef,
   onKeyDown,
   children,
 }: {
@@ -53,26 +64,21 @@ export function VirtualList<T>({
   /** Position of the active item in `items`, or -1. */
   activeIndex: number;
   className?: string;
-  /** Receives the scroll container, for callers that look up their rows in it. */
-  containerRef?: MutableRefObject<HTMLDivElement | null>;
+  /** Receives the list's VirtualListHandle. */
+  handleRef?: Ref<VirtualListHandle>;
   /** Key handler of the scroll container, such as the list panes' arrow-key navigation. */
   onKeyDown?: KeyboardEventHandler<HTMLDivElement>;
   /** Rendered after the rows, such as an empty-list note. */
   children?: ReactNode;
 }) {
-  const scrollRef = useRef<HTMLDivElement | null>(null);
-  const setScroller = useCallback(
-    (el: HTMLDivElement | null) => {
-      scrollRef.current = el;
-      if (containerRef) containerRef.current = el;
-    },
-    [containerRef],
-  );
+  const scrollRef = useRef<HTMLDivElement>(null);
   const rowsRef = useRef<HTMLDivElement>(null);
   const [rowHeight, setRowHeight] = useState(estimatedRowHeight);
   const [range, setRange] = useState<[number, number]>([0, Math.min(items.length, INITIAL_ROWS)]);
   /** The item whose row has the keyboard focus, or null. */
   const [focused, setFocused] = useState<T | null>(null);
+  /** The item whose row takes the focus once it is rendered (see focusRow), or null. */
+  const [pendingFocus, setPendingFocus] = useState<T | null>(null);
   const count = items.length;
 
   const start = Math.min(range[0], count);
@@ -109,6 +115,39 @@ export function VirtualList<T>({
   // React would render a scroll event's update after the frame that shows
   // the new scroll position, which would paint padding where rows belong.
   const onScroll = useCallback(() => flushSync(sync), [sync]);
+
+  /** The rendered row of item `index`, or null if it is not rendered. */
+  const rowElement = (index: number): HTMLElement | null => {
+    if (!virtual) return (scrollRef.current?.children[index] as HTMLElement | undefined) ?? null;
+    const child = childItems.indexOf(index);
+    return child >= 0 ? ((rowsRef.current?.children[child] as HTMLElement | undefined) ?? null) : null;
+  };
+
+  useImperativeHandle(handleRef, () => ({
+    focusRow(index: number) {
+      if (index < 0 || index >= count) return;
+      const row = rowElement(index);
+      if (row) {
+        row.focus({ preventScroll: true });
+        row.scrollIntoView({ block: 'nearest' });
+        return;
+      }
+      const scroller = scrollRef.current;
+      if (!virtual || !scroller) return;
+      // Scroll to the row, render what is in view there, and focus the row in
+      // the layout effect below, once it exists.
+      const top = revealScrollTop({
+        index,
+        rowHeight,
+        scrollTop: scroller.scrollTop,
+        viewportHeight: scroller.clientHeight,
+        offsetTop: offsetTop(),
+      });
+      if (top !== null) scroller.scrollTop = top;
+      setPendingFocus(items[index]);
+      sync();
+    },
+  }));
 
   // Measure the real row height from two neighbouring rows (margins included).
   useLayoutEffect(() => {
@@ -165,9 +204,18 @@ export function VirtualList<T>({
     return () => observer.disconnect();
   }, [virtual, sync]);
 
+  // Focus the row focusRow asked for, now that it is rendered. The request
+  // ends either way, so a row rendered later never takes the focus by surprise.
+  useLayoutEffect(() => {
+    if (pendingFocus === null) return;
+    const index = items.indexOf(pendingFocus);
+    setPendingFocus(null);
+    if (index >= 0) rowElement(index)?.focus({ preventScroll: true });
+  }, [pendingFocus]);
+
   if (!virtual) {
     return (
-      <div className={className} ref={setScroller} onKeyDown={onKeyDown}>
+      <div className={className} ref={scrollRef} onKeyDown={onKeyDown}>
         {items.map(renderItem)}
         {children}
       </div>
@@ -195,7 +243,7 @@ export function VirtualList<T>({
   return (
     <div
       className={className}
-      ref={setScroller}
+      ref={scrollRef}
       onScroll={onScroll}
       onKeyDown={onKeyDown}
       onFocus={onFocus}
