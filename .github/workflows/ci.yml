@@ -1,6 +1,7 @@
 # CI for every push and pull request: typecheck, all tests with the corpus
-# suites (which must run, never skip), the production build, and the network
-# check that proves the build makes no request outside its own origin.
+# suites (which must run, never skip), the production build, the network
+# check that proves the build makes no request outside its own origin, and the
+# import UI's end-to-end checks (e2e/import-ui.test.mjs).
 name: CI
 
 on:
@@ -71,6 +72,13 @@ jobs:
             third_party/canmatrix/tests/files/arxml/ARXMLContainerTest.arxml \
             examples/demo.dbc dist
 
+      - name: Import UI end-to-end checks (every format, clusters, source note, restore, cold start)
+        run: |
+          npx vite preview --port 4174 --strictPort > vite-preview-import-ui.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:4174/ > /dev/null && break; sleep 1; done
+          CANVIEWER_URL=http://localhost:4174/ CANVIEWER_E2E_OUT=import-ui \
+            NODE_PATH="$RUNNER_TEMP/pw/node_modules" node --test --test-reporter=spec e2e/import-ui.test.mjs
+
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -79,4 +87,6 @@ jobs:
             test-report.json
             network-check/
             vite-preview.log
+            import-ui/
+            vite-preview-import-ui.log
           if-no-files-found: ignore
