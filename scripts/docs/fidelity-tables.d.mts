@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 // Types for fidelity-tables.mjs, for the test that imports it
 // (app/src/lib/reference-docs.test.ts).
 

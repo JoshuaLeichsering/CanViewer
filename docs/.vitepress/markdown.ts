@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /**
  * Markdown rules that let one source serve two readers: GitHub, which renders
  * the pages in docs/ as files of the repository, and the documentation site.

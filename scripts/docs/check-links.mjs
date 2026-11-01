@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 // Link check for the documentation, in two modes.
 //
 //   node scripts/docs/check-links.mjs --sources

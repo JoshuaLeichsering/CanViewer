@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 // Screenshots for the documentation, taken from a running build in Chromium,
 // so that the images in docs/guide/images/ show the app as it is.
 //

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 // The documentation site: VitePress over docs/, published with GitHub Pages
 // together with the web app under app/ (see docs/decisions/0006-documentation-site.md).
 //

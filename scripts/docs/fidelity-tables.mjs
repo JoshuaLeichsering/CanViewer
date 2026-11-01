@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 // Generates the fidelity tables of the format reference (docs/reference/) from
 // the pinned baselines, so that no number in them is written by hand:
 //

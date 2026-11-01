@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 // A static file server that answers the way GitHub Pages does, for checking the
 // Pages site locally and in CI: a directory serves its index.html (after a
 // redirect that adds the trailing slash), a path without extension also finds

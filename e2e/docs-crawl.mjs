@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 // Crawl of the built documentation site in Chromium: visits every page that
 // the site links to, opens the local search once, and fails on any request
 // outside the site's origin, on a page or an asset that does not load, and on
