@@ -1,0 +1,22 @@
+## What and why
+
+<!-- What this pull request changes, and why. Reference issues as "Refs #12". -->
+
+## Evidence
+
+<!-- Quote the commands you ran and the lines of their output that matter. -->
+
+- [ ] `npx tsc --noEmit`
+- [ ] `npx vitest run`, and `node scripts/check-test-report.mjs` ends with "every corpus suite ran in full"
+- [ ] `npm run test:scripts`
+- [ ] `npm run build`
+- [ ] the network check reports `requests outside …: 0`
+- [ ] `npm run check:identifying-info` and `npm run check:licenses`
+
+## Checklist
+
+- [ ] New interface text exists in English and German.
+- [ ] No request outside the app's origin was added.
+- [ ] No test, threshold or baseline was weakened. A regenerated baseline is explained above.
+- [ ] A changed dependency is pinned, its license is allowed, and `THIRD_PARTY_NOTICES.md` is regenerated (`npm run notices`).
+- [ ] User-facing changes are described in the documentation.

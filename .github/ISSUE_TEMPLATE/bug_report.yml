@@ -1,0 +1,63 @@
+name: Bug report
+description: CanViewer shows something wrong, fails to open a file, or does not work as described.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for the report. Please do not attach confidential databases: a small file
+        made up to show the problem is best. Report vulnerabilities privately, as
+        [SECURITY.md](https://github.com/JoshuaLeichsering/CanViewer/blob/main/SECURITY.md) describes.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you saw, and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: How to reproduce it
+      description: The steps, starting from opening the app. Which view, which message or signal?
+      placeholder: |
+        1. Open examples/demo.dbc
+        2. Select the message EngineData
+        3. …
+    validations:
+      required: true
+  - type: textarea
+    id: file
+    attributes:
+      label: A file that shows it
+      description: |
+        If a particular file triggers the problem, attach it here (drag it into the field), or
+        paste the lines that matter. Remove anything confidential first.
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where
+      options:
+        - Web app
+        - Desktop app on Windows
+        - Desktop app on macOS
+        - Desktop app on Linux
+        - A build from source
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: The release, or the commit you built. For the web app, the address you opened it from.
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and system
+      description: For example "Firefox 140 on Windows 11". Also say the language and theme, if they matter.
+  - type: textarea
+    id: problems
+    attributes:
+      label: Parse problems or errors
+      description: Anything the app listed under parse problems, or showed as an error. Paste it as text.
+      render: text
