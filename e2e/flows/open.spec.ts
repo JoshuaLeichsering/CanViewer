@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 import { DEMO_DBC, DEMO_DBC_TEXT, TEST_ARXML, expect, openFile, openText, rail, test } from '../fixtures';
 
 test.describe('opening files', () => {

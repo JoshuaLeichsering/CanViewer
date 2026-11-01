@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /**
  * Shared setup for the component tests (they run under jsdom, see the
  * `// @vitest-environment jsdom` line at the top of each). Importing this

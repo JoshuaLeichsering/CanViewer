@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 import { DEMO_DBC, expect, openFile, rail, test } from '../fixtures';
 
 const theme = (page: import('@playwright/test').Page) => page.locator('html');

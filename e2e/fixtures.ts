@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /**
  * The `test` every end-to-end flow uses: Playwright's, plus a check after each
  * test that the page and its workers made no request outside the app's own

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 import { DEMO_DBC, expect, listPane, openFile, rail, test } from '../fixtures';
 
 const h1 = (page: import('@playwright/test').Page) => page.getByRole('heading', { level: 1 });

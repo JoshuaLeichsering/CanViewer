@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 // Every statement the parser cannot use becomes a visible problem with a
 // reason, or a counted skip, and never takes the rest of the file with it.
 import { describe, expect, it } from 'vitest';

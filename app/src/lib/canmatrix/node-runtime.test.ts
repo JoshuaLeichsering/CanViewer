@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 // The guard that keeps the corpus suites offline: while canmatrix runs under
 // Pyodide in Node, any fetch fails and is recorded, and close() restores it.
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';

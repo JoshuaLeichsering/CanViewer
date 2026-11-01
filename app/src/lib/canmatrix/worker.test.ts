@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 // The import worker's protocol, with Pyodide replaced by a stand-in. The real
 // runtime runs in the corpus suites (node-runtime.ts loads the same adapter)
 // and, in a browser, in the end-to-end tests and the network check.

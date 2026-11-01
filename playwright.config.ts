@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /**
  * End-to-end flows (e2e/**\/*.spec.ts) against the production build, served
  * by `vite preview` on its own port. Chromium only: the app has no

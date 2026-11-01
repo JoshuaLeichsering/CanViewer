@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 import { DEMO_DBC, expect, openFile, openText, rail, test } from '../fixtures';
 
 test('works offline after the first visit: reload, restore the file and its view, open another', async ({

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 // Prints the coverage of a Vitest run as a Markdown table: all of app/src,
 // app/src/lib (which has its own threshold in vite.config.ts) and each
 // directory. CI appends it to the job summary; the full report is the HTML in

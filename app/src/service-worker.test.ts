@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 // The service worker's caching rules, with the worker scope, the Cache API and
 // fetch replaced by stand-ins. A real browser runs it in the end-to-end tests
 // (offline reload) and in the network check.
