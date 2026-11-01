@@ -34,7 +34,11 @@
 }
 .trc-enc-row.inactive .trc-enc-name,
 .trc-enc-row.inactive .trc-enc-note {
-  color: var(--outline);
+  color: var(--muted);
+}
+.trc-enc-row.inactive.selected .trc-enc-name,
+.trc-enc-row.inactive.selected .trc-enc-note {
+  color: var(--on-surface-var);
 }
 .trc-enc-name {
   display: flex;
@@ -270,7 +274,11 @@ table.m3 tr.selected .trc-signals {
   color: inherit;
 }
 .trc-muted {
-  color: var(--outline);
+  color: var(--muted);
+}
+/* The selected row's tone needs the stronger tone in both themes. */
+table.m3 tr.selected .trc-muted {
+  color: var(--on-surface-var);
 }
 .trc-tag {
   margin-left: 6px;

@@ -54,8 +54,9 @@ take the focus with Tab. Enter or Space opens the row's message, or selects its 
 Below 840 px the list and the page take turns on screen instead of standing side by
 side, and the focus moves with them: to the page's back button, or to the selected item
 of the list. Below 600 px, phone width, the navigation rail becomes a navigation bar at
-the bottom, with the menu, open file and theme buttons in a bar at the top; Tab goes
-through the top bar first, then the navigation bar, then the content.
+the bottom, with the menu, open file, Save as DBC (once a file is open) and theme
+buttons in a bar at the top; Tab goes through the top bar first, from left to right,
+then the navigation bar, then the content.
 
 ## When something goes wrong
 

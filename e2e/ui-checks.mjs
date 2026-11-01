@@ -1,7 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // UI checks in Chromium against a production build:
 // - accessibility: axe-core finds no serious or critical issue in any view, at
-//   desktop and 390 px wide, in both themes and both languages;
+//   desktop and 390 px wide, in both themes and both languages, empty and with
+//   content: a multiplexed message with a payload in the decoder and the
+//   encoder, a replayed log with a line not read, a comparison, an import's
+//   progress, source note and cluster picker, the export and copy-as menus, and
+//   the Save as DBC, discard and About dialogs;
 // - keyboard: "/" focuses the message search (and closes the settings menu),
 //   the arrow keys, Home and End move through the lists, table rows and network
 //   nodes open with Enter, and the focus order follows the layout;
@@ -10,7 +14,8 @@
 //   "Reset stored file" button ends the crash loop of a file restored on start,
 //   a DBC (localStorage) or an imported file (IndexedDB);
 // - the narrow layout: nothing scrolls sideways at 390 px, comments keep a
-//   readable width, and the list and the detail take turns;
+//   readable width, every top-bar button can be seen and clicked, no label of
+//   the navigation bar is cut off, and the list and the detail take turns;
 // - deep links pasted into the open app, and the favicon.
 // Every check also fails on a page error or a failed same-origin request.
 //
@@ -38,6 +43,10 @@ const DEMO = readFileSync(repoPath('examples/demo.dbc'), 'utf8');
 const DEMO_WITH_PROBLEM = `${DEMO}\nCM_ SG_ 256 NoSuchSignal "A comment on a signal that is not there.";\n`;
 /** A KCD file, read through canmatrix (so the Python runtime loads in this run). */
 const HOMER_KCD = readFileSync(repoPath('third_party/cantools/tests/files/kcd/the_homer.kcd'));
+/** The next version of demo.dbc, for the Compare page. */
+const DEMO_V2 = readFileSync(repoPath('examples/demo-v2.dbc'), 'utf8');
+/** demo.asc with a line that is not a frame, so the Traces view lists a line not read. */
+const DEMO_ASC_WITH_PROBLEM = readFileSync(repoPath('examples/demo.asc'), 'utf8').replace('End TriggerBlock', 'garbage\nEnd TriggerBlock');
 
 const VIEWPORTS = { desktop: { width: 1440, height: 900 }, narrow: { width: 390, height: 844 } };
 /** The rail's destinations, in their order on screen. */
@@ -222,6 +231,91 @@ describe('accessibility (axe-core): no serious or critical issues', () => {
       await check('compare, before another version is open');
       await rail(page, 'traces');
       await check('traces, before a log is open');
+
+      assert.deepEqual(found, [], `axe found:\n${found.join('\n')}`);
+      assert.deepEqual(problems, []);
+      await context.close();
+    });
+
+    // The states with content loaded and the menus and dialogs open, which the
+    // pass above does not reach.
+    test(`working states, ${combo.viewport}, ${combo.theme}, ${combo.lang}`, async () => {
+      const { context, page, problems } = await openApp(combo);
+      const de = combo.lang === 'de';
+      const found = [];
+      const check = async (state) => {
+        for (const issue of await seriousIssues(page)) found.push(`${state}: ${issue}`);
+      };
+      await openFile(page, 'demo.dbc', DEMO_WITH_PROBLEM);
+      // The overview's export menu, open.
+      await page.getByTestId('exp-export-button').click();
+      await page.waitForSelector('.exp-menu-popover');
+      await check('export menu open');
+      await page.keyboard.press('Escape');
+
+      // A multiplexed message: the decoder with a payload in which some signals
+      // are not active (one of them selected), and the encoder likewise.
+      await rail(page, 'messages');
+      await selectMessage(page, 'DiagData');
+      await page.locator('label.text-field input').fill('01 FA 00 00 00 00 00 00');
+      await page.locator('.decoded-row.inactive').first().click();
+      await page.locator('[data-testid=trc-encoder] [data-signal="MuxSelector"] input').fill('1');
+      await page.locator('[data-testid=trc-encoder] [data-signal="SensorVoltage"] input').fill('12');
+      assert.ok((await page.locator('.decoded-row.inactive').count()) > 0, 'the decoder shows signals that are not active');
+      assert.ok((await page.locator('.trc-enc-row.inactive').count()) > 0, 'the encoder shows signals that are not active');
+      await check('multiplexed message with a payload, in the decoder and the encoder');
+      // The message page's copy-as menu, open.
+      await page.getByTestId('exp-copy-button').click();
+      await page.waitForSelector('.exp-menu-popover');
+      await check('copy-as menu open');
+      await page.keyboard.press('Escape');
+
+      // Save as DBC: the parse problem is listed as a loss before saving.
+      await page.getByTestId('edt-save-dbc').click();
+      await page.waitForSelector('[data-testid=edt-issues-dialog]');
+      await check('Save as DBC dialog with its list of losses');
+      await page.keyboard.press('Escape');
+
+      // An edit, then another file: the discard prompt.
+      await page.getByTestId('edt-edit-message').click();
+      await page.getByTestId('edt-message-comment').fill('Edited.');
+      await page.getByTestId('edt-submit').click();
+      await page.waitForSelector('[data-testid=edt-unsaved]');
+      await page.setInputFiles('input[type=file]:not([data-testid])', { name: 'demo.dbc', mimeType: 'text/plain', buffer: Buffer.from(DEMO) });
+      await page.waitForSelector('[data-testid=edt-discard-dialog]');
+      await check('discard-edits prompt');
+      await page.getByTestId('edt-discard-dialog').getByTestId('edt-submit').click();
+      await page.waitForSelector('[data-testid=edt-unsaved]', { state: 'detached' });
+
+      // Traces: a log replayed, with a frame selected and a line not read.
+      await rail(page, 'traces');
+      await page.setInputFiles('[data-testid=trc-file-input]', { name: 'demo.asc', mimeType: 'text/plain', buffer: Buffer.from(DEMO_ASC_WITH_PROBLEM) });
+      await page.waitForSelector('[data-testid=trc-problems]');
+      await page.locator('[data-testid=trc-row]').nth(4).click();
+      await check('traces with a log, a frame selected and a line not read');
+
+      // Compare: the result of a comparison with the next version.
+      await rail(page, 'compare');
+      await page.setInputFiles('[data-testid=dif-file-input]', { name: 'demo-v2.dbc', mimeType: 'text/plain', buffer: Buffer.from(DEMO_V2) });
+      await page.waitForSelector('[data-testid=dif-counts]');
+      await check('compare with a result');
+
+      // About CanViewer, from the settings menu.
+      await page.locator('.rail-icon-btn[aria-expanded]').click();
+      await page.getByRole('menuitem', { name: de ? 'Über CanViewer' : 'About CanViewer' }).click();
+      await page.waitForSelector('[data-testid=abt-dialog]');
+      await check('About dialog');
+      await page.keyboard.press('Escape');
+
+      // An import through canmatrix: its progress on a cold start, then the
+      // source note and the cluster picker of a file with three clusters.
+      await page.setInputFiles('input[type=file]:not([data-testid])', { name: 'the_homer.kcd', mimeType: 'application/xml', buffer: HOMER_KCD });
+      await page.waitForSelector('[data-testid=imp-progress][data-stage=runtime]', { timeout: 30_000 });
+      await check('import progress');
+      await page.waitForSelector('[data-testid=imp-source]', { timeout: 60_000 });
+      await page.waitForSelector('[data-testid=imp-progress]', { state: 'detached' });
+      assert.ok((await page.locator('[data-testid=imp-cluster]').count()) > 1, 'the cluster picker shows');
+      await check('imported file with its source note and cluster picker');
 
       assert.deepEqual(found, [], `axe found:\n${found.join('\n')}`);
       assert.deepEqual(problems, []);
@@ -621,6 +715,51 @@ describe('narrow layout (390 px)', () => {
     assert.deepEqual(problems, []);
     await context.close();
   });
+
+  for (const lang of ['en', 'de']) {
+    test(`every top-bar button can be seen and clicked, and no destination's label is cut off (${lang})`, async () => {
+      const { context, page, problems } = await openApp({ viewport: 'narrow', lang });
+      await openFile(page, 'demo.dbc', DEMO);
+      await page.evaluate(() => document.fonts.ready);
+      // The top bar: the menu, open file, Save as DBC and the theme toggle.
+      // Each one is on screen, inside the bar, and is what a tap at its
+      // centre hits, so that nothing covers another.
+      const topBar = await page.evaluate(() =>
+        [...document.querySelectorAll('.rail > div:first-child > .rail-icon-btn, .rail > .rail-fab, .rail > .rail-icon-btn')].map((el) => {
+          const r = el.getBoundingClientRect();
+          const hit = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
+          return { name: el.getAttribute('aria-label'), x: Math.round(r.x), top: Math.round(r.y), bottom: Math.round(r.bottom), hit: el.contains(hit) };
+        }),
+      );
+      const names = lang === 'de'
+        ? ['Einstellungen', 'Datei öffnen', 'Als DBC speichern', 'Dunkles Design']
+        : ['Settings', 'Open file', 'Save as DBC', 'Switch to dark theme'];
+      assert.deepEqual(topBar.map((b) => b.name), names, 'the top bar holds these buttons, in this order in the DOM');
+      for (const b of topBar) {
+        assert.ok(b.hit, `${b.name} is covered by another element`);
+        assert.ok(b.top >= 0 && b.bottom <= 56, `${b.name} is outside the top bar (${b.top}..${b.bottom})`);
+      }
+      // From left to right in the same order as the focus moves.
+      const xs = topBar.map((b) => b.x);
+      assert.deepEqual([...xs].sort((a, b) => a - b), xs, `the buttons are not in the focus order from left to right: ${xs.join(', ')}`);
+      // A real click on Save as DBC reaches it (demo.dbc saves without a dialog).
+      const download = page.waitForEvent('download');
+      await page.locator('[data-testid=edt-save-dbc]').click();
+      assert.equal((await download).suggestedFilename(), 'demo.dbc');
+
+      // The navigation bar: every label fits, with the active one in bold.
+      for (const destination of ['overview', 'messages', 'network', 'compare']) {
+        await rail(page, destination);
+        await frames(page);
+        const cut = await page.locator('.rail-item .label').evaluateAll((labels) =>
+          labels.filter((l) => l.scrollWidth > l.clientWidth).map((l) => `${l.textContent} (${l.scrollWidth} > ${l.clientWidth} px)`),
+        );
+        assert.deepEqual(cut, [], `with ${destination} active, these labels are cut off`);
+      }
+      assert.deepEqual(problems, []);
+      await context.close();
+    });
+  }
 
   test('the list and the detail take turns', async () => {
     const { context, page, problems } = await openApp({ viewport: 'narrow' });

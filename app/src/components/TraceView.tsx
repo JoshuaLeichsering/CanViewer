@@ -10,6 +10,7 @@ import { openTraceFile, type LoadedTrace, type TraceProblemReason, type TraceSki
 import { decodeRow, replayTrace, rowMatches, traceIdHex, type Replay, type ReplayRow } from '../lib/trace/replay';
 import { Icon } from './Icon';
 import { frameWindow, scrollTopForNewList } from './trc-window';
+import { useFocusableWhenScrolling } from './useFocusableWhenScrolling';
 import './trc.css';
 
 type FrameFilter = 'all' | 'decoded' | 'unknown' | 'errors';
@@ -187,6 +188,8 @@ function TraceBody({ db, trace, onSelect }: { db: DbcDatabase; trace: LoadedTrac
   const rows = useMemo(() => (filtered.length > MAX_ROWS ? filtered.slice(0, MAX_ROWS) : filtered), [filtered]);
   const selectedRow = selected === null ? undefined : replay.rows[selected];
   const { log } = trace;
+  // The lines not read scroll sideways on a narrow screen: the keyboard reaches them too.
+  const problemsScroll = useFocusableWhenScrolling<HTMLDivElement>();
 
   const filters: Array<[FrameFilter, string]> = [
     ['all', t('filterAll')],
@@ -265,7 +268,7 @@ function TraceBody({ db, trace, onSelect }: { db: DbcDatabase; trace: LoadedTrac
       </div>
 
       {log.problems.length > 0 && (
-        <div className="card table-card trc-problems" style={{ marginTop: 16 }} data-testid="trc-problems">
+        <div className="card table-card trc-problems" style={{ marginTop: 16 }} data-testid="trc-problems" ref={problemsScroll}>
           <h2>{t('trcProblemsTitle', { n: log.problems.length })}</h2>
           <div className="card-note">{t('trcProblemsHint')}</div>
           <table className="m3">

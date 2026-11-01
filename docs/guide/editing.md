@@ -26,8 +26,9 @@ because DBC statements cannot address those. The editor refuses them and says wh
 
 ## Saving as DBC
 
-**Save as DBC**, the download button in the navigation rail, saves the database as a
-UTF-8 `.dbc` file named after the open file. A dot on the button marks unsaved edits.
+**Save as DBC**, the download button in the navigation rail (below the open-file button,
+or beside it in the top bar on a phone), saves the database as a UTF-8 `.dbc` file named
+after the open file. A dot on the button marks unsaved edits.
 
 When the saved file would lack something, a dialog lists it first, and the file is saved
 only on **Save anyway**:

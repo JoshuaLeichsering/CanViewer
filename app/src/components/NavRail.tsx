@@ -115,7 +115,8 @@ export function NavRail({
   );
 
   return (
-    <nav className="rail" aria-label="CanViewer">
+    // With more file actions the open-file button moves left in the top bar (narrow.css).
+    <nav className={`rail ${actions ? 'with-actions' : ''}`} aria-label="CanViewer">
       <div ref={menuRef} onBlur={onMenuBlur}>
         <button
           ref={menuButtonRef}

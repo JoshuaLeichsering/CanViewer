@@ -4,7 +4,7 @@
  * of standing side by side (App sets .rgh-pane-list or .rgh-pane-detail, and
  * the detail gets a back button). Below 600 px, Material's compact width, the
  * navigation rail becomes a navigation bar at the bottom, and its menu, open
- * file and theme buttons move to a bar at the top.
+ * file, Save as DBC and theme buttons move to a bar at the top.
  */
 
 .rgh-back {
@@ -46,11 +46,19 @@
     padding: 0;
     background: var(--sc);
   }
+  /* Seven destinations share 390 px: each takes the width its label needs
+     (Material's small label size, without the letter spacing), and the rest
+     is shared out, so that no label is cut off in either language. */
   .rail-item {
-    flex: 1 1 0;
+    flex: 1 1 auto;
     min-width: 0;
     justify-content: center;
-    padding: 0 2px;
+    padding: 0 1px;
+    font-size: 11px;
+    letter-spacing: 0;
+  }
+  .rail-item .pill {
+    width: 48px;
   }
   .rail-item .label {
     max-width: 100%;
@@ -62,7 +70,8 @@
     display: none;
   }
 
-  /* top bar: the menu on the left, open file and theme on the right */
+  /* top bar: the menu on the left; open file, Save as DBC (with a file open)
+     and theme on the right, in the order of the focus */
   .rail > div:first-child,
   .rail > .rail-icon-btn,
   .rail-fab {
@@ -75,6 +84,9 @@
   .rail > .rail-icon-btn {
     right: 4px;
   }
+  .rail > .rail-icon-btn.edt-save {
+    right: 56px;
+  }
   .rail-fab {
     right: 56px;
     width: 48px;
@@ -84,6 +96,9 @@
     background: none;
     color: var(--on-surface-var);
     box-shadow: none;
+  }
+  .rail.with-actions .rail-fab {
+    right: 108px;
   }
   .menu-popover {
     position: fixed;

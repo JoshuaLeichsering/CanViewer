@@ -23,6 +23,10 @@
   --on-surface-var: #3f4948;
   --outline: #6f7979;
   --outline-var: #bec9c8;
+  /* Text that recedes (a multiplexed signal that is not active, the direction
+     of a frame): fainter than --on-surface-var, but at least 4.5:1 on every
+     surface container, which --outline (meant for borders) is not. */
+  --muted: #566060;
   --error: #ba1a1a;
   --on-error: #ffffff;
   --err-c: #ffdad6;
@@ -59,6 +63,7 @@
   --on-surface-var: #bec9c8;
   --outline: #889392;
   --outline-var: #3f4948;
+  --muted: #9aa5a4;
   --error: #ffb4ab;
   --on-error: #690005;
   --err-c: #93000a;
@@ -1148,7 +1153,11 @@ tr.selected .sig-chip {
   color: var(--on-sec-c);
 }
 .decoded-row.inactive {
-  color: var(--outline);
+  color: var(--muted);
+}
+/* On the selected row's tone the muted text would fall below 4.5:1 in the dark theme. */
+.decoded-row.inactive.selected {
+  color: var(--on-surface-var);
 }
 .decoded-row .name,
 .decoded-row .extra {
