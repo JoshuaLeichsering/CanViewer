@@ -4,7 +4,9 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "predev": "node scripts/fetch-wheels.mjs --quiet",
     "dev": "vite",
+    "prebuild": "node scripts/fetch-wheels.mjs --quiet",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "pretest": "node scripts/fetch-wheels.mjs --quiet",
