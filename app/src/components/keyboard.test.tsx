@@ -161,7 +161,14 @@ describe('the message search: ↓ and Enter', () => {
 });
 
 describe('the settings menu', () => {
-  const ALL: Record<Destination, boolean> = { overview: true, messages: true, network: true, nodes: true, tables: true };
+  const ALL: Record<Destination, boolean> = {
+    overview: true,
+    messages: true,
+    network: true,
+    nodes: true,
+    tables: true,
+    compare: true,
+  };
   const open = () => {
     renderWithProviders(
       <NavRail active="overview" enabled={ALL} badges={{}} onNavigate={() => {}} onOpenFile={() => {}} />,

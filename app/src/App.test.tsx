@@ -48,7 +48,7 @@ describe('App: welcome', () => {
     expect(screen.getByText(/DBC files open instantly/)).toBeTruthy();
     expect(screen.getByText('examples/demo.dbc')).toBeTruthy();
     expect(document.title).toBe('CanViewer — CAN Database Viewer');
-    for (const label of ['Overview', 'Messages', 'Network', 'Nodes', 'Tables']) expect(rail(label).disabled).toBe(true);
+    for (const label of ['Overview', 'Messages', 'Network', 'Nodes', 'Tables', 'Compare']) expect(rail(label).disabled).toBe(true);
     expect(document.querySelector('.list-pane')).toBeNull();
     expect(document.querySelector('.snackbar')).toBeNull();
   });
