@@ -104,6 +104,12 @@
   resize: vertical;
 }
 
+/* The extended-ID checkbox, beside the ID field: centered on the 52 px field height. */
+.edt-check-cell {
+  display: flex;
+  align-items: flex-start;
+  padding-top: 6px;
+}
 .edt-check {
   display: inline-flex;
   align-items: center;

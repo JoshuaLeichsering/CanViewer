@@ -62,10 +62,10 @@ export function MessageEditor({
           <div className="edt-grid">
             <TextField label={t('edtName')} value={draft.name} onChange={(v) => set('name', v)} error={errors.name} testId="edt-message-name" mono wide />
             <TextField label={t('edtId')} value={draft.id} onChange={(v) => set('id', v)} error={errors.id} testId="edt-message-id" mono />
-            <TextField label={t('edtDlc')} value={draft.dlc} onChange={(v) => set('dlc', v)} error={errors.dlc} testId="edt-message-dlc" mono inputMode="numeric" />
-            <div className="edt-field edt-wide">
+            <div className="edt-field edt-check-cell">
               <CheckField label={t('edtExtended')} checked={draft.extended} onChange={(v) => set('extended', v)} testId="edt-message-extended" />
             </div>
+            <TextField label={t('edtDlc')} value={draft.dlc} onChange={(v) => set('dlc', v)} error={errors.dlc} testId="edt-message-dlc" mono inputMode="numeric" />
             <SelectField label={t('edtSender')} value={draft.sender} options={senders} onChange={(v) => set('sender', v)} error={errors.sender} testId="edt-message-sender" />
             <TextField label={t('edtComment')} value={draft.comment} onChange={(v) => set('comment', v)} error={errors.comment} testId="edt-message-comment" multiline />
           </div>
