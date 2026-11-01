@@ -29,12 +29,15 @@ export function NavRail({
   badges,
   onNavigate,
   onOpenFile,
+  actions,
 }: {
   active: Destination | null;
   enabled: Record<Destination, boolean>;
   badges: Partial<Record<Destination, number>>;
   onNavigate: (d: Destination) => void;
   onOpenFile: () => void;
+  /** More file actions under the open-file button (Save as DBC). */
+  actions?: React.ReactNode;
 }) {
   const { t, lang, setLang } = useI18n();
   const { theme, toggle } = useTheme();
@@ -93,6 +96,7 @@ export function NavRail({
       <button className="rail-fab state" title={t('openFile')} aria-label={t('openFile')} onClick={onOpenFile}>
         <Icon name="upload_file" />
       </button>
+      {actions}
 
       {DESTINATIONS.map((d) => {
         const isActive = active === d.key;

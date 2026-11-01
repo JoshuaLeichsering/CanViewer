@@ -13,6 +13,8 @@ import { ValueTableDetail } from './components/ValueTableDetail';
 import { Overview } from './components/Overview';
 import { NetworkGraph } from './components/NetworkGraph';
 import { Icon } from './components/Icon';
+import { SaveAsDbcButton } from './components/SaveAsDbc';
+import { messageEditActions, type OnEdit } from './components/editActions';
 
 export type Selection =
   | { kind: 'overview' }
@@ -97,6 +99,8 @@ export function App() {
   const [dragging, setDragging] = useState(false);
   const [importing, setImporting] = useState<{ name: string; stage: ImportStage } | null>(null);
   const [snack, setSnack] = useState<Snack | null>(null);
+  // Edits made in the app and not yet saved as DBC.
+  const [edited, setEdited] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dragDepth = useRef(0);
   const initialHash = useRef(window.location.hash);
@@ -114,6 +118,7 @@ export function App() {
   const loadText = useCallback(
     (name: string, text: string) => {
       setDb(parseDbc(text));
+      setEdited(false);
       setFileName(name);
       resetView();
       try {
@@ -127,6 +132,7 @@ export function App() {
 
   const loadFile = useCallback(
     async (file: File) => {
+      if (edited && !window.confirm(t('edtDiscardConfirm', { name: fileName }))) return;
       setSnack(null);
       if (!canmatrixFormatFor(file.name)) {
         loadText(file.name, await readFileText(file));
@@ -137,6 +143,7 @@ export function App() {
       try {
         const imported = await importWithCanmatrix(file, (stage) => setImporting({ name: file.name, stage }));
         setDb(imported.db);
+        setEdited(false);
         setFileName(file.name);
         resetView();
         // Restoring an imported file on reload is not supported yet; drop the
@@ -155,7 +162,7 @@ export function App() {
         setImporting(null);
       }
     },
-    [loadText, resetView, t],
+    [loadText, resetView, t, edited, fileName],
   );
 
   // Restore the last opened file on startup. Guarded by a ref so StrictMode's
@@ -188,6 +195,27 @@ export function App() {
   useEffect(() => {
     document.title = db ? `${fileName} — CanViewer` : 'CanViewer — CAN Database Viewer';
   }, [db, fileName]);
+
+  // Unsaved edits live only in this page: ask before it is closed or reloaded.
+  useEffect(() => {
+    if (!edited) return;
+    const warn = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', warn);
+    return () => window.removeEventListener('beforeunload', warn);
+  }, [edited]);
+
+  const applyEdit = useCallback<OnEdit>(
+    (next, nextSelection) => {
+      setDb(next);
+      setSelection(nextSelection);
+      setEdited(true);
+      setSnack({ kind: 'info', text: t('edtApplied') });
+    },
+    [t],
+  );
 
   // Informational snackbars go away by themselves; errors stay until dismissed.
   useEffect(() => {
@@ -305,6 +333,19 @@ export function App() {
         badges={db ? { overview: db.problems.length } : {}}
         onNavigate={navigate}
         onOpenFile={openFileDialog}
+        actions={
+          db && (
+            <SaveAsDbcButton
+              db={db}
+              fileName={fileName}
+              edited={edited}
+              onSaved={(name) => {
+                setEdited(false);
+                setSnack({ kind: 'info', text: t('edtSaved', { name }) });
+              }}
+            />
+          )
+        }
       />
 
       {db && listKind && (
@@ -322,7 +363,14 @@ export function App() {
 
       <main className="main">
         {db ? (
-          <MainView db={db} fileName={fileName} selection={selection} onSelect={setSelection} onCopyLink={copyLink} />
+          <MainView
+            db={db}
+            fileName={fileName}
+            selection={selection}
+            onSelect={setSelection}
+            onCopyLink={copyLink}
+            onEdit={applyEdit}
+          />
         ) : (
           <div className="welcome">
             <div className="welcome-card">
@@ -368,12 +416,14 @@ function MainView({
   selection,
   onSelect,
   onCopyLink,
+  onEdit,
 }: {
   db: DbcDatabase;
   fileName: string;
   selection: Selection;
   onSelect: (s: Selection) => void;
   onCopyLink: () => void;
+  onEdit: OnEdit;
 }) {
   switch (selection.kind) {
     case 'message': {
@@ -389,6 +439,7 @@ function MainView({
             onSelect({ kind: 'message', rawId: selection.rawId, occ: selection.occ, signal })
           }
           onCopyLink={onCopyLink}
+          {...messageEditActions(db, message, selection.signal, onEdit)}
         />
       );
     }
