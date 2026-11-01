@@ -148,7 +148,7 @@ patterns stand out:
 | File | Format | Clusters | Messages | Signals | Reader notes | Differences from the twin | Error |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | --- |
 | `canmatrix/tests/files/arxml/ARXMLCompuMethod1.arxml` | ARXML | 1 | 0 | 0 | 1 |  |  |
-| `canmatrix/tests/files/arxml/ARXMLContainerTest.arxml` | ARXML | 1 | 5 | 10 | 1 |  |  |
+| `canmatrix/tests/files/arxml/ARXMLContainerTest.arxml` | ARXML | 1 | 5 | 10 | 5 |  |  |
 | `canmatrix/tests/files/arxml/ARXMLSecuredPDUTest.arxml` | ARXML | 1 | 2 | 2 | – |  |  |
 | `canmatrix/tests/files/arxml/ARXML_min_max.arxml` | ARXML | 1 | 1 | 6 | 6 |  |  |
 | `canmatrix/tests/files/arxml/MyECU.ecuc.arxml` | ARXML | 1 | 2 | 4 | – |  |  |

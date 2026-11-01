@@ -22,7 +22,10 @@ move items up/down freely and check them off when done. The
       **About CanViewer** in the settings menu
 - [x] Close the file and forget the stored copy (**Close file** in the settings menu)
 - [ ] Parse large DBC files in a worker: opening a file of 5000 messages blocks
-      the page for 0.1 to 0.25 s while it parses
+      the page for 0.1 to 0.25 s while it parses (0.6 s with the CPU throttled
+      2x). Proposed for the owner: defer it past v0.2.0, since the pause happens
+      once per file and every view stays responsive afterwards (the 5000-message
+      check in `e2e/large-database.mjs`); the owner has not decided yet
 
 ## Formats
 
@@ -33,10 +36,19 @@ move items up/down freely and check them off when done. The
   [decision record 0005](docs/decisions/0005-license-gpl-2-or-later.md))
 - Not planned: LIN (`.ldf`), whose canmatrix reader needs a library without a
   WebAssembly build
+- [x] Report the contained PDUs of AUTOSAR container frames, which CanViewer's
+      model cannot show, as an import note instead of dropping them silently
 - [ ] Report the losses of ECU configuration files (`.ecuc.arxml`), where canmatrix
       reads every frame ID as 0 and ignores the signal types, as a visible problem
       ([The two ARXML readers](docs/develop/arxml-readers.md)). The owner decides
       between this and an upstream report
+- [ ] Report the other losses canmatrix does not report itself, measured in
+      [The two ARXML readers](docs/develop/arxml-readers.md#findings-for-canviewer-whatever-the-decision):
+      a missing `PACKING-BYTE-ORDER` read as big endian (logged at debug level
+      only), a broken `COMPU-METHOD` given an assumed scaling, and a range canmatrix
+      computes from the raw value range when the file gives none. Each needs the
+      adapter to detect what canmatrix does silently, or an upstream change; the
+      owner decides which, as for the ECU configuration files
 - Owner's decision: whether to read ARXML with cantools instead of canmatrix, and
   whether to post the drafted canmatrix reports ([`docs/develop/upstream/`](docs/develop/upstream/))
 
@@ -46,8 +58,9 @@ move items up/down freely and check them off when done. The
       messages and signals
 - [x] Export message/signal list as CSV or JSON
 - [x] Copy a message as C struct / decode pseudo-code
-- Open question: whether the comparison should ignore whitespace around line
-  breaks in comments (it reports `"Multi \n Line"` against `"Multi\nLine"` as a change)
+- Owner's decision: whether the comparison should ignore whitespace around line
+  breaks in comments (it reports `"Multi \n Line"` against `"Multi\nLine"` as a
+  change). Until then it reports them, which shows what the files say
 
 ## Decode & traces
 

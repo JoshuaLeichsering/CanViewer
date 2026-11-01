@@ -33,8 +33,16 @@ it is tested against.
 canmatrix's readers are less complete than CanViewer's DBC parser, and some of their
 weaknesses are listed above. Anything canmatrix reports while reading (warnings,
 errors, and lines it drops) becomes a [parse problem](./opening-files.md#when-a-line-cannot-be-read),
-so a loss is visible rather than silent. CanViewer never fills in a value the file does
-not contain.
+and so does what CanViewer's model cannot show, such as the contained PDUs of an AUTOSAR
+container frame. CanViewer itself fills in no value the file does not contain: it leaves
+out the initial value canmatrix makes up.
+
+Some losses happen inside canmatrix without a report, and so stay silent for now
+([the measured list](../develop/arxml-readers.md#findings-for-canviewer-whatever-the-decision)):
+in ARXML, a missing byte order becomes big endian, a broken scaling (`COMPU-METHOD`) gets
+an assumed one, and an ECU configuration file (`.ecuc.arxml`) loses its frame IDs and
+signal types; in every format, a range the file leaves out is filled in from the raw value
+range, so it looks like one the file gives.
 
 ### The first import downloads the runtime
 

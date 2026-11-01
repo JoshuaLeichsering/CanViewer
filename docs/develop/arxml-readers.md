@@ -378,11 +378,14 @@ Pyodide download would grow by these packages (sizes of the PyPI wheels):
 
 These came up during the comparison and are not about switching readers:
 
-- **Contained PDUs are dropped without a problem.** canmatrix keeps a container
+- **Contained PDUs were dropped without a problem.** canmatrix keeps a container
   frame's contained PDUs in `frame.pdus`, which `canviewer_adapter.py` does not
   map. In `ARXMLContainerTest.arxml`, CanViewer shows the header signals of 4
-  container frames and loses 12 contained PDUs with 22 signals, and nothing says
-  so. That breaks *faithful*; a fix belongs in the adapter.
+  container frames and loses 12 contained PDUs with 22 signals. That broke
+  *faithful*; the adapter now adds an import note for each such frame (for
+  example "frame TestFrame holds 3 contained PDUs with 9 signals, which CanViewer
+  does not show"), pinned in the import baseline. Showing the contained PDUs
+  would need a place for them in CanViewer's model.
 - **A missing `PACKING-BYTE-ORDER` becomes big endian silently.** canmatrix logs
   it at debug level only, below the adapter's WARNING threshold.
 - **A broken `COMPU-METHOD` gets an assumed scaling silently** (the
@@ -393,6 +396,10 @@ These came up during the comparison and are not about switching readers:
 - **Computed ranges look like given ones.** canmatrix fills in a range from the
   raw value range when a file gives none, the same way it fills in an initial
   value; the adapter already leaves the invented initial value out.
+
+These four are still silent, and each is in [`BACKLOG.md`](../../BACKLOG.md) under
+Formats: reporting them needs the adapter to see what canmatrix does not report
+(a debug message, a scaling it assumed, a range it computed), or an upstream change.
 
 ## Reproduce
 

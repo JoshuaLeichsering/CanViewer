@@ -28,10 +28,18 @@
         }
       ],
       "log": [
-        "ERROR canmatrix.formats.arxml: PDU SmallSignalsContainer_NewPDU is a Container-sub-PDU with no header, but NO PDU offset was found! (will most likely result in wrong encoding/decoding!) - check ARXML file!!"
+        "ERROR canmatrix.formats.arxml: PDU SmallSignalsContainer_NewPDU is a Container-sub-PDU with no header, but NO PDU offset was found! (will most likely result in wrong encoding/decoding!) - check ARXML file!!",
+        "NOTE canviewer_adapter: frame Frame_With_Container holds 3 contained PDUs with 6 signals, which CanViewer does not show",
+        "NOTE canviewer_adapter: frame TestFrame holds 3 contained PDUs with 9 signals, which CanViewer does not show",
+        "NOTE canviewer_adapter: frame Trame4PDUS holds 4 contained PDUs with 5 signals, which CanViewer does not show",
+        "NOTE canviewer_adapter: frame Trame2PDUs holds 2 contained PDUs with 2 signals, which CanViewer does not show"
       ],
       "problems": [
-        "0: canmatrix error: ERROR canmatrix.formats.arxml: PDU SmallSignalsContainer_NewPDU is a Container-sub-PDU with no heade"
+        "0: canmatrix error: ERROR canmatrix.formats.arxml: PDU SmallSignalsContainer_NewPDU is a Container-sub-PDU with no heade",
+        "0: import note: NOTE canviewer_adapter: frame Frame_With_Container holds 3 contained PDUs with 6 signals, which CanV",
+        "0: import note: NOTE canviewer_adapter: frame TestFrame holds 3 contained PDUs with 9 signals, which CanViewer does ",
+        "0: import note: NOTE canviewer_adapter: frame Trame4PDUS holds 4 contained PDUs with 5 signals, which CanViewer does",
+        "0: import note: NOTE canviewer_adapter: frame Trame2PDUs holds 2 contained PDUs with 2 signals, which CanViewer does"
       ]
     },
     "canmatrix/tests/files/arxml/ARXMLSecuredPDUTest.arxml": {

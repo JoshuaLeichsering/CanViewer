@@ -308,6 +308,31 @@ _LINE_RE = re.compile(r"(?:line(?: no)?:?|sourceline)\s*(\d+)", re.IGNORECASE)
 _BYTES_RE = re.compile(r"^b(['\"])(.*)\1$")
 
 
+def _contained_pdus(dbs):
+    """Notes for the contained PDUs of container frames, which the mapping does not show.
+
+    canmatrix keeps an AUTOSAR container frame's contained PDUs in frame.pdus,
+    with their own signals; CanViewer's model has no place for them, so each
+    container frame that has some gets a note rather than losing them silently.
+    """
+    notes = []
+    several = len([db for db in (dbs or {}).values() if db is not None]) > 1
+    for cluster, db in (dbs or {}).items():
+        if db is None:
+            continue
+        for frame in db.frames:
+            pdus = list(getattr(frame, "pdus", None) or [])
+            if not pdus:
+                continue
+            signals = sum(len(pdu.signals) for pdu in pdus)
+            where = "frame %s%s" % (frame.name, " of cluster %s" % cluster if several else "")
+            notes.append(
+                "NOTE canviewer_adapter: %s holds %d contained PDU%s with %d signal%s, which CanViewer does not show"
+                % (where, len(pdus), "" if len(pdus) == 1 else "s", signals, "" if signals == 1 else "s")
+            )
+    return notes
+
+
 def _problems(printed, logged, notes):
     """ParseProblem entries from what canmatrix printed and logged.
 
@@ -443,6 +468,8 @@ def read(data, import_type, options=None):
     finally:
         root.removeHandler(handler)
         root.setLevel(previous_level)
+    if error is None:
+        notes.extend(_contained_pdus(dbs))
     printed_lines = [line for line in printed.getvalue().splitlines() if line.strip()]
     problems = _problems(printed_lines, logged, notes)
     _locate(problems, data, options.get(_ENCODING_OPTION.get(import_type, ""), None))
