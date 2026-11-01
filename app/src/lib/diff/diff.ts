@@ -20,6 +20,7 @@ import {
   text,
   valueChanges,
   type FieldChange,
+  type Scalar,
 } from './fields';
 
 /**
@@ -263,7 +264,9 @@ export const messageLabel = (m: MessageDiff) => {
 /**
  * The diff as plain text, one line per change: added and removed objects as
  * one line each (their signals are not listed), changed ones with one line
- * per field. Used to pin diffs in tests and to copy a diff from the app.
+ * per field. Texts are quoted; a side without the value (a value description
+ * or an attribute only one version has) is written as (none). Used to pin
+ * diffs in tests and to copy a diff from the app.
  */
 export function diffLines(diff: DatabaseDiff): string[] {
   const out: string[] = [];
@@ -295,4 +298,5 @@ export function diffLines(diff: DatabaseDiff): string[] {
   return out;
 }
 
-const show = (v: unknown) => (typeof v === 'string' ? JSON.stringify(v) : String(v));
+/** A value in diff lines: texts quoted, an absent side as (none) rather than JavaScript's undefined. */
+const show = (v: Scalar) => (v === undefined ? '(none)' : typeof v === 'string' ? JSON.stringify(v) : String(v));

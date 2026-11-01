@@ -105,9 +105,9 @@ describe('diffDatabases on messages', () => {
           ['BA_ "GenMsgCycleTime" BO_ 256 10;', 'BA_ "GenMsgCycleTime" BO_ 256 20;\nBA_ "GenMsgCycleTime" BO_ 512 50;'],
         ),
       ),
-    ).toEqual(['message 0x100 Engine: attr[GenMsgCycleTime] 10 -> 20', 'message 0x200 Gearbox: attr[GenMsgCycleTime] undefined -> 50']);
+    ).toEqual(['message 0x100 Engine: attr[GenMsgCycleTime] 10 -> 20', 'message 0x200 Gearbox: attr[GenMsgCycleTime] (none) -> 50']);
     expect(lines(edited(['BA_ "GenMsgCycleTime" BO_ 256 10;', '']))).toEqual([
-      'message 0x100 Engine: attr[GenMsgCycleTime] 10 -> undefined',
+      'message 0x100 Engine: attr[GenMsgCycleTime] 10 -> (none)',
     ]);
   });
 
@@ -222,13 +222,20 @@ describe('diffDatabases on signals', () => {
   it('reports value descriptions per raw value: added, removed and changed', () => {
     expect(lines(edited(['0 "Off" 1 "On" 2 "Error" ;', '0 "Off" 1 "Running" 3 "Fault" ;']))).toEqual([
       'message 0x100 Engine / Mode: values[1] "On" -> "Running"',
-      'message 0x100 Engine / Mode: values[2] "Error" -> undefined',
-      'message 0x100 Engine / Mode: values[3] undefined -> "Fault"',
+      'message 0x100 Engine / Mode: values[2] "Error" -> (none)',
+      'message 0x100 Engine / Mode: values[3] (none) -> "Fault"',
     ]);
     expect(lines(edited([/^VAL_ 256.*\n/m, '']))).toEqual([
-      'message 0x100 Engine / Mode: values[0] "Off" -> undefined',
-      'message 0x100 Engine / Mode: values[1] "On" -> undefined',
-      'message 0x100 Engine / Mode: values[2] "Error" -> undefined',
+      'message 0x100 Engine / Mode: values[0] "Off" -> (none)',
+      'message 0x100 Engine / Mode: values[1] "On" -> (none)',
+      'message 0x100 Engine / Mode: values[2] "Error" -> (none)',
+    ]);
+  });
+
+  it('writes an absent side as (none), apart from a text that reads "(none)"', () => {
+    expect(lines(edited(['2 "Error" ;', '2 "(none)" 3 "(none)" ;']))).toEqual([
+      'message 0x100 Engine / Mode: values[2] "Error" -> "(none)"',
+      'message 0x100 Engine / Mode: values[3] (none) -> "(none)"',
     ]);
   });
 
@@ -313,7 +320,7 @@ describe('diffDatabases on nodes, value tables, attribute definitions and the da
     const j1939 = edited(['BA_DEF_ "BusType" STRING;', 'BA_DEF_ "BusType" STRING;\nBA_DEF_ "ProtocolType" STRING;'], [/$/, 'BA_ "ProtocolType" "J1939";\n']);
     const diff = diffDatabases(base(), j1939);
     expect(diffLines(diff)).toEqual([
-      'database: attr[ProtocolType] undefined -> "J1939"',
+      'database: attr[ProtocolType] (none) -> "J1939"',
       'database: j1939Database false -> true',
       'definition network ProtocolType: added',
     ]);
@@ -374,13 +381,13 @@ describe('the example versions', () => {
       'database: version "CanViewer Demo 1.0" -> "CanViewer Demo 1.1"',
       'definition BO_ GenMsgStartDelayTime: added',
       'node BCM: added',
-      'value table GearPositions: values[7] undefined -> "Gear 7"',
+      'value table GearPositions: values[7] (none) -> "Gear 7"',
       'message 0x100 EngineData / EngineSpeed: comment "Crankshaft rotational speed." -> "Crankshaft rotational speed, filtered."',
       'message 0x100 EngineData / EngineTemp: offset -40 -> -50',
       'message 0x100 EngineData / EngineTemp: min -40 -> -50',
       'message 0x100 EngineData / EngineTemp: max 215 -> 205',
       'message 0x100 EngineData / OilPressure: added',
-      'message 0x200 GearboxData / GearPosition: values[7] undefined -> "Gear 7"',
+      'message 0x200 GearboxData / GearPosition: values[7] (none) -> "Gear 7"',
       'message 0x200 GearboxData / TorqueConverterLock: removed',
       'message 0x300 BrakeData: dlc 6 -> 8',
       'message 0x300 BrakeData: attr[GenMsgCycleTime] 20 -> 10',

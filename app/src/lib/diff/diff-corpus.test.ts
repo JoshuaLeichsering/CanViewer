@@ -82,6 +82,8 @@ describe.skipIf(files.length === 0)('diff mode on the OEM corpus (third_party su
   it.each(PAIRS)('%s -> %s gives the pinned diff', (beforeFile, afterFile) => {
     const diff = diffDatabases(opendbc(beforeFile), opendbc(afterFile));
     const lines = diffLines(diff);
+    // An absent side is written as (none), never as JavaScript's undefined (also when regenerating).
+    expect(lines.filter((l) => / undefined -> | -> undefined$/.test(l))).toEqual([]);
     const pinned: Pinned = {
       counts: countChanges(diff),
       sha256: createHash('sha256').update(lines.join('\n')).digest('hex'),
@@ -127,7 +129,7 @@ describe.skipIf(files.length === 0)('diff mode on the OEM corpus (third_party su
       'node Gateway_Neu: added',
       'message 0x086 LWI_01: removed',
       'message 0x09F LH_EPS_03: comment "" -> "Steering status"',
-      'message 0x09F LH_EPS_03 / EPS_HCA_Status: values[6] undefined -> "limited"',
+      'message 0x09F LH_EPS_03 / EPS_HCA_Status: values[6] (none) -> "limited"',
       'message 0x09F LH_EPS_03 / EPS_HCA_Status: values[8] "preempted" -> "overridden"',
       'message 0x09F LH_EPS_03 / EPS_Lenkmoment: factor 1 -> 0.01',
       'message 0x09F LH_EPS_03 / EPS_Lenkungstyp: removed',
