@@ -41,6 +41,7 @@
     "@vitejs/plugin-react": "^4.3.4",
     "@vitest/coverage-v8": "2.1.9",
     "axe-core": "4.14.0",
+    "fast-check": "4.10.2",
     "jsdom": "26.1.0",
     "typescript": "^5.6.3",
     "vite": "^6.0.3",

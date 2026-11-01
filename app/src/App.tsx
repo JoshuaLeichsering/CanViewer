@@ -20,6 +20,8 @@ import { BackToList, type ListKind } from './components/BackToList';
 import { ImportProgress } from './components/ImportProgress';
 import { ImportFormatsNote, ImportSourceContext } from './components/ImportSource';
 import { DiffView, type Comparison, type DiffViewHandle } from './components/DiffView';
+import { TraceView } from './components/TraceView';
+import { isTraceFileName, openTraceFile, type LoadedTrace } from './lib/trace';
 
 export type Selection =
   | { kind: 'overview' }
@@ -27,7 +29,8 @@ export type Selection =
   | { kind: 'message'; rawId: number; occ: number; signal?: string }
   | { kind: 'node'; name: string }
   | { kind: 'valueTable'; name: string }
-  | { kind: 'diff' };
+  | { kind: 'diff' }
+  | { kind: 'trace' };
 
 /** Serialize the selection into the URL hash so views are deep-linkable. */
 function selectionToHash(sel: Selection): string {
@@ -45,6 +48,8 @@ function selectionToHash(sel: Selection): string {
       return '#graph';
     case 'diff':
       return '#diff';
+    case 'trace':
+      return '#trace';
     default:
       return '';
   }
@@ -75,6 +80,7 @@ function parseHash(hash: string): Selection {
   if (vt) return { kind: 'valueTable', name: decodeURIComponent(vt[1]) };
   if (hash === '#graph') return { kind: 'graph' };
   if (hash === '#diff') return { kind: 'diff' };
+  if (hash === '#trace') return { kind: 'trace' };
   return { kind: 'overview' };
 }
 
@@ -85,6 +91,7 @@ const DESTINATION_OF: Record<Selection['kind'], Destination> = {
   node: 'nodes',
   valueTable: 'tables',
   diff: 'compare',
+  trace: 'traces',
 };
 
 type Snack = { kind: 'error'; text: string } | { kind: 'info'; text: string };
@@ -102,6 +109,7 @@ export function App() {
   // Diff mode: the other version the open file is compared with.
   const [comparison, setComparison] = useState<Comparison | null>(null);
   const diffRef = useRef<DiffViewHandle>(null);
+  const [trace, setTrace] = useState<LoadedTrace | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dragDepth = useRef(0);
   const initialHash = useRef(window.location.hash);
@@ -137,12 +145,33 @@ export function App() {
     [resetView, t],
   );
   const { db, fileName, source, progress, loadFile: openFile, selectCluster } = useDatabaseLoader(onLoaderEvent);
+
+  // Logs (.asc, .log) open in the Traces view and leave the database as it is.
+  const openTrace = useCallback(
+    async (file: File) => {
+      try {
+        const loaded = await openTraceFile(file);
+        if (!loaded) {
+          setSnack({ kind: 'error', text: t('trcNotALog', { name: file.name }) });
+          return;
+        }
+        setTrace(loaded);
+        if (db) setSelection({ kind: 'trace' });
+        else setSnack({ kind: 'info', text: t('trcNeedDatabase', { name: file.name }) });
+      } catch (e) {
+        setSnack({ kind: 'error', text: t('trcReadFailed', { name: file.name, error: e instanceof Error ? e.message : String(e) }) });
+      }
+    },
+    [db, t],
+  );
+
   const loadFile = useCallback(
     (file: File) => {
       setSnack(null);
-      void openFile(file);
+      if (isTraceFileName(file.name)) void openTrace(file);
+      else void openFile(file);
     },
-    [openFile],
+    [openFile, openTrace],
   );
   const importSource = useMemo(() => ({ source, onSelectCluster: selectCluster }), [source, selectCluster]);
 
@@ -195,6 +224,9 @@ export function App() {
           break;
         case 'compare':
           setSelection({ kind: 'diff' });
+          break;
+        case 'traces':
+          setSelection({ kind: 'trace' });
           break;
       }
     },
@@ -261,8 +293,9 @@ export function App() {
       setDragging(false);
       const file = e.dataTransfer.files[0];
       if (!file) return;
-      // On the Compare page a dropped file is the other version, not a new open file.
-      if (diffRef.current) diffRef.current.openOther(file);
+      // On the Compare page a dropped database is the other version, not a new
+      // open file; a log is never a version of a database and opens as a trace.
+      if (diffRef.current && !isTraceFileName(file.name)) diffRef.current.openOther(file);
       else loadFile(file);
     },
     [loadFile],
@@ -279,6 +312,7 @@ export function App() {
       nodes: !!db && db.nodes.length > 0,
       tables: !!db && db.valueTables.length > 0,
       compare: !!db,
+      traces: !!db,
     }),
     [db],
   );
@@ -360,7 +394,15 @@ export function App() {
         ) : db ? (
           <ImportSourceContext.Provider value={importSource}>
             {listKind && <BackToList kind={listKind} onBack={() => setPane('list')} />}
-            <MainView db={db} fileName={fileName} selection={selection} onSelect={show} onCopyLink={copyLink} />
+            <MainView
+              db={db}
+              fileName={fileName}
+              selection={selection}
+              onSelect={show}
+              onCopyLink={copyLink}
+              trace={trace}
+              onTrace={setTrace}
+            />
           </ImportSourceContext.Provider>
         ) : (
           <div className="welcome">
@@ -406,12 +448,16 @@ function MainView({
   selection,
   onSelect,
   onCopyLink,
+  trace,
+  onTrace,
 }: {
   db: DbcDatabase;
   fileName: string;
   selection: Selection;
   onSelect: (s: Selection) => void;
   onCopyLink: () => void;
+  trace: LoadedTrace | null;
+  onTrace: (trace: LoadedTrace | null) => void;
 }) {
   switch (selection.kind) {
     case 'message': {
@@ -442,6 +488,8 @@ function MainView({
     }
     case 'graph':
       return <NetworkGraph db={db} fileName={fileName} onSelect={onSelect} />;
+    case 'trace':
+      return <TraceView db={db} fileName={fileName} trace={trace} onTrace={onTrace} onSelect={onSelect} />;
     default:
       return <Overview db={db} fileName={fileName} onSelect={onSelect} />;
   }

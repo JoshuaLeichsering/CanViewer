@@ -9,6 +9,7 @@ import { fmtNum, hexId } from '../lib/format';
 import { BitMatrix, signalNumber } from './BitMatrix';
 import { AttributesCard } from './AttributesCard';
 import { SignalTable } from './SignalTable';
+import { EncodeCard } from './EncodeCard';
 import { Icon } from './Icon';
 import { CopyCodeMenu } from './ExportMenu';
 
@@ -208,6 +209,14 @@ export function MessageDetail({
             decoded={decoded}
             selectedSignal={selectedSignal}
             onSelectSignal={toggle}
+          />
+          <EncodeCard
+            message={message}
+            decoderBytes={bytes}
+            decoderHasInput={hexInput.trim() !== ''}
+            onDecode={setHexInput}
+            selectedSignal={selectedSignal}
+            onSelectSignal={onSelectSignal}
           />
         </div>
       </div>

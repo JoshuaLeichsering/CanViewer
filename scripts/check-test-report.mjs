@@ -45,6 +45,8 @@ const EXPECTED = [
   { file: 'c-struct.test.ts', pattern: /: every message's C struct compiles$/, count: 149, what: 'corpus DBC files whose C structs compiled with cc' },
   { file: 'diff-corpus.test.ts', pattern: / has no differences with itself$/, count: 58, what: 'OEM DBC files diffed with themselves' },
   { file: 'diff-corpus.test.ts', pattern: / gives the pinned diff$/, count: 2, what: 'opendbc version pairs diffed as pinned' },
+  { file: 'encode.corpus.test.ts', pattern: /: every signal round-trips through the encoder$/, count: 58, what: 'OEM DBC files with every signal round-tripped through the frame encoder', when: 'app/src/lib/dbc/encode.corpus.test.ts' },
+  { file: 'encode.corpus.test.ts', pattern: /: its sampled messages round-trip as whole frames$/, count: 58, what: 'OEM DBC files with sampled whole frames round-tripped through the encoder', when: 'app/src/lib/dbc/encode.corpus.test.ts' },
 ];
 
 const problems = [];
