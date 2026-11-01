@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 // Small helpers for component tests that run in jsdom (`// @vitest-environment jsdom`):
 // render with React's act(), and fire the events React listens to.
 import { act } from 'react';

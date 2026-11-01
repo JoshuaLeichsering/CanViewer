@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 import type { Selection } from '../App';
 import { replaceMessage, replaceSignal } from '../lib/dbc/edit';
 import { occurrenceOf } from '../lib/dbc/identity';

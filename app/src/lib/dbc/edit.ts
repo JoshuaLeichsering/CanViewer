@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 import { MAX_SIGNAL_BITS } from './parser';
 import type { ByteOrder, DbcDatabase, DbcMessage, DbcSignal, SignalValueType } from './types';
 import { dbcAddressing } from './writer';

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 import { describe, expect, it } from 'vitest';
 import { parseDbc } from './parser';
 import { dbcAddressing, notWritten, writeDbc, type DbcWriteIssue } from './writer';

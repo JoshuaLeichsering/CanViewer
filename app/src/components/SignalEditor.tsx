@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 import { useState } from 'react';
 import type { ByteOrder, DbcDatabase, DbcMessage, DbcSignal, SignalValueType } from '../lib/dbc/types';
 import { editSignal, receiverOptions, signalDraft, type EditResult, type SignalDraft } from '../lib/dbc/edit';

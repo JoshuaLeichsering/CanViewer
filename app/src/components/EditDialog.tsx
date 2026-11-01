@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 import { useEffect, useId, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import type { EditError } from '../lib/dbc/edit';

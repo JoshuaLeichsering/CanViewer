@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 // End-to-end check of editing and Save as DBC, against a production build in Chromium.
 //
 // Opens a DBC through the app's file input, edits a message and a signal in
