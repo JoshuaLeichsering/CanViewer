@@ -41,7 +41,7 @@ pub fn install(builder: tauri::Builder<tauri::Wry>, files: &[PathBuf]) -> tauri:
     });
 
     builder
-        .plugin(tauri::plugin::Builder::new("canviewer-smoke").js_init_script(script).build())
+        .plugin(tauri::plugin::Builder::<tauri::Wry, ()>::new("canviewer-smoke").js_init_script(script).build())
         .invoke_handler(tauri::generate_handler![smoke_report])
 }
 
