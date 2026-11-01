@@ -67,11 +67,16 @@ export function markdownLinks(markdown) {
   return links;
 }
 
-/** GitHub's anchor for a heading: lower case, punctuation removed, spaces as hyphens. */
+/**
+ * GitHub's anchor for a heading: lower case, punctuation removed, spaces as
+ * hyphens. Emphasis markers go, but an underscore inside a word is text, and
+ * GitHub keeps it (`et_xmlfile` in THIRD_PARTY_NOTICES.md).
+ */
 export function githubSlug(heading) {
   return heading
     .replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1')
-    .replace(/[`*_]/g, '')
+    .replace(/[`*]/g, '')
+    .replace(/(?<![\p{L}\p{N}])_+|_+(?![\p{L}\p{N}])/gu, '')
     .trim()
     .toLowerCase()
     .replace(/[^\p{L}\p{M}\p{N}\p{Pc}\- ]/gu, '')
