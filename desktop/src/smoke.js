@@ -1,5 +1,7 @@
 // Injected by smoke.rs only when CANVIEWER_SMOKE_FILES is set: opens each
-// file through the app's file input, then reports what the app showed.
+// file through the app's file input, saves the first file's message list
+// through the export menu, then reports what the app showed. smoke.rs adds
+// the check of the saved file to the report.
 (() => {
   if (window.top !== window || window.__canviewerSmoke) return;
   window.__canviewerSmoke = true;
@@ -51,12 +53,37 @@
     };
   }
 
+  // Export, then Messages as CSV, as a user saves the list; then wait until
+  // the download handler has seen the download finish.
+  async function exportMessages(file) {
+    const result = { expected: file.name.replace(/\.[^.]*$/, '') + '.messages.csv', clicked: false, finished: false };
+    const button = document.querySelector('[data-testid=exp-export-button]');
+    if (!button) return { ...result, problem: 'the overview shows no export menu' };
+    button.click();
+    const item = await until(() => document.querySelector('[data-testid=exp-export-messagesCsv]'), 10_000);
+    if (!item) return { ...result, problem: 'the export menu did not open' };
+    item.click();
+    result.clicked = true;
+    const t0 = Date.now();
+    while (!result.finished && Date.now() - t0 < 30_000) {
+      result.finished = await window.__TAURI_INTERNALS__.invoke('smoke_download_finished');
+      if (!result.finished) await sleep(200);
+    }
+    result.status = button.title;
+    return result;
+  }
+
   async function run() {
     const ready = await until(() => document.querySelector('.welcome') && document.querySelector('input[type=file]'), 60_000);
-    if (ready) for (const file of files) report.files.push(await open(file));
-    else report.errors.push('the app did not render its welcome screen within 60 s');
+    if (ready) {
+      for (const file of files) {
+        report.files.push(await open(file));
+        if (report.files.length === 1 && report.files[0].opened) report.export = await exportMessages(file);
+      }
+    } else report.errors.push('the app did not render its welcome screen within 60 s');
     report.resources = performance.getEntriesByType('resource').map((e) => e.name);
-    report.passed = report.files.length === files.length && report.files.every((f) => f.opened);
+    // smoke.rs also requires the exported file to be saved.
+    report.passed = report.files.length === files.length && report.files.every((f) => f.opened) && Boolean(report.export?.clicked);
     await window.__TAURI_INTERNALS__.invoke('smoke_report', { report: JSON.stringify(report, null, 2), passed: report.passed });
   }
 

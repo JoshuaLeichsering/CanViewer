@@ -10,7 +10,9 @@ mod smoke;
 use tauri::webview::DownloadEvent;
 
 fn main() {
-    let mut builder = tauri::Builder::default().setup(|app| {
+    let smoke_files = smoke::files_from_env();
+    let smoke = smoke_files.is_some();
+    let mut builder = tauri::Builder::default().setup(move |app| {
         // The window is described in tauri.conf.json ("create": false) and
         // built here, because only a window built in code can take a download
         // handler.
@@ -22,11 +24,17 @@ fn main() {
             .find(|w| w.label == "main")
             .ok_or("tauri.conf.json describes no window labelled main")?;
         tauri::WebviewWindowBuilder::from_config(app.handle(), config)?
-            .on_download(|_webview, event| allow_download(&event))
+            .on_download(move |_webview, event| {
+                let allowed = allow_download(&event);
+                if smoke {
+                    smoke::record_download(&event, allowed);
+                }
+                allowed
+            })
             .build()?;
         Ok(())
     });
-    if let Some(files) = smoke::files_from_env() {
+    if let Some(files) = smoke_files {
         builder = smoke::install(builder, &files);
     }
     builder
