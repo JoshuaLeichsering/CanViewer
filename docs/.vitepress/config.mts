@@ -102,6 +102,7 @@ const develop: DefaultTheme.SidebarItem[] = [
       { text: 'Tests and baselines', link: '/develop/testing' },
       { text: 'Documentation', link: '/develop/documentation' },
       { text: 'Release process', link: '/develop/release' },
+      { text: 'The two ARXML readers', link: '/develop/arxml-readers' },
     ],
   },
   // Reports written for upstream projects, listed by themselves when there are any.
