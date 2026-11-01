@@ -3,8 +3,8 @@
 **Written** 2026-11-01. CanViewer reads ARXML through canmatrix 1.3.3 under Pyodide
 (`app/src/lib/canmatrix/`). cantools reads some of the files canmatrix fails on, so
 this report holds the two readers against each other and against the DBC twins on
-the corpus. Nothing is switched: replacing canmatrix's ARXML reader is Joshua's
-decision (`docs/handover/2026-11-01-goal.md`, *Authority*).
+the corpus. Nothing is switched: replacing canmatrix's ARXML reader is the
+maintainer's decision (`docs/handover/2026-11-01-goal.md`, *Authority*).
 
 ## The short answer
 
@@ -24,8 +24,9 @@ decision (`docs/handover/2026-11-01-goal.md`, *Authority*).
 - **Where both read a file, neither is right throughout.** Against the DBC twins,
   cantools gets a scaling wrong (factor 5 and offset 1 read as 1 and 0) and drops
   three value descriptions that canmatrix keeps. Against each other, cantools has
-  the right CAN ids in `MyECU.ecuc.arxml` (canmatrix reads 0 for both) and reads
-  limits and a value description that canmatrix replaces or drops; canmatrix
+  the right CAN ids and value types in `MyECU.ecuc.arxml` (canmatrix reads 0 for
+  both frames and every signal as signed) and reads limits and a value
+  description that canmatrix replaces or drops; canmatrix
   keeps the secured PDUs that cantools misses, and a unit cantools ignores on
   purpose.
 - **cantools is stricter, which helps faithfulness.** On the 7 files cantools'
@@ -33,7 +34,7 @@ decision (`docs/handover/2026-11-01-goal.md`, *Authority*).
   returns an empty database without an error on 3, and reads 2 with a scaling it
   made up, without a warning.
 
-The options for Joshua:
+The options for the maintainer:
 
 1. **Keep canmatrix alone** (today). Nothing changes; the gaps below stay visible
    in the baselines.
@@ -74,7 +75,7 @@ own. There is no real-world OEM ARXML in it.
   | kind | what it covers |
   |---|---|
   | presence | a message or signal only one side has |
-  | frame | id kind, name, DLC, frame format (classic, FD, J1939) |
+  | frame | id (only between the readers, see below), id kind, name, DLC, frame format (classic, FD, J1939) |
   | layout | start bit, length, byte order, value type, multiplexing |
   | scaling | factor, offset, minimum, maximum, unit |
   | no range | a minimum or maximum the compared reading does not have at all |
@@ -237,20 +238,32 @@ cantools reads 3 of the 8 twins' files, canmatrix 6. On the 3 both read
 On the larger twins only canmatrix has a reading. Its differences are pinned in
 the import baseline. The biggest groups in `test.arxml` are 143 signals that the
 twin has as signed and canmatrix reads as unsigned, with the ranges that follow
-(143 minimum and 143 maximum lines, such as `-2` to `1` against `0` to `3`), and
-13 twin signals that the reading lacks against 7 it has instead, mostly the same
-signals under the ARXML name (`RealPower command` for `RealPower_command`, one
-`FreqHi` where the twin has `FreqHi0` and `FreqHi1`).
+(143 minimum and 143 maximum lines, such as `-2` to `1` against `0` to `3`). Its
+22 presence lines are 13 twin signals that the reading lacks against 7 it has
+instead, mostly the same signals under the ARXML name (`RealPower command` for
+`RealPower_command`, one `FreqHi` where the twin has `FreqHi0` and `FreqHi1`), and
+2 message lines at `0xCFFCAF7`. That id belongs to two frames, in the twin and in
+the file alike: `FRAME_MasterMeasuredPowerAPU2` and `FRAME_StatusMeasuredPower`.
+canmatrix reads both, but `compareDatabases()` pairs messages by id, and with two
+frames on one id it pairs the twin's `FRAME_MasterMeasuredPowerAPU2` with the
+reading's `FRAME_StatusMeasuredPower` (the 1 frame line, a name difference), then
+counts the twin's `FRAME_StatusMeasuredPower` as missing and the reading's
+`FRAME_MasterMeasuredPowerAPU2` as extra. Those 2 lines are an artefact of the
+comparison, not a loss.
 
 ## cantools against canmatrix
 
 On the 11 files where at least one reader finds frames and neither fails,
 canmatrix's reading is the reference: "presence" counts what only one of them has.
+`compareDatabases()` pairs messages by id, so before it runs, `compare.ts` pairs
+the frames the two readers give different ids by name (where the name is unique
+on both sides); the id difference then counts as one frame line per frame, and
+the signals of such frames are compared like any others.
 
 | file | canmatrix | cantools | presence | frame | layout | scaling | no range | values | other |
 |---|---|---|---|---|---|---|---|---|---|
 | canmatrix/tests/files/arxml/ARXMLSecuredPDUTest.arxml | 2 / 2 | 0 / 0 | 2 | 0 | 0 | 0 | 0 | 0 | 17 |
-| canmatrix/tests/files/arxml/MyECU.ecuc.arxml | 2 / 4 | 2 / 4 | 4 | 0 | 0 | 0 | 0 | 0 | 0 |
+| canmatrix/tests/files/arxml/MyECU.ecuc.arxml | 2 / 4 | 2 / 4 | 0 | 2 | 4 | 0 | 8 | 0 | 0 |
 | canmatrix/tests/reference/from_dbc/test.arxml | 2 / 2 | 2 / 2 | 0 | 0 | 0 | 2 | 4 | 1 | 31 |
 | canmatrix/tests/reference/from_dbf/test.arxml | 2 / 2 | 2 / 2 | 0 | 0 | 0 | 2 | 4 | 1 | 31 |
 | canmatrix/tests/reference/from_json/test.arxml | 2 / 2 | 2 / 2 | 0 | 0 | 0 | 2 | 4 | 0 | 27 |
@@ -263,10 +276,19 @@ canmatrix's reading is the reference: "presence" counts what only one of them ha
 
 What the file says, case by case:
 
-- **`MyECU.ecuc.arxml`, CAN ids: cantools is right.** canmatrix reads both
-  frames with id 0. cantools reads 0x210 and 0x200, the file's
-  `CanIfRxPduCanId` (528) and `CanIfTxPduCanId` (512). The signals agree.
-  (Different ids make the frames count as 2 missing and 2 extra: presence 4.)
+- **`MyECU.ecuc.arxml`, an ECU configuration: cantools is right twice.**
+  - CAN ids: canmatrix reads both frames with id 0. cantools reads 0x210 and
+    0x200, the file's `CanIfRxPduCanId` (528) and `CanIfTxPduCanId` (512)
+    (frame 2).
+  - Value types: start bit, length and byte order of the 4 signals agree, but
+    the file declares them `UINT8`, `UINT8`, `BOOLEAN` and `UINT8`
+    (`ComSignalType`). cantools reads them as unsigned; canmatrix reads them as
+    signed (layout 4) and computes a range of -1 to 0 for each 1-bit signal,
+    where cantools gives none (no range 8). canmatrix's ECUC reader
+    (`ecuc_extract_signal()` in `arxml.py`) reads `ComSignalType` but never
+    passes it on, so every signal gets `Signal`'s default, signed, and
+    `extract_cm_from_ecuc()` creates every frame without its CAN id, so with
+    canmatrix's default of 0.
 - **`system-3.2.3.arxml`, byte order: the file leaves it open.** Five signals
   have no `PACKING-BYTE-ORDER`. canmatrix takes them as big endian, logging that
   only at debug level, so CanViewer shows no problem; cantools takes them as
@@ -281,7 +303,7 @@ What the file says, case by case:
   `COMPU-SCALE` of `Position` has a `SHORT-LABEL` (`StandardPosition`) and a
   `VT` (`STANDARD_POSITION`). canmatrix shows the label, cantools the text value
   (values 3).
-- **Ranges the file does not give** (no range 4, 4, 4, 2 and 20): cantools leaves
+- **Ranges the file does not give** (no range 8, 4, 4, 4, 2 and 20): cantools leaves
   the minimum and maximum out, canmatrix computes them from the raw range. In
   CanViewer a computed range looks like one the file gave.
 - **`system-missing-rational-4.2.arxml`, maximum: cantools is right.** The file
@@ -365,6 +387,9 @@ These came up during the comparison and are not about switching readers:
   it at debug level only, below the adapter's WARNING threshold.
 - **A broken `COMPU-METHOD` gets an assumed scaling silently** (the
   missing-denominator and missing-factor files above).
+- **ECU configuration files lose their ids and value types silently.** In
+  `MyECU.ecuc.arxml`, canmatrix gives both frames id 0 and makes every signal
+  signed (above), and CanViewer shows no problem for either.
 - **Computed ranges look like given ones.** canmatrix fills in a range from the
   raw value range when a file gives none, the same way it fills in an initial
   value; the adapter already leaves the invented initial value out.

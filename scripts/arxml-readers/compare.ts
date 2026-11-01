@@ -11,8 +11,10 @@
  * cluster compared with each come from the pinned import baseline, and the
  * canmatrix differences found here must equal the pinned ones, or the script
  * fails. Both readers are compared with CanViewer's compareDatabases(), which
- * also produced the baseline, and every difference line is sorted into one
- * kind. Prints Markdown tables; <details.json> receives every line.
+ * also produced the baseline (between the two readers, frames they give
+ * different ids are first paired by name, see pairByName()), and every
+ * difference line is sorted into one kind. Prints Markdown tables;
+ * <details.json> receives every line.
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -23,7 +25,7 @@ import { missingWheels, startCanmatrix } from '../../app/src/lib/canmatrix/node-
 import type { CanmatrixReadResult } from '../../app/src/lib/canmatrix/types';
 import lock from '../../app/src/lib/canmatrix/wheels.lock.json';
 import { parseDbc } from '../../app/src/lib/dbc/parser';
-import type { DbcDatabase } from '../../app/src/lib/dbc/types';
+import type { DbcDatabase, DbcMessage } from '../../app/src/lib/dbc/types';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '../..');
 const THIRD_PARTY = join(root, 'third_party');
@@ -44,14 +46,14 @@ interface Baseline {
 const KINDS = ['presence', 'frame', 'layout', 'scaling', 'no range', 'values', 'other'] as const;
 type Kind = (typeof KINDS)[number];
 
-const FRAME_FIELDS = new Set(['isExtended', 'name', 'dlc', 'frameFormat']);
+const FRAME_FIELDS = new Set(['id', 'isExtended', 'name', 'dlc', 'frameFormat']);
 const LAYOUT_FIELDS = new Set(['startBit', 'length', 'byteOrder', 'valueType', 'multiplex']);
 const SCALING_FIELDS = new Set(['factor', 'offset', 'min', 'max', 'unit']);
 
 /**
  * The kind of one compareDatabases() line:
  * - presence: a message or signal only one side has;
- * - frame: id kind, name, DLC or frame format (classic, FD, J1939) of a message;
+ * - frame: id, id kind, name, DLC or frame format (classic, FD, J1939) of a message;
  * - layout: start bit, length, byte order, value type or multiplexing of a signal;
  * - scaling: factor, offset, minimum, maximum or unit;
  * - no range: a minimum or maximum the compared reading does not have at all
@@ -94,6 +96,35 @@ function shortError(error: string | null | undefined, crashed = false): string {
     .replace(/^UnsupportedDatabaseFormatError: ARXML: "(.*)"$/, '$1')
     .replace(/\|/g, '\\|');
   return `error: ${text.length > 70 ? text.slice(0, 67) + '...' : text}${crashed ? ' (reader crash)' : ''}`;
+}
+
+const idText = (m: DbcMessage) => `${m.isExtended ? 'x' : ''}0x${m.id.toString(16).toUpperCase()}`;
+
+/**
+ * For the comparison of the two readers: compareDatabases() pairs messages by
+ * id, so a frame the readers give different ids would count as one missing and
+ * one extra message, and its signals would never be compared. Here a message
+ * of `reference` whose id `other` does not have takes the id of the message of
+ * `other` with the same name, if that name is unique among the unpaired
+ * messages on both sides and that id is unique in `other`. Each such pairing
+ * gives one "id" line (kind frame) in compareDatabases()' format.
+ */
+function pairByName(reference: DbcDatabase, other: DbcDatabase): { reference: DbcDatabase; lines: string[] } {
+  const referenceIds = new Set(reference.messages.map((m) => m.id));
+  const otherIds = new Set(other.messages.map((m) => m.id));
+  const unpairedReference = reference.messages.filter((m) => !otherIds.has(m.id));
+  const unpairedOther = other.messages.filter((m) => !referenceIds.has(m.id));
+  const lines: string[] = [];
+  const messages = reference.messages.map((r) => {
+    if (!unpairedReference.includes(r)) return r;
+    const named = unpairedOther.filter((o) => o.name === r.name);
+    if (named.length !== 1 || unpairedReference.filter((m) => m.name === r.name).length !== 1) return r;
+    const [o] = named;
+    if (other.messages.filter((m) => m.id === o.id).length !== 1) return r;
+    lines.push(`${idText(r)} ${r.name}: id ${idText(r)} -> ${idText(o)}`);
+    return { ...r, id: o.id, isExtended: o.isExtended };
+  });
+  return { reference: { ...reference, messages }, lines };
 }
 
 /** All clusters of a canmatrix read as one database (cantools merges its buses too). */
@@ -173,8 +204,10 @@ async function main() {
 
     if (cmDb && ctDb && (cmDb.messages.length || ctDb.messages.length)) {
       // canmatrix's reading as the reference, so "missing" means only canmatrix
-      // has it and "not in the DBC twin" means only cantools has it.
-      const lines = compareDatabases(cmDb, ctDb);
+      // has it and "not in the DBC twin" means only cantools has it. Frames the
+      // two read with different ids are paired by name first.
+      const paired = pairByName(cmDb, ctDb);
+      const lines = [...paired.lines, ...compareDatabases(paired.reference, ctDb)];
       const t = tally(lines);
       crossRows.push(
         `| ${file} | ${cmDb.messages.length} / ${signalCount(cmDb)} | ${ctDb.messages.length} / ${signalCount(ctDb)} | ${KINDS.map((k) => t[k]).join(' | ')} |`,
