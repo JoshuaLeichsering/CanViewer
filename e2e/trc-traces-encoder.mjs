@@ -6,7 +6,8 @@
 // examples/demo-candump.log and examples/demo.asc in the Traces view: facts,
 // decoded rows, the frame detail, filters, keyboard selection, the way back from
 // a message, and German, dark and narrow layouts with screenshots. A generated
-// log of many frames (200,000 by default) times opening, scrolling and filtering.
+// log of many frames (200,000 by default) times opening, scrolling and filtering,
+// and checks that a filter applied while scrolled down shows its rows at once.
 //
 // Every request is recorded, and Chromium resolves no hostname except
 // localhost, so the check also shows that reading and decoding logs stays in
@@ -225,16 +226,21 @@ for (let i = 0; i < count; i++) {
   const [id, data] = payloads[i % payloads.length];
   lines.push(`(${(1793520000 + i * 0.001).toFixed(6)}) can0 ${id}#${data}`);
 }
+// One frame the database does not know, near the start: a filter that leaves it alone
+// while the table is scrolled to the bottom is the case where a stale scroll position shows.
+const UNKNOWN_AT = 3;
+lines.splice(UNKNOWN_AT, 0, '(1793520000.002500) can0 123#DEADBEEF');
+const total = count + 1;
 // The generated log is not evidence worth keeping; it goes to a temporary directory.
 const bigDir = mkdtempSync(join(tmpdir(), 'trc-'));
 const bigPath = join(bigDir, 'large-candump.log');
 writeFileSync(bigPath, lines.join('\n') + '\n');
 let t0 = Date.now();
 await page.setInputFiles('[data-testid=trc-file-input]', bigPath);
-await page.waitForFunction((n) => document.querySelector('[data-testid=trc-facts]')?.textContent.includes(`Frames${n}`), count, { timeout: 120_000 });
+await page.waitForFunction((n) => document.querySelector('[data-testid=trc-facts]')?.textContent.includes(`Frames${n}`), total, { timeout: 120_000 });
 const openMs = Date.now() - t0;
 const rendered = await page.locator('[data-testid=trc-row]').count();
-check(`a log of ${count} frames opens and renders only the rows in view`, rendered > 0 && rendered < 200, `${openMs} ms to open, ${rendered} rows in the DOM`);
+check(`a log of ${total} frames opens and renders only the rows in view`, rendered > 0 && rendered < 200, `${openMs} ms to open, ${rendered} rows in the DOM`);
 const scrollMs = await page.evaluate(async () => {
   const el = document.querySelector('[data-testid=trc-viewport]');
   const t = performance.now();
@@ -244,16 +250,93 @@ const scrollMs = await page.evaluate(async () => {
 });
 const middle = await page.locator('[data-testid=trc-row]').first().getAttribute('data-row');
 check('scrolling to the middle renders the rows there', Number(middle) > count / 2 - 1000 && Number(middle) < count / 2 + 1000, `${scrollMs.toFixed(1)} ms, first row in the DOM #${Number(middle) + 1}`);
+// What the table shows: the scroll position, the rows in the DOM and whether they are inside the viewport.
+const tableState = () =>
+  page.evaluate(() => {
+    const el = document.querySelector('[data-testid=trc-viewport]');
+    const box = el.getBoundingClientRect();
+    const rows = [...el.querySelectorAll('[data-testid=trc-row]')];
+    const inView = rows.filter((r) => {
+      const b = r.getBoundingClientRect();
+      return b.bottom > box.top && b.top < box.bottom;
+    });
+    return {
+      scrollTop: el.scrollTop,
+      rows: rows.length,
+      inView: inView.map((r) => Number(r.getAttribute('data-row'))),
+      text: inView.map((r) => r.innerText),
+      selectedInView: inView.some((r) => r.classList.contains('selected')),
+      // How far the selected row is from the middle of the table body, in pixels.
+      selectedOffCentre: (() => {
+        const row = el.querySelector('tr.selected');
+        if (!row) return null;
+        const head = el.querySelector('thead').getBoundingClientRect().height;
+        const b = row.getBoundingClientRect();
+        return Math.round((b.top + b.bottom) / 2 - (box.top + head + (box.bottom - box.top - head) / 2));
+      })(),
+      note: el.querySelector('.card-note')?.textContent ?? null,
+      count: document.querySelector('[data-testid=trc-count]').textContent,
+    };
+  });
+// Timed until the count changes; the rows have to be there in the same moment, without scrolling.
 t0 = Date.now();
 await page.fill('.trc-search input', 'GearboxData');
 await page.waitForFunction((n) => document.querySelector('[data-testid=trc-count]')?.textContent.startsWith(`${n} of`), Math.ceil(count / 6));
 const filterMs = Date.now() - t0;
+let state = await tableState();
 check('filtering the large log stays quick', filterMs < 5000, `${filterMs} ms`);
+check(
+  'a filter applied in the middle of the log shows its first matches at once, from the top',
+  state.scrollTop === 0 && state.inView.length > 10 && state.inView[0] === 1 && state.text.every((r) => r.includes('GearboxData')),
+  `scrollTop ${state.scrollTop}, ${state.inView.length} rows in view, first #${state.inView[0] + 1}`,
+);
 await page.locator('[data-testid=trc-viewport]').focus();
 t0 = Date.now();
 await page.keyboard.press('End');
 await page.waitForFunction(() => document.querySelector('[data-testid=trc-detail]')?.textContent.includes('Frame'));
 check('End selects the last matching frame', (await text('[data-testid=trc-detail]')).includes('GearboxData'), `${Date.now() - t0} ms`);
+// Select a frame in the middle of the filtered list, then clear the filter: the frame stays in view.
+await page.evaluate(async () => {
+  const el = document.querySelector('[data-testid=trc-viewport]');
+  el.scrollTop = el.scrollHeight / 2;
+  await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+});
+state = await tableState();
+const picked = state.inView[Math.floor(state.inView.length / 2)];
+await page.locator(`[data-testid=trc-row][data-row="${picked}"]`).click();
+const selectedFrame = async () => Number((await content('[data-testid=trc-detail] .card-overline')).match(/^Frame (\d+) /)?.[1]) - 1;
+const pickedSelected = await selectedFrame();
+await page.fill('.trc-search input', '');
+await page.waitForFunction((n) => document.querySelector('[data-testid=trc-count]')?.textContent.startsWith(`${n} of`), total);
+state = await tableState();
+check(
+  'clearing the filter keeps the selected frame in view, in the middle of the table',
+  pickedSelected === picked && Math.abs(picked - total / 2) < 1000 && state.inView.includes(picked) && state.selectedInView && Math.abs(state.selectedOffCentre) <= 40,
+  `frame #${picked + 1} selected; rows in view #${state.inView[0] + 1} to #${state.inView.at(-1) + 1}, the selected one ${state.selectedOffCentre} px from the middle`,
+);
+// The review's case: scrolled to the very bottom, a chip that leaves one frame.
+await page.evaluate(() => {
+  const el = document.querySelector('[data-testid=trc-viewport]');
+  el.scrollTop = el.scrollHeight;
+});
+await page.waitForFunction(() => {
+  const el = document.querySelector('[data-testid=trc-viewport]');
+  return el.scrollTop > 0 && el.scrollTop + el.clientHeight >= el.scrollHeight - 1;
+});
+const bottomTop = (await tableState()).scrollTop;
+await page.getByRole('radio', { name: 'Unknown ID' }).click();
+await page.waitForFunction((n) => document.querySelector('[data-testid=trc-count]')?.textContent === `1 of ${n} frames`, total);
+state = await tableState();
+check(
+  'a chip that leaves one frame, clicked at the bottom of the log, shows that frame at once',
+  state.scrollTop === 0 && state.rows === 1 && state.inView[0] === UNKNOWN_AT && state.text[0].includes('not in the database'),
+  `scrollTop ${bottomTop} before, ${state.scrollTop} after, rows in view: ${JSON.stringify(state.inView)}`,
+);
+await page.getByRole('radio', { name: 'Error frames' }).click();
+await page.waitForFunction((n) => document.querySelector('[data-testid=trc-count]')?.textContent === `0 of ${n} frames`, total);
+state = await tableState();
+check('a filter that leaves nothing says so', state.rows === 0 && state.note === 'No frames match.', `note: ${state.note}`);
+await page.getByRole('radio', { name: 'All' }).click();
 
 // ---------- requests ----------
 const foreign = requests.filter((r) => !r.url.startsWith(origin) && !r.url.startsWith('data:') && !r.url.startsWith('blob:'));

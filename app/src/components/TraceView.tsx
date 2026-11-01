@@ -8,6 +8,7 @@ import { fmtNum, hexId } from '../lib/format';
 import { openTraceFile, type LoadedTrace, type TraceProblemReason, type TraceSkipReason } from '../lib/trace';
 import { decodeRow, replayTrace, rowMatches, traceIdHex, type Replay, type ReplayRow } from '../lib/trace/replay';
 import { Icon } from './Icon';
+import { frameWindow, scrollTopForNewList } from './trc-window';
 import './trc.css';
 
 type FrameFilter = 'all' | 'decoded' | 'unknown' | 'errors';
@@ -181,7 +182,8 @@ function TraceBody({ db, trace, onSelect }: { db: DbcDatabase; trace: LoadedTrac
     () => replay.rows.filter((r) => passes(r, filter) && rowMatches(r, query)),
     [replay, filter, query],
   );
-  const rows = filtered.length > MAX_ROWS ? filtered.slice(0, MAX_ROWS) : filtered;
+  // Memoized so that the table sees a new list only when the filter, the search or the database changes.
+  const rows = useMemo(() => (filtered.length > MAX_ROWS ? filtered.slice(0, MAX_ROWS) : filtered), [filtered]);
   const selectedRow = selected === null ? undefined : replay.rows[selected];
   const { log } = trace;
 
@@ -372,8 +374,22 @@ function FrameTable({
     if (measured && Math.abs(measured - rowHeight) > 0.5) setRowHeight(measured);
   });
 
-  const first = Math.max(0, Math.floor(scrollTop / rowHeight) - OVERSCAN);
-  const last = Math.min(rows.length, Math.ceil((scrollTop + height) / rowHeight) + OVERSCAN);
+  // A new list starts at its top, or with the selected frame in view if the list
+  // still holds it: the old scroll position means nothing in the new list.
+  const shownRows = useRef(rows);
+  useLayoutEffect(() => {
+    if (shownRows.current === rows) return; // on mount the remembered position was restored above
+    shownRows.current = rows;
+    const el = viewport.current;
+    if (!el) return;
+    const position = selected === null ? -1 : rows.findIndex((r) => r.index === selected);
+    const headHeight = head.current?.getBoundingClientRect().height ?? 0;
+    el.scrollTop = scrollTopForNewList(position, rowHeight, el.clientHeight - headHeight);
+    onScroll(el.scrollTop);
+    // Only when the list changes, not when the selection or the size does.
+  }, [rows]);
+
+  const { first, last } = frameWindow(scrollTop, height, rowHeight, rows.length, OVERSCAN);
   const visible = rows.slice(first, last);
 
   const scrollIntoView = (position: number) => {
