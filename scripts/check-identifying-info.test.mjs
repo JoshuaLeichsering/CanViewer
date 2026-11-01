@@ -30,6 +30,9 @@ test('third-party notices may quote upstream addresses, but nothing else', () =>
   const text = j('Copyright (c) 2001 Upstream Author <author', '@', 'example.org>');
   assert.deepEqual(rules(text, 'THIRD_PARTY_NOTICES.md'), []);
   assert.deepEqual(rules(j(text, '\n/', 'home/alice/x'), 'THIRD_PARTY_NOTICES.md'), ['home-path']);
+  const deprecated = j('"deprecated": "No longer supported. Contact maintainer', '@', 'example.org"');
+  assert.deepEqual(rules(deprecated, 'package-lock.json'), []);
+  assert.deepEqual(rules(deprecated, 'app/package-lock.json'), ['email']);
 });
 
 test('local paths are found', () => {

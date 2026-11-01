@@ -48,8 +48,10 @@ const RULES = [
     what: 'an email address other than a noreply or project address',
     re: /[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.([A-Za-z]{2,})\b/g,
     test: (m) => !NOT_A_TLD.test(m[1]) && !ALLOWED_EMAIL.some((a) => a.test(m[0])),
-    // Upstream copyright notices are reproduced verbatim, as their licenses require.
-    exempt: ['THIRD_PARTY_NOTICES.md', /^scripts\/third-party\/licenses\//],
+    // Upstream copyright notices are reproduced verbatim, as their licenses
+    // require; lock files copy registry metadata, such as the contact address
+    // in a package's deprecation notice.
+    exempt: ['THIRD_PARTY_NOTICES.md', /^scripts\/third-party\/licenses\//, 'package-lock.json', 'desktop/Cargo.lock'],
   },
   {
     id: 'home-path',
