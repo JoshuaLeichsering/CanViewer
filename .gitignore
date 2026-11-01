@@ -12,3 +12,5 @@ vite-preview.log
 /playwright-report/
 import-ui/
 vite-preview-import-ui.log
+tbl-checks/
+vite-preview-tbl.log

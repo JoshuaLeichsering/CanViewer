@@ -30,9 +30,10 @@
 // Writes everything to <out-dir>/large-database.json, takes screenshots, and
 // exits non-zero if a budget below is exceeded or the page logs an error.
 //
-// Usage (Playwright must be installed; it is not a dependency of the app):
+// Usage (Playwright is a dev dependency; `npx playwright install chromium`
+// fetches its browser):
 //   npm run build && npx vite preview --port 4173 --strictPort &
-//   NODE_PATH=$(npm root -g) node e2e/large-database.mjs http://localhost:4173/ <out-dir> [cpu-slowdown]
+//   node e2e/large-database.mjs http://localhost:4173/ <out-dir> [cpu-slowdown]
 // cpu-slowdown (for example 4) runs the page on a CPU that many times slower
 // (Chromium's CPU throttling), to see how much headroom the budgets leave.
 import { mkdirSync, writeFileSync } from 'node:fs';

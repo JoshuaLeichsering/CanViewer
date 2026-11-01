@@ -20,9 +20,10 @@
 //     the title and the filter controls stay in view.
 // Screenshots go to <out-dir>; exits non-zero on the first broken expectation.
 //
-// Usage (Playwright must be installed; it is not a dependency of the app):
+// Usage (Playwright is a dev dependency; `npx playwright install chromium`
+// fetches its browser):
 //   npm run build && npx vite preview --port 4173 --strictPort &
-//   NODE_PATH=$(npm root -g) node e2e/signal-table.mjs http://localhost:4173/ <out-dir> examples/demo.dbc
+//   node e2e/signal-table.mjs http://localhost:4173/ <out-dir> examples/demo.dbc
 import { strict as assert } from 'node:assert';
 import { mkdirSync } from 'node:fs';
 import { createRequire } from 'node:module';

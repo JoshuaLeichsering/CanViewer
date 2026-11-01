@@ -105,12 +105,14 @@ jobs:
           CANVIEWER_URL=http://localhost:4175/ CANVIEWER_E2E_OUT=import-ui \
             node --test --test-reporter=spec e2e/import-ui.test.mjs
 
+      # Each browser check below serves the build on a port of its own: the
+      # servers started in earlier steps keep running until the job ends.
       - name: Signal table and large database checks (sorting, filtering, 5000 messages)
         run: |
-          npx vite preview --port 4174 --strictPort > vite-preview-tbl.log 2>&1 &
-          for i in $(seq 1 30); do curl -sf http://localhost:4174/ > /dev/null && break; sleep 1; done
-          NODE_PATH="$RUNNER_TEMP/pw/node_modules" node e2e/signal-table.mjs http://localhost:4174/ tbl-checks examples/demo.dbc
-          NODE_PATH="$RUNNER_TEMP/pw/node_modules" node e2e/large-database.mjs http://localhost:4174/ tbl-checks
+          npx vite preview --port 4176 --strictPort > vite-preview-tbl.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:4176/ > /dev/null && break; sleep 1; done
+          node e2e/signal-table.mjs http://localhost:4176/ tbl-checks examples/demo.dbc
+          node e2e/large-database.mjs http://localhost:4176/ tbl-checks
 
       - uses: actions/upload-artifact@v4
         if: always()
