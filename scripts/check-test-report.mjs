@@ -1,14 +1,17 @@
-// Checks a Vitest JSON report for CI: every test passed, nothing was skipped,
-// and each corpus suite ran over exactly the expected number of files.
+// Checks a Vitest JSON report for CI: every test file loaded and passed, every
+// test passed, nothing was skipped, and each corpus suite ran over exactly the
+// expected number of files.
 //
 // The corpus suites skip themselves when the submodules are missing, which
 // would make a green run meaningless; the counts make that impossible to miss.
+// A test file that fails to load (a bad import, say) contributes no tests at
+// all, so the files' own status is checked as well as each test's.
 // When a corpus legitimately grows or shrinks, update EXPECTED in the same
 // pull request and say why.
 //
 // Usage: node scripts/check-test-report.mjs <vitest-json-report>
 import { existsSync, readFileSync } from 'node:fs';
-import { basename } from 'node:path';
+import { basename, relative } from 'node:path';
 
 const [, , reportPath] = process.argv;
 if (!reportPath) {
@@ -35,7 +38,18 @@ const EXPECTED = [
 ];
 
 const problems = [];
+if (report.testResults.length === 0) problems.push('the report contains no test files');
 if (tests.length === 0) problems.push('the report contains no tests');
+
+for (const file of report.testResults.filter((f) => f.status !== 'passed')) {
+  const why = file.message ? file.message.split('\n')[0] : 'see its tests below';
+  problems.push(`test file ${file.status}: ${relative(process.cwd(), file.name)}: ${why}`);
+}
+if (report.success !== true) {
+  problems.push(
+    `Vitest reports success: ${report.success} (${report.numFailedTestSuites} failed suite(s), ${report.numFailedTests} failed test(s))`,
+  );
+}
 
 for (const t of tests.filter((t) => t.status !== 'passed')) {
   problems.push(`${t.status}: ${t.file} > ${t.fullName}`);
@@ -52,9 +66,13 @@ for (const e of EXPECTED) {
   if (ran !== e.count) problems.push(`${e.what}: ${ran} passed, expected ${e.count}`);
 }
 
-const byStatus = {};
-for (const t of tests) byStatus[t.status] = (byStatus[t.status] ?? 0) + 1;
-console.log(`tests: ${tests.length} ${JSON.stringify(byStatus)}`);
+const count = (items) => {
+  const byStatus = {};
+  for (const i of items) byStatus[i.status] = (byStatus[i.status] ?? 0) + 1;
+  return `${items.length} ${JSON.stringify(byStatus)}`;
+};
+console.log(`test files: ${count(report.testResults)}`);
+console.log(`tests: ${count(tests)}`);
 console.log('corpus suites:');
 console.log(rows.join('\n'));
 
@@ -63,4 +81,4 @@ if (problems.length) {
   for (const p of problems) console.error(`  ${p}`);
   process.exit(1);
 }
-console.log('\nall tests passed, none skipped, every corpus suite ran in full');
+console.log('\nall test files and tests passed, none skipped, every corpus suite ran in full');
