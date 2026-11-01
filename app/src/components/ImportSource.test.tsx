@@ -120,8 +120,8 @@ describe('the overview of an imported database', () => {
 describe('ImportFormatsNote', () => {
   it('lists every canmatrix format on the welcome screen, in both languages', () => {
     expect(render('en', <ImportFormatsNote />)).toBe(
-      '<p class="formats">DBC files open instantly. ARXML, KCD, FIBEX, ODX, SYM, DBF, JSON, YAML, XLSX, and XLS are read with canmatrix, which loads once on first use.</p>',
+      '<p class="formats">DBC files open instantly. ARXML, KCD, FIBEX, ODX, SYM, DBF, JSON, YAML, and XLSX are read with canmatrix, which loads once on first use.</p>',
     );
-    expect(render('de', <ImportFormatsNote />)).toContain('ARXML, KCD, FIBEX, ODX, SYM, DBF, JSON, YAML, XLSX und XLS werden mit canmatrix gelesen');
+    expect(render('de', <ImportFormatsNote />)).toContain('ARXML, KCD, FIBEX, ODX, SYM, DBF, JSON, YAML und XLSX werden mit canmatrix gelesen');
   });
 });

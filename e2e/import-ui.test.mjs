@@ -58,7 +58,6 @@ const SAMPLES = {
   yaml: { corpus: 'canmatrix/tests/reference/from_dbc/test.yaml' },
   yml: { corpus: 'canmatrix/tests/reference/from_dbc/test.yaml', name: 'test.yml' },
   xlsx: { corpus: 'canmatrix/tests/files/xlsx/test.xlsx' },
-  xls: { corpus: 'canmatrix/tests/files/xlsx/test.xls' },
 };
 
 /** A file to hand to the page: its name, bytes and what canmatrix makes of it. */
@@ -588,7 +587,7 @@ describe('import UI', () => {
     const { context, page, errors } = await freshPage({ lang: 'de' });
     assert.match(
       await page.locator('.welcome .formats').first().innerText(),
-      /ARXML, KCD, FIBEX, ODX, SYM, DBF, JSON, YAML, XLSX und XLS werden mit canmatrix gelesen/,
+      /ARXML, KCD, FIBEX, ODX, SYM, DBF, JSON, YAML und XLSX werden mit canmatrix gelesen/,
     );
     await shot(page, 'welcome-de');
     const pending = open(page, viaInput(page, HOMER), HOMER.name);

@@ -59,8 +59,9 @@ describe('ImportProgress', () => {
   });
 
   it('lists the packages a format needs', () => {
-    const html = render('en', <ImportProgress progress={{ name: 'a.xls', stage: 'packages', packages: ['xlrd', 'xlwt'] }} />);
-    expect(html).toContain('xlrd, xlwt');
+    // No format needs two packages since .xls left; the list is joined all the same.
+    const html = render('en', <ImportProgress progress={{ name: 'a.xlsx', stage: 'packages', packages: ['openpyxl', 'pyyaml'] }} />);
+    expect(html).toContain('openpyxl, pyyaml');
     expect(render('en', <ImportProgress progress={{ name: 'a.sym', stage: 'runtime', packages: [] }} />)).not.toContain(
       'imp-step-packages',
     );

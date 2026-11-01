@@ -37,7 +37,7 @@ describe('format labels', () => {
 
   it('lists each label once, in the order of the table', () => {
     // .yaml and .yml are one format.
-    expect(canmatrixFormatLabels()).toEqual(['ARXML', 'KCD', 'FIBEX', 'ODX', 'SYM', 'DBF', 'JSON', 'YAML', 'XLSX', 'XLS']);
+    expect(canmatrixFormatLabels()).toEqual(['ARXML', 'KCD', 'FIBEX', 'ODX', 'SYM', 'DBF', 'JSON', 'YAML', 'XLSX']);
   });
 });
 
@@ -55,6 +55,8 @@ describe('canmatrixFormatFor', () => {
 
   it('leaves DBC and unknown files to CanViewer’s parser', () => {
     expect(canmatrixFormatFor('demo.dbc')).toBeUndefined();
+    // .xls is not imported: xlrd's license is incompatible with the GPL.
+    expect(canmatrixFormatFor('matrix.xls')).toBeUndefined();
     expect(canmatrixFormatFor('notes.txt')).toBeUndefined();
     expect(canmatrixFormatFor('no-extension')).toBeUndefined();
   });

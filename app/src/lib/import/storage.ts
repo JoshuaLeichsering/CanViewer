@@ -6,8 +6,8 @@
  *   `{ name, text }`, exactly as before imports existed.
  * - An imported file (any format in app/src/lib/canmatrix/formats.ts) is kept
  *   in IndexedDB as its bytes, its name and the cluster the user picked. It
- *   is read again through canmatrix on restore, and it can be binary (XLS,
- *   XLSX) or larger than localStorage allows (ARXML).
+ *   is read again through canmatrix on restore, and it can be binary (XLSX)
+ *   or larger than localStorage allows (ARXML).
  *
  * Only one file is kept: opening one removes the other (lib/import/loader.ts).
  * Should both be found, the DBC is the newer one, because localStorage is
