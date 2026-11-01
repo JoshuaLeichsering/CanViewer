@@ -114,7 +114,8 @@ export class DatabaseLoader {
     if (!canmatrixFormatFor(name)) {
       const text = decodeDbc(bytes);
       this.showDbc(name, text, false);
-      storage.saveDbcText(name, text);
+      // Too large to store: a reload then restores nothing, rather than the file opened before.
+      if (!storage.saveDbcText(name, text)) storage.clearDbcText();
       void storage.clearImportedFile();
       return;
     }

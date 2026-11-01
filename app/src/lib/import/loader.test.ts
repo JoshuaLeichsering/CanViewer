@@ -118,6 +118,15 @@ describe('opening a DBC', () => {
     expect(loader.getState().db?.messages[0].comment).toBe('ä');
   });
 
+  it('forgets the file opened before when this one is too large to store', async () => {
+    const { loader, stored } = setup({ dbc: { name: 'before.dbc', text: 'BU_: OLD\n' } });
+    stored.storage.saveDbcText = () => false;
+    await loader.open('large.dbc', bytesOf(DEMO));
+    expect(loader.getState().fileName).toBe('large.dbc');
+    expect(stored.state.dbc).toBeUndefined();
+    expect(stored.log).toEqual(['clearDbc', 'clearImported']);
+  });
+
   it('treats .txt and unknown extensions as DBC', async () => {
     const { loader, importer } = setup();
     await loader.open('export.txt', bytesOf(DEMO));
