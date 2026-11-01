@@ -6,6 +6,7 @@ import { decomposeJ1939Id, isJ1939Database, PGN_NAMES } from '../lib/dbc/j1939';
 import { useI18n } from '../lib/i18n';
 import { hexId } from '../lib/format';
 import { Icon } from './Icon';
+import { ExportMenu } from './ExportMenu';
 import { messageTag, MessageTag } from './MessageTag';
 
 /** Rendering tens of thousands of problem rows would freeze the UI. */
@@ -51,11 +52,12 @@ export function Overview({
 
   return (
     <div>
-      <header className="page-header">
+      <header className="page-header exp-header">
         <div className="overline">
           {db.version ? t('overviewOverline', { v: db.version }) : t('overviewOverlineNoVersion')}
         </div>
         <h1>{fileName}</h1>
+        <ExportMenu db={db} fileName={fileName} />
         {db.comment && <p className="lead">{db.comment}</p>}
       </header>
 

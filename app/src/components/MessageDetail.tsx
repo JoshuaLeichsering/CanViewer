@@ -8,6 +8,7 @@ import { fmtNum, hexId, muxLabel } from '../lib/format';
 import { BitMatrix, signalNumber, signalTone } from './BitMatrix';
 import { AttributesCard } from './AttributesCard';
 import { Icon } from './Icon';
+import { CopyCodeMenu } from './ExportMenu';
 
 const hexByte = (n: number) => '0x' + n.toString(16).toUpperCase().padStart(2, '0');
 
@@ -110,6 +111,7 @@ export function MessageDetail({
             {isJ1939Pg(db, message) && <span className="assist-chip">J1939 PG</span>}
           </div>
         </div>
+        <CopyCodeMenu db={db} message={message} fileName={fileName} />
         <button className="btn outlined with-icon state" onClick={onCopyLink}>
           <Icon name="link" size={18} />
           {t('copyLink')}
