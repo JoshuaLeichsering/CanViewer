@@ -278,11 +278,13 @@ describe('App: copying a link', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Copy link' }));
     });
     expect(writeText).toHaveBeenCalledWith('http://localhost:3000/#msg=256');
-    expect(screen.getByRole('status').textContent).toBe('Link copied');
+    // The snackbar's status; the signal table has a live region of its own.
+    const snackbar = () => screen.queryAllByRole('status').find((s) => s.classList.contains('snackbar')) ?? null;
+    expect(snackbar()?.textContent).toBe('Link copied');
     act(() => vi.advanceTimersByTime(2999));
-    expect(screen.queryByRole('status')).toBeTruthy();
+    expect(snackbar()).toBeTruthy();
     act(() => vi.advanceTimersByTime(1));
-    expect(screen.queryByRole('status')).toBeNull();
+    expect(snackbar()).toBeNull();
   });
 
   it('says so when the clipboard is not available, until dismissed', async () => {

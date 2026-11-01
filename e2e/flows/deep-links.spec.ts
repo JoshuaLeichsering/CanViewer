@@ -51,9 +51,11 @@ test('copies a link to the current view', async ({ page, context, baseURL }) => 
   await rail(page, 'Messages').click();
   await page.getByRole('row', { name: /EngineTemp/ }).click();
   await page.getByRole('button', { name: 'Copy link' }).click();
-  await expect(page.getByRole('status')).toHaveText('Link copied');
+  // The snackbar's status; the signal table has a live region of its own.
+  const confirmation = page.getByRole('status').filter({ hasText: 'Link copied' });
+  await expect(confirmation).toHaveText('Link copied');
   expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(page.url());
   expect(page.url()).toMatch(/#msg=256\/EngineTemp$/);
   // The confirmation goes away by itself.
-  await expect(page.getByRole('status')).toBeHidden({ timeout: 6_000 });
+  await expect(confirmation).toBeHidden({ timeout: 6_000 });
 });
