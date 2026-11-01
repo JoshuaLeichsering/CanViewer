@@ -228,9 +228,11 @@ When the owner obtains certificates (a paid service, his decision):
 - One codebase, one webview API, and one CI workflow cover all three systems. Each
   system's webview is the one its users already update: WebView2, WKWebView and
   WebKitGTK. The packages stay small: the spike's were 11 to 12 MB.
-- The app depends on the system webview: WebView2 on Windows, WebKitGTK 4.1 on Linux
-  (Debian 12 and Ubuntu 22.04 or later), and WKWebView on macOS. Only the
-  `macos-latest` runner's macOS is tested; older versions may lack what the app uses.
+- The app depends on the system webview: WebView2 on Windows, WebKitGTK 4.1 on Linux,
+  and WKWebView on macOS. Only the runners' systems are tested: `macos-latest`, and
+  `ubuntu-latest` for the `.deb`, which is built there and so needs a C library (glibc)
+  at least as new as the one it was linked against. The Linux job prints that version.
+  Older releases of either may lack what the app uses.
 - The import worker obeys the CSP in the desktop app. A future change that makes the
   worker fetch from elsewhere fails there, and the CSP check in CI catches it on every
   pull request.

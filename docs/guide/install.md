@@ -271,8 +271,10 @@ rm -rf "Application Support/io.github.joshualeichsering.canviewer" \
 
 ## Linux
 
-The `.deb` is for Debian 12 and later, Ubuntu 22.04 and later, and the distributions
-built on them, on 64-bit x86. It needs WebKitGTK 4.1, which `apt` installs with it.
+The `.deb` is for Debian, Ubuntu and the distributions built on them, on 64-bit x86. It
+needs WebKitGTK 4.1, which `apt` installs with it. It is built and tested on the newest
+Ubuntu release that GitHub's build machines run; an older release may lack a library
+version it needs.
 
 The commands expect the files in `~/Downloads`. If your browser saved them elsewhere (on a
 system in another language the folder may have another name), change the `cd` line.

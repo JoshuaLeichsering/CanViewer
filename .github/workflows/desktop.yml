@@ -442,6 +442,9 @@ jobs:
           dpkg -L can-viewer
           command -v canviewer
           dpkg -s libwebkit2gtk-4.1-0 | grep -E '^Version'
+          . /etc/os-release
+          echo "built and installed on $PRETTY_NAME; $(ldd --version | head -1)"
+          echo "the binary needs glibc $(objdump -T /usr/bin/canviewer | grep -o 'GLIBC_[0-9.]*' | sort -uV | tail -1)"
           for f in THIRD_PARTY_NOTICES.md LICENSE; do
             if [ -e "$f" ] && ! dpkg -L can-viewer | grep -q "/$f\$"; then echo "$f is not in the package"; exit 1; fi
           done
