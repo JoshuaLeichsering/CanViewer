@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { trcDe, trcEn } from './i18n-trc';
 
 export type Lang = 'en' | 'de';
 
@@ -10,6 +11,7 @@ const STORAGE_KEY = 'canviewer.lang';
  * type names) intentionally stays untranslated.
  */
 const en = {
+  ...trcEn,
   // toolbar / app shell
   settings: 'Settings',
   language: 'Language',
@@ -202,6 +204,7 @@ const en = {
 export type MsgKey = keyof typeof en;
 
 const de: Record<MsgKey, string> = {
+  ...trcDe,
   settings: 'Einstellungen',
   language: 'Sprache',
   welcomeTagline: 'Ein Viewer für DBC-CAN-Datenbanken.',

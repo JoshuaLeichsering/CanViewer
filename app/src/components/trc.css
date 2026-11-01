@@ -1,0 +1,305 @@
+/*
+ * The trace view and the frame encoder. Every class starts with trc- and
+ * uses the tokens from styles.css, so both themes work unchanged.
+ */
+
+/* ---------- frame encoder ---------- */
+
+.trc-enc h2 {
+  margin-bottom: 4px;
+}
+.trc-enc-help {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: var(--on-surface-var);
+}
+.trc-enc-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.trc-enc-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(104px, 150px) minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  min-height: 44px;
+  padding: 2px 8px;
+  border-radius: 8px;
+}
+.trc-enc-row.selected {
+  background: var(--sec-c);
+  color: var(--on-sec-c);
+}
+.trc-enc-row.inactive .trc-enc-name,
+.trc-enc-row.inactive .trc-enc-note {
+  color: var(--outline);
+}
+.trc-enc-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.trc-enc-field {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--outline);
+  border-radius: 4px;
+  background: var(--surface);
+}
+.trc-enc-field:focus-within {
+  border: 2px solid var(--primary);
+  padding: 0 9px;
+}
+.trc-enc-field.invalid {
+  border: 2px solid var(--error);
+  padding: 0 9px;
+}
+.trc-enc-field input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  font-family: var(--mono);
+  font-size: 14px;
+  text-align: right;
+}
+.trc-enc-field input::placeholder {
+  color: var(--outline);
+}
+.trc-enc-unit {
+  flex: none;
+  font-size: 12px;
+  color: var(--on-surface-var);
+}
+.trc-enc-note {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  color: var(--on-surface-var);
+}
+.trc-enc-row.selected .trc-enc-note {
+  color: inherit;
+}
+.trc-enc-note.error {
+  color: var(--error);
+}
+.trc-enc-note.warn {
+  color: var(--on-ter-c);
+}
+.trc-enc-select {
+  max-width: 100%;
+  height: 32px;
+  padding: 0 4px;
+  border: 1px solid var(--outline-var);
+  border-radius: 4px;
+  background: var(--surface);
+  font-size: 13px;
+}
+.trc-enc-banner {
+  margin: 12px 0 0;
+}
+.trc-enc-out {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin-top: 16px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: var(--sc-high);
+}
+.trc-enc-out-label {
+  flex: 1 1 100%;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  color: var(--on-surface-var);
+}
+.trc-enc-hex {
+  flex: 1 1 100%;
+  font-family: var(--mono);
+  font-size: 15px;
+  line-height: 22px;
+  word-break: break-word;
+}
+.trc-enc-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.trc-enc-actions .btn:disabled,
+.trc-actions .btn:disabled {
+  opacity: 0.38;
+  cursor: default;
+}
+
+/* ---------- trace view ---------- */
+
+.trc-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.trc-empty {
+  max-width: 760px;
+}
+.trc-empty p {
+  margin: 8px 0 0;
+  color: var(--on-surface-var);
+}
+.trc-empty .trc-actions {
+  margin-top: 16px;
+}
+.trc-privacy {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.trc-skipped {
+  margin: -8px 0 16px;
+  font-size: 13px;
+  color: var(--on-surface-var);
+}
+.trc-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  margin-bottom: 12px;
+}
+.trc-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 280px;
+  max-width: 420px;
+  height: 44px;
+  padding: 0 8px 0 14px;
+  border-radius: 22px;
+  background: var(--sc-high);
+  color: var(--on-surface-var);
+}
+.trc-search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--on-surface);
+}
+.trc-search .clear {
+  border: 0;
+  background: none;
+  padding: 4px;
+  border-radius: 12px;
+  color: var(--on-surface-var);
+  display: flex;
+}
+.trc-toolbar .chips {
+  margin-top: 0;
+}
+.trc-count {
+  font-size: 13px;
+  color: var(--on-surface-var);
+  white-space: nowrap;
+}
+.trc-layout {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-start;
+}
+.trc-table-card {
+  flex: 1 1 560px;
+  min-width: 0;
+  margin-bottom: 0;
+  padding: 0;
+  overflow: hidden;
+}
+.trc-viewport {
+  height: min(62vh, 640px);
+  min-height: 240px;
+  overflow: auto;
+  outline: none;
+}
+.trc-viewport:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--primary);
+}
+table.m3.trc-table {
+  table-layout: fixed;
+  min-width: 900px;
+}
+table.m3.trc-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--sc-low);
+  box-shadow: inset 0 -1px 0 var(--outline-var);
+}
+table.m3.trc-table td {
+  height: 36px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+table.m3.trc-table td.trc-spacer {
+  height: auto;
+  padding: 0;
+  border: 0;
+}
+.trc-data {
+  font-family: var(--mono);
+  font-size: 13px;
+}
+.trc-signals {
+  color: var(--on-surface-var);
+}
+table.m3 tr.selected .trc-signals {
+  color: inherit;
+}
+.trc-muted {
+  color: var(--outline);
+}
+.trc-tag {
+  margin-left: 6px;
+}
+.trc-detail {
+  flex: 1 1 320px;
+  max-width: 100%;
+  margin-bottom: 0;
+}
+/* Beside the table the detail keeps to its column; below it (narrow windows) it takes the width. */
+@media (min-width: 1100px) {
+  .trc-detail {
+    flex: 0 1 300px;
+  }
+}
+.trc-detail .decoded-row {
+  grid-template-columns: minmax(96px, 1fr) auto minmax(0, max-content);
+}
+.trc-detail .trc-hex {
+  margin: 12px 0 0;
+  font-family: var(--mono);
+  font-size: 14px;
+  word-break: break-word;
+}
+.trc-detail .banner {
+  margin: 12px 0 0;
+}
+.trc-detail .trc-actions {
+  margin-top: 16px;
+}
+.trc-problems td.trc-line {
+  font-family: var(--mono);
+}

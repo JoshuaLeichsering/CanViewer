@@ -12,6 +12,8 @@ import { NodeDetail } from './components/NodeDetail';
 import { ValueTableDetail } from './components/ValueTableDetail';
 import { Overview } from './components/Overview';
 import { NetworkGraph } from './components/NetworkGraph';
+import { TraceView } from './components/TraceView';
+import { isTraceFileName, openTraceFile, type LoadedTrace } from './lib/trace';
 import { Icon } from './components/Icon';
 
 export type Selection =
@@ -19,7 +21,8 @@ export type Selection =
   | { kind: 'graph' }
   | { kind: 'message'; rawId: number; occ: number; signal?: string }
   | { kind: 'node'; name: string }
-  | { kind: 'valueTable'; name: string };
+  | { kind: 'valueTable'; name: string }
+  | { kind: 'trace' };
 
 /** Serialize the selection into the URL hash so views are deep-linkable. */
 function selectionToHash(sel: Selection): string {
@@ -35,6 +38,8 @@ function selectionToHash(sel: Selection): string {
       return `#vt=${encodeURIComponent(sel.name)}`;
     case 'graph':
       return '#graph';
+    case 'trace':
+      return '#trace';
     default:
       return '';
   }
@@ -55,6 +60,7 @@ function hashToSelection(hash: string): Selection {
   const vt = hash.match(/^#vt=(.+)$/);
   if (vt) return { kind: 'valueTable', name: decodeURIComponent(vt[1]) };
   if (hash === '#graph') return { kind: 'graph' };
+  if (hash === '#trace') return { kind: 'trace' };
   return { kind: 'overview' };
 }
 
@@ -64,6 +70,7 @@ const DESTINATION_OF: Record<Selection['kind'], Destination> = {
   graph: 'network',
   node: 'nodes',
   valueTable: 'tables',
+  trace: 'traces',
 };
 
 const IMPORT_STAGE_KEYS = {
@@ -97,6 +104,7 @@ export function App() {
   const [dragging, setDragging] = useState(false);
   const [importing, setImporting] = useState<{ name: string; stage: ImportStage } | null>(null);
   const [snack, setSnack] = useState<Snack | null>(null);
+  const [trace, setTrace] = useState<LoadedTrace | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dragDepth = useRef(0);
   const initialHash = useRef(window.location.hash);
@@ -125,9 +133,32 @@ export function App() {
     [resetView],
   );
 
+  // Logs (.asc, .log) open in the Traces view and leave the database as it is.
+  const openTrace = useCallback(
+    async (file: File) => {
+      try {
+        const loaded = await openTraceFile(file);
+        if (!loaded) {
+          setSnack({ kind: 'error', text: t('trcNotALog', { name: file.name }) });
+          return;
+        }
+        setTrace(loaded);
+        if (db) setSelection({ kind: 'trace' });
+        else setSnack({ kind: 'info', text: t('trcNeedDatabase', { name: file.name }) });
+      } catch (e) {
+        setSnack({ kind: 'error', text: t('trcReadFailed', { name: file.name, error: e instanceof Error ? e.message : String(e) }) });
+      }
+    },
+    [db, t],
+  );
+
   const loadFile = useCallback(
     async (file: File) => {
       setSnack(null);
+      if (isTraceFileName(file.name)) {
+        await openTrace(file);
+        return;
+      }
       if (!canmatrixFormatFor(file.name)) {
         loadText(file.name, await readFileText(file));
         return;
@@ -155,7 +186,7 @@ export function App() {
         setImporting(null);
       }
     },
-    [loadText, resetView, t],
+    [loadText, openTrace, resetView, t],
   );
 
   // Restore the last opened file on startup. Guarded by a ref so StrictMode's
@@ -222,6 +253,9 @@ export function App() {
         case 'tables':
           if (db.valueTables[0]) setSelection({ kind: 'valueTable', name: db.valueTables[0].name });
           break;
+        case 'traces':
+          setSelection({ kind: 'trace' });
+          break;
       }
     },
     [db],
@@ -257,6 +291,7 @@ export function App() {
       network: !!db,
       nodes: !!db && db.nodes.length > 0,
       tables: !!db && db.valueTables.length > 0,
+      traces: !!db,
     }),
     [db],
   );
@@ -322,7 +357,15 @@ export function App() {
 
       <main className="main">
         {db ? (
-          <MainView db={db} fileName={fileName} selection={selection} onSelect={setSelection} onCopyLink={copyLink} />
+          <MainView
+            db={db}
+            fileName={fileName}
+            selection={selection}
+            onSelect={setSelection}
+            onCopyLink={copyLink}
+            trace={trace}
+            onTrace={setTrace}
+          />
         ) : (
           <div className="welcome">
             <div className="welcome-card">
@@ -368,12 +411,16 @@ function MainView({
   selection,
   onSelect,
   onCopyLink,
+  trace,
+  onTrace,
 }: {
   db: DbcDatabase;
   fileName: string;
   selection: Selection;
   onSelect: (s: Selection) => void;
   onCopyLink: () => void;
+  trace: LoadedTrace | null;
+  onTrace: (trace: LoadedTrace | null) => void;
 }) {
   switch (selection.kind) {
     case 'message': {
@@ -404,6 +451,8 @@ function MainView({
     }
     case 'graph':
       return <NetworkGraph db={db} fileName={fileName} onSelect={onSelect} />;
+    case 'trace':
+      return <TraceView db={db} fileName={fileName} trace={trace} onTrace={onTrace} onSelect={onSelect} />;
     default:
       return <Overview db={db} fileName={fileName} onSelect={onSelect} />;
   }

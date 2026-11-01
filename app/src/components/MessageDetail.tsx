@@ -7,6 +7,7 @@ import { useI18n } from '../lib/i18n';
 import { fmtNum, hexId, muxLabel } from '../lib/format';
 import { BitMatrix, signalNumber, signalTone } from './BitMatrix';
 import { AttributesCard } from './AttributesCard';
+import { EncodeCard } from './EncodeCard';
 import { Icon } from './Icon';
 
 const hexByte = (n: number) => '0x' + n.toString(16).toUpperCase().padStart(2, '0');
@@ -204,6 +205,14 @@ export function MessageDetail({
             decoded={decoded}
             selectedSignal={selectedSignal}
             onSelectSignal={toggle}
+          />
+          <EncodeCard
+            message={message}
+            decoderBytes={bytes}
+            decoderHasInput={hexInput.trim() !== ''}
+            onDecode={setHexInput}
+            selectedSignal={selectedSignal}
+            onSelectSignal={onSelectSignal}
           />
         </div>
       </div>

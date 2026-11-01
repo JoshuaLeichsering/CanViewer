@@ -25,9 +25,9 @@ move items up/down freely and check them off when done.
 
 ## Decode & traces
 
-- [ ] Import a candump / ASC log and replay it through the decoder
+- [x] Import a candump / ASC log and replay it through the decoder
       (table of decoded frames over time)
-- [ ] Frame encoder: enter physical values per signal, get the hex frame
+- [x] Frame encoder: enter physical values per signal, get the hex frame
       (inverse of the decode panel)
 
 ## Editing (long term)

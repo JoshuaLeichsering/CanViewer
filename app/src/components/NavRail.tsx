@@ -4,7 +4,7 @@ import { useTheme } from '../lib/theme';
 import { Icon } from './Icon';
 import type { IconName } from './icon-paths';
 
-export type Destination = 'overview' | 'messages' | 'network' | 'nodes' | 'tables';
+export type Destination = 'overview' | 'messages' | 'network' | 'nodes' | 'tables' | 'traces';
 
 const DESTINATIONS: Array<{ key: Destination; label: MsgKey; icon: IconName; filled: IconName }> = [
   { key: 'overview', label: 'railOverview', icon: 'dashboard', filled: 'dashboard_fill' },
@@ -12,6 +12,7 @@ const DESTINATIONS: Array<{ key: Destination; label: MsgKey; icon: IconName; fil
   { key: 'network', label: 'railNetwork', icon: 'hub', filled: 'hub_fill' },
   { key: 'nodes', label: 'railNodes', icon: 'memory', filled: 'memory_fill' },
   { key: 'tables', label: 'railTables', icon: 'table_rows', filled: 'table_rows_fill' },
+  { key: 'traces', label: 'trcRail', icon: 'receipt_long', filled: 'receipt_long_fill' },
 ];
 
 const LANGUAGES: Array<[Lang, string]> = [
@@ -20,7 +21,7 @@ const LANGUAGES: Array<[Lang, string]> = [
 ];
 
 /**
- * Material 3 navigation rail: settings menu, the "open file" FAB, the five
+ * Material 3 navigation rail: settings menu, the "open file" FAB, the
  * destinations and the theme toggle.
  */
 export function NavRail({
