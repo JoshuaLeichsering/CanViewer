@@ -1,8 +1,8 @@
 # Draft: DBC import reports wrong line numbers after a `VAL_` line
 
 **Status:** draft, not posted. Whether it goes to
-[ebroecker/canmatrix](https://github.com/ebroecker/canmatrix/issues) is Joshua's
-decision. Everything from the issue title down to *Notes for CanViewer* is the
+[ebroecker/canmatrix](https://github.com/ebroecker/canmatrix/issues) is the
+maintainer's decision. Everything from the issue title down to *Notes for CanViewer* is the
 text to post; the notes are not.
 
 The reproduction and the *Actual* block are checked by
@@ -134,7 +134,9 @@ Give the three loops their own index:
 ```
 
 With this patch applied to 1.3.3, the reproduction prints the *Expected* block,
-and `tests/test_dbc.py` still passes (68 passed). Counting with
+and `tests/test_dbc.py` still passes with lxml installed (68 passed, as for
+unpatched 1.3.3 installed with `pip install canmatrix[kcd]==1.3.3 pytest`).
+Counting with
 `for i, line in enumerate(f, start=1):` instead of `i = i + 1` would also keep
 the counter right, but would leave the shadowing in place.
 
@@ -152,5 +154,5 @@ the counter right, but would leave the shadowing in place.
   the workaround stays harmless; it can then be reduced to the SYM case its
   docstring also names.
 - Before posting: search the open and closed issues for "line no" and
-  "VAL_". This sandbox could not: its GitHub access covers only this
-  repository. Check that the development branch still has the three loops.
+  "VAL_" for duplicates (not done yet). Check that the development branch still
+  has the three loops.

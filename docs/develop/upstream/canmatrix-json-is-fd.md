@@ -5,7 +5,7 @@ development branch already has the change. Pull request ebroecker/canmatrix#939
 ("fix: preserve define defaults, signal groups, fd flag and multiplexing in
 json/yaml round trip", commit 2a63b57, merged 2026-10-28) makes `from_dict`
 apply `is_fd`. It is not in a release yet: 1.3.3 (2026-10-21) is the latest on
-PyPI, and it is the version CanViewer ships. The options are Joshua's:
+PyPI, and it is the version CanViewer ships. The options are the maintainer's:
 
 - wait for the next release, then update the wheel in
   `app/src/lib/canmatrix/wheels.lock.json` (the check of this draft then fails on

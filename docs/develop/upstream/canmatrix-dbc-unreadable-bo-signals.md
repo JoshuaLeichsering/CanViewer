@@ -1,8 +1,8 @@
 # Draft: signals of an unreadable `BO_` line join the previous frame
 
 **Status:** draft, not posted. Whether it goes to
-[ebroecker/canmatrix](https://github.com/ebroecker/canmatrix/issues) is Joshua's
-decision. Everything from the issue title down to *Notes for CanViewer* is the
+[ebroecker/canmatrix](https://github.com/ebroecker/canmatrix/issues) is the
+maintainer's decision. Everything from the issue title down to *Notes for CanViewer* is the
 text to post; the notes are not.
 
 The reproduction and the *Actual* block are checked by
@@ -124,7 +124,8 @@ that could not be read fail the way they already do when it is the first:
 ```
 
 With this patch applied to 1.3.3, the reproduction prints the *Expected* block
-above, and `tests/test_dbc.py` still passes (68 passed).
+above, and `tests/test_dbc.py` still passes with lxml installed (68 passed, as
+for unpatched 1.3.3 installed with `pip install canmatrix[kcd]==1.3.3 pytest`).
 
 Whether such an id should be read at all is a separate question, and readers
 disagree: cantools 45.1.2 refuses the whole file ("Standard frame id 0x800 is
@@ -148,5 +149,5 @@ written. This report is only about the misplaced signals.
   ever current, and its 27 `SG_` lines are reported instead, as described
   above.
 - Before posting: search the open and closed issues for "BO_" and
-  "ArbitrationIdOutOfRange". This sandbox could not: its GitHub access covers
-  only this repository. The opendbc files above (MIT) can be named as examples.
+  "ArbitrationIdOutOfRange" for duplicates (not done yet). The opendbc files
+  above (MIT) can be named as examples.

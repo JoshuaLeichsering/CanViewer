@@ -74,6 +74,32 @@ _canviewer_out.getvalue()
     }
   }
 
+  /**
+   * Runs a reproduction (its output discarded), then returns what canmatrix's
+   * JSON exporter writes for the `db` it built, in the default layout
+   * (jsonExportAll=False).
+   */
+  function dumpJson(source: string): string {
+    cm.pyodide.globals.set('_canviewer_source', source);
+    try {
+      return cm.pyodide.runPython(`
+def _canviewer_dump_json(source):
+    import contextlib, io
+    import canmatrix.formats
+    namespace = {"__name__": "__main__"}
+    with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+        exec(compile(source, "reproduction.py", "exec"), namespace)
+    out = io.BytesIO()
+    canmatrix.formats.dump(namespace["db"], out, "json", jsonExportAll=False)
+    return out.getvalue().decode("utf-8")
+_canviewer_dump_json(_canviewer_source)
+`) as string;
+    } finally {
+      cm.pyodide.globals.delete('_canviewer_source');
+      cm.pyodide.globals.delete('_canviewer_dump_json');
+    }
+  }
+
   const bytes = (text: string) => new TextEncoder().encode(text);
 
   describe.each([
@@ -116,18 +142,11 @@ _canviewer_out.getvalue()
   });
 
   it('an FD frame of 8 bytes from a JSON file shows as classic CAN (canmatrix-json-is-fd.md)', () => {
-    // What canmatrix 1.3.3 writes for the draft's frame (jsonExportAll=False).
-    const json = JSON.stringify({
-      messages: [
-        {
-          id: 291,
-          is_extended_frame: false,
-          is_fd: true,
-          name: 'FdFrame',
-          signals: [{ name: 'S', start_bit: 0, bit_length: 8, factor: '1', offset: '0', is_big_endian: false, is_signed: false, is_float: false, is_ascii: false }],
-        },
-      ],
-    });
+    // What canmatrix 1.3.3 writes for the draft's frame: the reproduction's own
+    // database, dumped by canmatrix's JSON exporter, so the input is its real output.
+    const json = dumpJson(fenced(section(draft('canmatrix-json-is-fd.md'), 'Reproduction'), 'python'));
+    const written = JSON.parse(json) as { messages: Array<{ id: number; name: string; is_fd: boolean }> };
+    expect(written.messages.map((m) => [m.id, m.name, m.is_fd])).toEqual([[0x123, 'FdFrame', true]]);
     const db = cm.read(bytes(json), 'json').clusters[0].db;
     const [frame] = db.messages;
     expect(frame.dlc).toBe(8);

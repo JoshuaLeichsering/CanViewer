@@ -1,7 +1,7 @@
 # Upstream reports
 
 Drafts of reports for projects CanViewer depends on. **None of them is posted.**
-Posting on other people's repositories is Joshua's decision
+Posting on other people's repositories is the maintainer's decision
 (`docs/handover/2026-11-01-goal.md`, *Authority*).
 
 | draft | project | found in | status upstream | effect on CanViewer |
@@ -25,12 +25,16 @@ changed upstream: update or retire the draft, then the test.
 The same output was seen with CPython 3.13 and canmatrix 1.3.3 from PyPI. The
 suggested patches for the two DBC reports were applied to 1.3.3 and checked:
 the reproductions then print the *Expected* blocks, and canmatrix's own
-`tests/test_dbc.py` passes (68 passed).
+`tests/test_dbc.py` (from the 1.3.3 source distribution) passes with lxml
+installed: 68 passed, as for unpatched 1.3.3 installed with
+`pip install canmatrix[kcd]==1.3.3 pytest`. Without lxml
+(`pip install canmatrix==1.3.3 pytest`), unpatched 1.3.3 gives 1 failed, 67
+passed: `test_cycle_time_handling` needs the KCD format, which canmatrix loads
+only when lxml is installed (`KeyError: 'canmatrix.formats.kcd'`).
 
 ## Before posting one
 
 1. Run the reproduction against the latest release and the development branch.
-2. Search the project's open and closed issues for duplicates. The session that
-   wrote these drafts could not: its GitHub access covered only this repository.
+2. Search the project's open and closed issues for duplicates (not done yet).
 3. Post the part between the two rules of the draft, nothing above or below it.
 4. Record the issue link in the draft and in the table above.
