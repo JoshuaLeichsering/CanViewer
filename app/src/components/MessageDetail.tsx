@@ -4,9 +4,10 @@ import { decodeFrame, parseHexBytes, signalOutOfBounds, signalsConflict, type De
 import { declaredFrameFormat, isCanFd, isJ1939Pg, isValidFrameSize, paddedFdSize } from '../lib/dbc/canfd';
 import { ADDRESS_NAMES, decomposeJ1939Id, isJ1939Database, PGN_NAMES } from '../lib/dbc/j1939';
 import { useI18n } from '../lib/i18n';
-import { fmtNum, hexId, muxLabel } from '../lib/format';
-import { BitMatrix, signalNumber, signalTone } from './BitMatrix';
+import { fmtNum, hexId } from '../lib/format';
+import { BitMatrix, signalNumber } from './BitMatrix';
 import { AttributesCard } from './AttributesCard';
+import { SignalTable } from './SignalTable';
 import { Icon } from './Icon';
 
 const hexByte = (n: number) => '0x' + n.toString(16).toUpperCase().padStart(2, '0');
@@ -208,54 +209,7 @@ export function MessageDetail({
         </div>
       </div>
 
-      <div className="card table-card">
-        <h2>{t('signalsTitle')}</h2>
-        <table className="m3">
-          <thead>
-            <tr>
-              <th>{t('thName')}</th>
-              <th>{t('thMux')}</th>
-              <th className="num">{t('thStart')}</th>
-              <th className="num">{t('thLength')}</th>
-              <th>{t('thByteOrder')}</th>
-              <th>{t('thType')}</th>
-              <th className="num">{t('thFactor')}</th>
-              <th className="num">{t('thOffset')}</th>
-              <th className="num">Min</th>
-              <th className="num">Max</th>
-              <th>{t('thUnit')}</th>
-              <th>{t('thReceivers')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {message.signals.map((signal, index) => (
-              <tr
-                key={signal.name + index}
-                className={`clickable ${selectedSignal === signal.name ? 'selected' : ''}`}
-                onClick={() => toggle(signal.name)}
-              >
-                <td>
-                  <span className="sig-name">
-                    <span className={`sig-chip tone-${signalTone(index)}`}>{signalNumber(index)}</span>
-                    {signal.name}
-                  </span>
-                </td>
-                <td className="mono">{signal.multiplex.role !== 'none' ? muxLabel(signal.multiplex) : ''}</td>
-                <td className="num">{signal.startBit}</td>
-                <td className="num">{signal.length}</td>
-                <td>{signal.byteOrder === 'intel' ? 'Intel' : 'Motorola'}</td>
-                <td>{signal.valueType}</td>
-                <td className="num">{fmtNum(signal.factor)}</td>
-                <td className="num">{fmtNum(signal.offset)}</td>
-                <td className="num">{fmtNum(signal.min)}</td>
-                <td className="num">{fmtNum(signal.max)}</td>
-                <td>{signal.unit}</td>
-                <td className="comment">{signal.receivers.join(', ')}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <SignalTable message={message} selectedSignal={selectedSignal} onToggleSignal={toggle} />
 
       <AttributesCard title={t('messageAttributes')} attributes={message.attributes} />
     </div>
