@@ -11,9 +11,10 @@
 // German, and records every request: everything must stay inside the app's
 // origin (a download is a blob: URL of the page itself).
 //
-// Usage (Playwright must be installed; it is not a dependency of the app):
-//   npm run build && npx vite preview --port 4174 --strictPort &
-//   node e2e/export-check.mjs http://localhost:4174/ <out-dir> examples/demo.dbc
+// Usage (Playwright is a dev dependency; `npx playwright install chromium`
+// fetches its browser):
+//   npm run build && npx vite preview --port 4177 --strictPort &
+//   node e2e/export-check.mjs http://localhost:4177/ <out-dir> examples/demo.dbc
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { join } from 'node:path';

@@ -14,3 +14,5 @@ import-ui/
 vite-preview-import-ui.log
 tbl-checks/
 vite-preview-tbl.log
+export-check/
+vite-preview-export.log

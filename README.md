@@ -43,7 +43,7 @@ No data leaves your machine — files are parsed locally.
 |---|---|
 | `app/` | The web app, and Vite's root: `index.html` and `src/` (the views, the DBC parser in `src/lib/dbc/`, the canmatrix import in `src/lib/canmatrix/`, each with its tests next to it) |
 | `desktop/` | The Tauri desktop shell, which packages the build in `dist/` |
-| `e2e/` | Checks that drive a browser or the packaged app: `network-check.mjs`, the Playwright flows in `flows/` (`npm run e2e`, configured in `playwright.config.ts`), the UI checks (`ui-checks.mjs`), the import UI's checks (`import-ui.test.mjs`), the signal table and large database checks (`signal-table.mjs`, `large-database.mjs`), and the desktop smoke test over CDP with its build config (`desktop-cdp-smoke.mjs`, `desktop-cdp.conf.json`) |
+| `e2e/` | Checks that drive a browser or the packaged app: `network-check.mjs`, the Playwright flows in `flows/` (`npm run e2e`, configured in `playwright.config.ts`), the UI checks (`ui-checks.mjs`), the import UI's checks (`import-ui.test.mjs`), the signal table and large database checks (`signal-table.mjs`, `large-database.mjs`), the export check (`export-check.mjs`), the desktop smoke test over CDP with its build config (`desktop-cdp-smoke.mjs`, `desktop-cdp.conf.json`), and the check of the file the desktop self-test exports (`desktop-download-check.mjs`) |
 | `scripts/` | Build and maintenance scripts: `fetch-wheels.mjs`, the Vite plugins, the CI check of the test report, the coverage summary, the license and identifying-information checks, the generator of `THIRD_PARTY_NOTICES.md` |
 | `examples/` | Sample files, such as `demo.dbc` |
 | `docs/` | Handover notes, spike reports, design notes and [decision records](docs/decisions/) |
@@ -77,8 +77,8 @@ request: typecheck, all tests with the coverage thresholds, a check that every c
 suite ran over the expected number of files with nothing skipped
 ([check-test-report.mjs](scripts/check-test-report.mjs)), the production build, the
 network check, which fails on any request outside the app's origin, the end-to-end
-flows, the UI checks, the import UI's checks, and the signal table and large database
-checks. A second job checks licenses, notices and identifying information
+flows, the UI checks, the import UI's checks, the signal table and large database
+checks, and the export check. A second job checks licenses, notices and identifying information
 ([CONTRIBUTING.md](CONTRIBUTING.md#the-local-check) lists every step).
 
 `dev`, `test` and `build` run `fetch-wheels` first. It downloads the wheels listed in

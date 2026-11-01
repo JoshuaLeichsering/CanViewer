@@ -7,7 +7,9 @@ does, and the conventions the project keeps. By taking part you agree to follow 
 
 ## Setting up
 
-You need Node.js 22 and git. For the desktop app you also need Rust and the
+You need Node.js 22, git and a C compiler (`cc`, or the one `CC` names): the export
+tests compile the generated C structs, and the local check below requires them to run.
+For the desktop app you also need Rust and the
 [Tauri prerequisites](https://tauri.app/start/prerequisites/) of your system.
 
 ```sh
@@ -65,6 +67,8 @@ CANVIEWER_URL=http://localhost:4175/ node --test e2e/import-ui.test.mjs   # the 
 npx vite preview --port 4176 --strictPort &
 node e2e/signal-table.mjs http://localhost:4176/ tbl-checks examples/demo.dbc   # sorting, filtering
 node e2e/large-database.mjs http://localhost:4176/ tbl-checks   # 5000 messages stay responsive
+npx vite preview --port 4177 --strictPort &
+node e2e/export-check.mjs http://localhost:4177/ export-check examples/demo.dbc   # export and copy
 ```
 
 The network check must end with `requests outside http://localhost:4173: 0`. Stop the
@@ -77,14 +81,16 @@ profile, and checks the loading stages, the cluster choice, the source note, res
 on reload and the translated failures. `e2e/signal-table.mjs` sorts and filters the
 signal table by mouse and keyboard, and `e2e/large-database.mjs` generates a database of
 5000 messages and fails if scrolling, search, the keyboard or the overview's pages exceed
-their time budgets. Stop the preview servers afterwards.
+their time budgets. `e2e/export-check.mjs` exports and copies through the menus and
+requires every file and every copy to equal the pinned output in
+`app/src/lib/export/pinned/`. Stop the preview servers afterwards.
 
 If you change a dependency, also run `npm run notices` (it needs Rust's `cargo` and
 `rustc`, for the desktop crates and the Rust standard library) and commit the regenerated
 `THIRD_PARTY_NOTICES.md`. CI checks that it is up to date, and checks the crates' licenses
 with `cargo deny --manifest-path desktop/Cargo.toml check licenses`. The outputs of the
 check above (`test-report.json`, `network-check/`, `coverage/`, `test-results/`,
-`import-ui/`, `tbl-checks/`) are ignored by git, so the sweep for identifying information does not read them.
+`import-ui/`, `tbl-checks/`, `export-check/`) are ignored by git, so the sweep for identifying information does not read them.
 
 ## Conventions
 
