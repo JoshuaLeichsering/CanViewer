@@ -4,7 +4,7 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseDbc } from './parser';
-import { writeDbc } from './writer';
+import { notWritten, writeDbc } from './writer';
 import type { DbcDatabase } from './types';
 
 /**
@@ -57,6 +57,8 @@ describe.skipIf(files.length === 0)('DBC writer round trip on the OEM corpus (th
     // the two header statements CanViewer skips (NS_ and BS_).
     expect(second.problems).toEqual([]);
     expect(second.skipped).toEqual({ NS_: 1, BS_: 1 });
+    // So a saved file, opened again, saves without a list of losses.
+    expect(notWritten(second)).toEqual({ skipped: [], problems: 0 });
 
     const carried: DbcDatabase = { ...second, problems: first.problems, skipped: first.skipped };
     expect(modelSha256(carried)).toBe(baseline[name].modelSha256);

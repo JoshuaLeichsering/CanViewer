@@ -61,6 +61,52 @@ const LIST_NAME = /^[^\s,]+$/;
 /** What the parser reads as a value description key. */
 const VALUE_KEY = /^-?\d+$/;
 
+/**
+ * Whether the statements after the BO_ blocks (CM_, BA_, VAL_, SIG_VALTYPE_,
+ * …) can address this message, or this signal of it. They name a message by
+ * its raw id and a signal by its name, and the parser attaches them to the
+ * first match, so a later message with the same id, or a later signal of the
+ * same name in a message, cannot be addressed. The editors use this rule too,
+ * so they never accept a change the writer would have to report.
+ */
+export function dbcAddressing(db: DbcDatabase): (message: DbcMessage, signal?: DbcSignal) => boolean {
+  const firstMessageWithId = new Map<number, DbcMessage>();
+  for (const message of db.messages) if (!firstMessageWithId.has(message.rawId)) firstMessageWithId.set(message.rawId, message);
+  return (message, signal) =>
+    firstMessageWithId.get(message.rawId) === message &&
+    (signal === undefined || message.signals.find((s) => s.name === signal.name) === signal);
+}
+
+/** The skipped statements the writer writes itself: an empty BS_ and the standard NS_ list. */
+const WRITTEN_SKIPPED = new Set(['NS_', 'BS_']);
+/**
+ * The one parse problem whose line stays in the model: a second message with
+ * an id already taken is kept, and written, as it is. writer.test.ts pins
+ * this against the parser's wording.
+ */
+const KEPT_PROBLEM = /^duplicate message id /;
+
+/** What the source held that is not in the model, so that a written file lacks it too. */
+export interface DbcNotWritten {
+  /** Statements the reader recognized but CanViewer does not model, as counted in `skipped`: EV_, SIG_GROUP_, BA_REL_, … */
+  skipped: Array<[keyword: string, count: number]>;
+  /** Parse problems whose content is lost: lines the reader could not use, such as a CM_ for an unknown signal. */
+  problems: number;
+}
+
+/**
+ * The two parse diagnostics, read as what a written file cannot have: the
+ * model holds neither the statements CanViewer does not model nor the lines
+ * it could not use, so the writer cannot write them. Save as DBC lists them
+ * before it saves, so that nothing is lost silently.
+ */
+export function notWritten(db: DbcDatabase): DbcNotWritten {
+  return {
+    skipped: Object.entries(db.skipped).filter(([keyword]) => !WRITTEN_SKIPPED.has(keyword)),
+    problems: db.problems.filter((p) => !KEPT_PROBLEM.test(p.reason)).length,
+  };
+}
+
 export function writeDbc(db: DbcDatabase): DbcWriteResult {
   const issues: DbcWriteIssue[] = [];
   const out: string[] = [];
@@ -128,15 +174,9 @@ export function writeDbc(db: DbcDatabase): DbcWriteResult {
   const signalWhere = (message: DbcMessage, signal: DbcSignal) => `SG_ ${message.name}.${signal.name}`;
   const messageWhere = (message: DbcMessage) => `BO_ ${message.rawId} ${message.name}`;
 
-  // Statements after the BO_ blocks address a message by its raw id and a
-  // signal by its name; the parser attaches them to the first match. A
-  // property of a later duplicate cannot be addressed, so it is reported and
-  // not written (writing it would attach it to the first one).
-  const firstMessageWithId = new Map<number, DbcMessage>();
-  for (const message of db.messages) if (!firstMessageWithId.has(message.rawId)) firstMessageWithId.set(message.rawId, message);
-  const addressable = (message: DbcMessage, signal?: DbcSignal) =>
-    firstMessageWithId.get(message.rawId) === message &&
-    (signal === undefined || message.signals.find((s) => s.name === signal.name) === signal);
+  // A property of a later duplicate cannot be addressed, so it is reported
+  // and not written (writing it would attach it to the first one).
+  const addressable = dbcAddressing(db);
 
   // Header
   out.push(`VERSION ${plain(db.version, 'VERSION', 'version')}`, '', '');

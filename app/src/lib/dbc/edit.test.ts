@@ -111,7 +111,7 @@ describe('signal edits', () => {
     const db = fresh();
     for (const message of db.messages) {
       for (const signal of message.signals) {
-        const result = editSignal(message, signal, signalDraft(signal));
+        const result = editSignal(db, message, signal, signalDraft(signal));
         expect(result.errors).toEqual({});
         expect(result.value).toEqual(signal);
       }
@@ -137,7 +137,7 @@ describe('signal edits', () => {
       receivers: ['IC'],
       comment: 'Edited.',
     };
-    const { errors, value } = editSignal(engine, speed, draft);
+    const { errors, value } = editSignal(db, engine, speed, draft);
     expect(errors).toEqual({});
     expect(value).toMatchObject({
       name: 'EngineRpm', startBit: 8, length: 12, byteOrder: 'motorola', valueType: 'signed',
@@ -157,7 +157,7 @@ describe('signal edits', () => {
     const db = fresh();
     const power = byName(db, 'PowerData');
     const voltage = power.signals[0];
-    const { errors, value } = editSignal(power, voltage, { ...signalDraft(voltage), valueType: 'float' });
+    const { errors, value } = editSignal(db, power, voltage, { ...signalDraft(voltage), valueType: 'float' });
     expect(errors).toEqual({});
     const { text } = writeDbc(replaceSignal(db, power, voltage, value!).db);
     expect(text).toContain(`SIG_VALTYPE_ ${power.rawId} BatteryVoltage : 1;`);
@@ -168,7 +168,7 @@ describe('signal edits', () => {
       'BO_ 2 Mux: 8 A\n SG_ Sw M : 0|8@1+ (1,0) [0|0] "" A\n SG_ Leaf m3 : 8|8@1+ (1,0) [0|0] "" A\nSG_MUL_VAL_ 2 Leaf Sw 3-3;\n',
     );
     const message = db.messages[0];
-    const { value } = editSignal(message, message.signals[0], { ...signalDraft(message.signals[0]), name: 'Selector' });
+    const { value } = editSignal(db, message, message.signals[0], { ...signalDraft(message.signals[0]), name: 'Selector' });
     const edited = replaceSignal(db, message, message.signals[0], value!);
     expect(edited.message.signals[1].multiplex.extended?.switchName).toBe('Selector');
     expect(writeDbc(edited.db).text).toContain('SG_MUL_VAL_ 2 Leaf Selector 3-3;');
@@ -179,7 +179,7 @@ describe('signal edits', () => {
     const engine = byName(db, 'EngineData');
     const speed = engine.signals[0];
     const base = signalDraft(speed);
-    const err = (patch: Partial<typeof base>) => editSignal(engine, speed, { ...base, ...patch }).errors;
+    const err = (patch: Partial<typeof base>) => editSignal(db, engine, speed, { ...base, ...patch }).errors;
     expect(err({ name: 'Engine-Speed' })).toEqual({ name: { key: 'edtErrIdentifier' } });
     expect(err({ name: 'EngineTemp' })).toEqual({ name: { key: 'edtErrSignalNameTaken', params: { name: 'EngineTemp' } } });
     expect(err({ startBit: '512' })).toEqual({ startBit: { key: 'edtErrStartBit' } });
@@ -199,6 +199,92 @@ describe('signal edits', () => {
   it('offers the database nodes as receivers, plus any receiver the file names without defining it', () => {
     const db = parseDbc('BU_: A B\nBO_ 1 M: 8 A\n SG_ S : 0|8@1+ (1,0) [0|0] "" B,Ghost\n');
     expect(receiverOptions(db, db.messages[0].signals[0])).toEqual(['A', 'B', 'Ghost']);
+  });
+});
+
+describe('edits to duplicates that DBC statements cannot address', () => {
+  // Two messages with id 1, and two signals named S in the first: CM_ and
+  // SIG_VALTYPE_ reach only the first message with an id and the first signal
+  // with a name, so the editors refuse what the writer would have to report.
+  const DUPLICATES =
+    'BU_: A\n' +
+    'BO_ 1 First: 8 A\n SG_ S : 0|32@1+ (1,0) [0|0] "" A\n SG_ S : 32|32@1+ (1,0) [0|0] "" A\n' +
+    'BO_ 1 Second: 8 A\n SG_ T : 0|32@1+ (1,0) [0|0] "" A\n';
+  const unaddressableMessage = { key: 'edtErrUnaddressableMessage' };
+  const unaddressableSignal = { key: 'edtErrUnaddressableSignal' };
+
+  /** An accepted edit is one the writer holds: no issues, and it reads back as applied. */
+  function writesAndReadsBack(db: ReturnType<typeof fresh>, index: number, signal?: number) {
+    const { text, issues } = writeDbc(db);
+    expect(issues).toEqual([]);
+    const reread = parseDbc(text).messages[index];
+    const edited = db.messages[index];
+    expect(signal === undefined ? reread : reread.signals[signal]).toEqual(signal === undefined ? edited : edited.signals[signal]);
+  }
+
+  it('a second message with the same id takes no comment, but every other change', () => {
+    const db = parseDbc(DUPLICATES);
+    const second = db.messages[1];
+    const base = messageDraft(second);
+    expect(editMessage(db, second, { ...base, comment: 'second comment' }).errors).toEqual({ comment: unaddressableMessage });
+    expect(editMessage(db, second, { ...base, name: 'SecondRenamed', comment: 'second comment' }).errors).toEqual({
+      comment: unaddressableMessage,
+    });
+
+    const renamed = editMessage(db, second, { ...base, name: 'SecondRenamed', dlc: '6' });
+    expect(renamed.errors).toEqual({});
+    writesAndReadsBack(replaceMessage(db, second, renamed.value!), 1);
+  });
+
+  it('a new id makes a second message addressable, and the first takes a comment as always', () => {
+    const db = parseDbc(DUPLICATES);
+    const [first, second] = db.messages;
+    const moved = editMessage(db, second, { ...messageDraft(second), id: '0x2', comment: 'second comment' });
+    expect(moved.errors).toEqual({});
+    const edited = replaceMessage(db, second, moved.value!);
+    expect(writeDbc(edited).text).toContain('CM_ BO_ 2 "second comment";');
+    writesAndReadsBack(edited, 1);
+
+    const commented = editMessage(db, first, { ...messageDraft(first), comment: 'first comment' });
+    expect(commented.errors).toEqual({});
+    writesAndReadsBack(replaceMessage(db, first, commented.value!), 0);
+  });
+
+  it('a second signal with the same name, or a signal of a second message, takes no comment and no float type', () => {
+    const db = parseDbc(DUPLICATES);
+    const [first, second] = db.messages;
+    const duplicate = first.signals[1];
+    const draft = signalDraft(duplicate);
+    expect(editSignal(db, first, duplicate, { ...draft, comment: 'x' }).errors).toEqual({ comment: unaddressableSignal });
+    expect(editSignal(db, first, duplicate, { ...draft, valueType: 'float' }).errors).toEqual({ valueType: unaddressableSignal });
+    expect(editSignal(db, first, duplicate, { ...draft, valueType: 'double' }).errors).toEqual({
+      length: { key: 'edtErrFloatLength', params: { type: 'double', n: 64 } },
+      valueType: unaddressableSignal,
+    });
+    const other = second.signals[0];
+    expect(editSignal(db, second, other, { ...signalDraft(other), comment: 'x', valueType: 'float' }).errors).toEqual({
+      comment: unaddressableSignal,
+      valueType: unaddressableSignal,
+    });
+
+    // What the SG_ line holds needs no addressing.
+    const scaled = editSignal(db, first, duplicate, { ...draft, factor: '0.5', unit: 'V', valueType: 'signed' });
+    expect(scaled.errors).toEqual({});
+    writesAndReadsBack(replaceSignal(db, first, duplicate, scaled.value!).db, 0, 1);
+  });
+
+  it('a new name makes a second signal addressable, and the first takes a comment and a float type as always', () => {
+    const db = parseDbc(DUPLICATES);
+    const first = db.messages[0];
+    const duplicate = first.signals[1];
+    const renamed = editSignal(db, first, duplicate, { ...signalDraft(duplicate), name: 'S2', comment: 'x', valueType: 'float' });
+    expect(renamed.errors).toEqual({});
+    writesAndReadsBack(replaceSignal(db, first, duplicate, renamed.value!).db, 0, 1);
+
+    const original = first.signals[0];
+    const typed = editSignal(db, first, original, { ...signalDraft(original), comment: 'y', valueType: 'float' });
+    expect(typed.errors).toEqual({});
+    writesAndReadsBack(replaceSignal(db, first, original, typed.value!).db, 0, 0);
   });
 });
 

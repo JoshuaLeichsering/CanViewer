@@ -14,6 +14,7 @@ import { Overview } from './components/Overview';
 import { NetworkGraph } from './components/NetworkGraph';
 import { Icon } from './components/Icon';
 import { SaveAsDbcButton } from './components/SaveAsDbc';
+import { DiscardEditsDialog } from './components/DiscardEditsDialog';
 import { messageEditActions, type OnEdit } from './components/editActions';
 
 export type Selection =
@@ -101,6 +102,8 @@ export function App() {
   const [snack, setSnack] = useState<Snack | null>(null);
   // Edits made in the app and not yet saved as DBC.
   const [edited, setEdited] = useState(false);
+  // A file that waits for the answer to "discard the unsaved edits?".
+  const [discardFor, setDiscardFor] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dragDepth = useRef(0);
   const initialHash = useRef(window.location.hash);
@@ -131,8 +134,11 @@ export function App() {
   );
 
   const loadFile = useCallback(
-    async (file: File) => {
-      if (edited && !window.confirm(t('edtDiscardConfirm', { name: fileName }))) return;
+    async (file: File, discardEdits = false) => {
+      if (edited && !discardEdits) {
+        setDiscardFor(file);
+        return;
+      }
       setSnack(null);
       if (!canmatrixFormatFor(file.name)) {
         loadText(file.name, await readFileText(file));
@@ -162,7 +168,7 @@ export function App() {
         setImporting(null);
       }
     },
-    [loadText, resetView, t, edited, fileName],
+    [loadText, resetView, t, edited],
   );
 
   // Restore the last opened file on startup. Guarded by a ref so StrictMode's
@@ -339,14 +345,36 @@ export function App() {
               db={db}
               fileName={fileName}
               edited={edited}
-              onSaved={(name) => {
+              onSaved={(name, text) => {
                 setEdited(false);
                 setSnack({ kind: 'info', text: t('edtSaved', { name }) });
+                // A reload restores what was saved, not the file as it was before the edits.
+                try {
+                  localStorage.setItem('canviewer.file', JSON.stringify({ name, text }));
+                } catch {
+                  // Too large to store: a reload then restores nothing rather than the pre-edit file.
+                  try {
+                    localStorage.removeItem('canviewer.file');
+                  } catch {
+                    // storage unavailable
+                  }
+                }
               }}
             />
           )
         }
       />
+      {discardFor && (
+        <DiscardEditsDialog
+          fileName={fileName}
+          nextName={discardFor.name}
+          onDiscard={() => {
+            setDiscardFor(null);
+            void loadFile(discardFor, true);
+          }}
+          onCancel={() => setDiscardFor(null)}
+        />
+      )}
 
       {db && listKind && (
         <ListPane

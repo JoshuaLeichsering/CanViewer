@@ -49,7 +49,7 @@ export function SignalEditor({
   };
   const submit = () => {
     if (!draft) return;
-    const result = editSignal(message, signal, draft);
+    const result = editSignal(db, message, signal, draft);
     if (result.value) {
       setDraft(null);
       onApply(result.value);
@@ -85,7 +85,7 @@ export function SignalEditor({
             <TextField label={t('edtStartBit')} value={draft.startBit} onChange={(v) => set('startBit', v)} error={errors.startBit} testId="edt-signal-start" mono inputMode="numeric" />
             <TextField label={t('edtLength')} value={draft.length} onChange={(v) => set('length', v)} error={errors.length} testId="edt-signal-length" mono inputMode="numeric" />
             <SelectField label={t('edtByteOrder')} value={draft.byteOrder} options={BYTE_ORDERS} onChange={(v) => set('byteOrder', v)} testId="edt-signal-order" />
-            <SelectField label={t('edtValueType')} value={draft.valueType} options={VALUE_TYPES} onChange={(v) => set('valueType', v)} testId="edt-signal-type" />
+            <SelectField label={t('edtValueType')} value={draft.valueType} options={VALUE_TYPES} onChange={(v) => set('valueType', v)} error={errors.valueType} testId="edt-signal-type" />
             <TextField label={t('edtFactor')} value={draft.factor} onChange={(v) => set('factor', v)} error={errors.factor} testId="edt-signal-factor" mono inputMode="decimal" />
             <TextField label={t('edtOffset')} value={draft.offset} onChange={(v) => set('offset', v)} error={errors.offset} testId="edt-signal-offset" mono inputMode="decimal" />
             <TextField label={t('edtMin')} value={draft.min} onChange={(v) => set('min', v)} error={errors.min} testId="edt-signal-min" mono inputMode="decimal" />

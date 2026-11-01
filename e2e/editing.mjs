@@ -2,24 +2,27 @@
 //
 // Opens a DBC through the app's file input, edits a message and a signal in
 // their dialogs (with the mouse and with the keyboard), checks validation,
-// saves as DBC, and opens the saved file again to see the edits come back.
-// Then it checks the German texts, the dark theme and a 390 px wide window,
-// the prompts that guard unsaved edits, and that no request left the origin.
-// Screenshots of the dialogs go to <out-dir>.
+// saves as DBC, reloads, and opens the saved file again to see the edits come
+// back. Then it checks the German texts, the dark theme and a 390 px wide
+// window, the prompts that guard unsaved edits, the list of what a saved file
+// lacks (with cantools' foobar.dbc, which holds statements CanViewer does not
+// model), and that no request left the origin. Screenshots of the dialogs go
+// to <out-dir>.
 //
 // Usage (Playwright must be installed; it is not a dependency of the app):
 //   npm run build && npx vite preview --port 4174 --strictPort &
-//   node e2e/editing.mjs http://localhost:4174/ <out-dir> examples/demo.dbc
+//   node e2e/editing.mjs http://localhost:4174/ <out-dir> examples/demo.dbc \
+//     third_party/cantools/tests/files/dbc/foobar.dbc
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 
 // require() rather than import, so that a global install found via NODE_PATH works too.
 const { chromium } = createRequire(import.meta.url)('playwright');
 
-const [, , appUrl, outDir, dbcPath] = process.argv;
-if (!appUrl || !outDir || !dbcPath) {
-  console.error('usage: node e2e/editing.mjs <app-url> <out-dir> <file.dbc>');
+const [, , appUrl, outDir, dbcPath, unmodeledPath] = process.argv;
+if (!appUrl || !outDir || !dbcPath || !unmodeledPath) {
+  console.error('usage: node e2e/editing.mjs <app-url> <out-dir> <demo.dbc> <foobar.dbc>');
   process.exit(2);
 }
 mkdirSync(outDir, { recursive: true });
@@ -125,6 +128,13 @@ check(saved.includes('CM_ BO_ 288 "Edited in CanViewer.";'), 'the saved file hol
 check((await page.locator(tid('edt-unsaved')).count()) === 0, 'saving clears the unsaved mark');
 check((await page.locator('.snackbar').innerText()).includes('Saved demo.dbc'), 'a snackbar confirms the save');
 
+// A reload restores what was saved, not the file as it was before the edits.
+await page.reload();
+await titled(page, 'demo.dbc');
+await page.waitForSelector('.page-header h1');
+check((await heading(page)) === 'EngineStatus', 'a reload after saving shows the saved file', await heading(page));
+check((await page.locator(tid('edt-unsaved')).count()) === 0, 'the reloaded file has no unsaved edits');
+
 // Open what was saved: the edits come back through the parser.
 await openFile(page, savedPath, 'saved.dbc');
 await page.getByRole('button', { name: 'Messages', exact: true }).click();
@@ -134,20 +144,43 @@ check(/\b0\.5\b/.test(reopened) && reopened.includes('U/min'), 'the saved file o
 const overview = await page.getByRole('button', { name: 'Overview', exact: true }).click().then(() => page.locator('.main').innerText());
 check(overview.includes('Parsed without problems.'), 'the saved file parses without problems');
 
-// Unsaved edits are guarded: another file asks first, and so does leaving.
+// Unsaved edits are guarded: another file asks first, in the app's own dialog
+// (not window.confirm, which a webview shows only if its host implements it),
+// and leaving asks too.
 await page.getByRole('button', { name: 'Messages', exact: true }).click();
 await page.click(tid('edt-edit-message'));
 await page.fill(tid('edt-message-dlc'), '6');
 await page.click(tid('edt-submit'));
-let asked = '';
-page.once('dialog', (d) => {
-  asked = d.message();
+const browserDialogs = [];
+const onBrowserDialog = (d) => {
+  browserDialogs.push(d.type());
   void d.dismiss();
-});
+};
+page.on('dialog', onBrowserDialog);
 await page.setInputFiles('input[type=file]', dbcPath);
-await page.waitForTimeout(300);
-check(asked === 'Discard the unsaved edits to saved.dbc?', 'opening another file asks first', asked);
+await page.waitForSelector(tid('edt-discard-dialog'));
+const asked = await page.locator(tid('edt-discard-dialog')).innerText();
+check(
+  asked.includes('Discard unsaved edits?') && asked.includes('The edits to saved.dbc are not saved. Opening demo.dbc discards them.'),
+  'opening another file asks first',
+  asked.replace(/\s+/g, ' '),
+);
+check(await page.evaluate(() => document.activeElement?.dataset.testid === 'edt-cancel'), 'the question starts on Cancel');
+await page.screenshot({ path: join(outDir, 'discard-dialog-en-light.png') });
+await page.keyboard.press('Escape');
+await page.waitForSelector(tid('edt-discard-dialog'), { state: 'detached' });
 check((await page.locator('.facts').innerText()).includes('6 B'), 'declining keeps the edits');
+check((await page.locator(tid('edt-unsaved')).count()) === 1, 'declining keeps the unsaved mark');
+await page.setInputFiles('input[type=file]', dbcPath);
+await page.click(`${tid('edt-discard-dialog')} ${tid('edt-submit')}`);
+await titled(page, 'demo.dbc');
+check((await page.locator(tid('edt-unsaved')).count()) === 0, 'discarding opens the other file');
+check(browserDialogs.length === 0, 'no browser dialog was used', browserDialogs.join(', '));
+page.off('dialog', onBrowserDialog);
+await page.getByRole('button', { name: 'Messages', exact: true }).click();
+await page.click(tid('edt-edit-message'));
+await page.fill(tid('edt-message-dlc'), '6');
+await page.click(tid('edt-submit'));
 let unload = '';
 page.once('dialog', (d) => {
   unload = d.type();
@@ -213,6 +246,46 @@ await issues.screenshot({ path: join(outDir, 'issues-dialog-en-light.png') });
 await issues.click(tid('edt-cancel'));
 check((await issues.locator(tid('edt-issues-dialog')).count()) === 0, 'Cancel closes the issue list without saving');
 await issues.context().close();
+
+// ---- What a saved file lacks: statements CanViewer does not model, and lines it could not use ----
+// foobar.dbc (cantools' tests) has relation attributes and a signal group,
+// which CanViewer skips, and a "//" comment line it cannot use.
+const lossy = await newPage({ viewport: { width: 1280, height: 860 } }, () => localStorage.setItem('canviewer.lang', 'en'));
+const lossyDownloads = [];
+lossy.on('download', (d) => lossyDownloads.push(d));
+await lossy.goto(appUrl);
+await lossy.waitForSelector('.welcome');
+const unmodeledName = basename(unmodeledPath);
+await openFile(lossy, unmodeledPath, unmodeledName);
+await lossy.click(tid('edt-save-dbc'));
+await lossy.waitForSelector(tid('edt-issues-dialog'));
+const lossText = await lossy.locator(`${tid('edt-loss-list')} li`).allInnerTexts();
+check(
+  lossText.length === 2 &&
+    lossText[0] === '8 statements CanViewer does not model: BA_DEF_REL_ (3×) · BA_DEF_DEF_REL_ (2×) · BA_REL_ (2×) · SIG_GROUP_ (1×)' &&
+    lossText[1] === '1 parse problem: a line CanViewer could not use (listed in the overview)',
+  'Save as DBC lists what the saved file will lack',
+  lossText.join(' | '),
+);
+check((await lossy.locator(tid('edt-issue-list')).count()) === 0, 'foobar.dbc holds nothing the writer has to report');
+await lossy.screenshot({ path: join(outDir, 'loss-dialog-en-light.png') });
+await lossy.click(tid('edt-cancel'));
+await lossy.waitForTimeout(300);
+check(lossyDownloads.length === 0, 'Cancel saves nothing', String(lossyDownloads.length));
+await lossy.click(tid('edt-save-dbc'));
+const [lossyDownload] = await Promise.all([lossy.waitForEvent('download'), lossy.click(tid('edt-submit'))]);
+const lossyPath = join(outDir, 'saved-foobar.dbc');
+await lossyDownload.saveAs(lossyPath);
+const lossySaved = readFileSync(lossyPath, 'utf8');
+check(lossyDownload.suggestedFilename() === unmodeledName, 'Save anyway saves under the file name', lossyDownload.suggestedFilename());
+const unwritten = lossySaved.match(/^(SIG_GROUP_|BA_REL_|BA_DEF_REL_|BA_DEF_DEF_REL_)\s.*$/gm) ?? [];
+check(unwritten.length === 0, 'the saved file lacks what the list named', unwritten.slice(0, 3).join(' | '));
+check(lossySaved.includes('CM_ SG_ 2147558192 Bar "Bar.";'), 'the saved file holds the rest', 'CM_ SG_ 2147558192 Bar');
+// The saved file, opened again, has nothing more to lose: it saves at once.
+await openFile(lossy, lossyPath, 'saved-foobar.dbc');
+const [again] = await Promise.all([lossy.waitForEvent('download'), lossy.click(tid('edt-save-dbc'))]);
+check((await lossy.locator(tid('edt-issues-dialog')).count()) === 0, 'the saved file saves again without a list', again.suggestedFilename());
+await lossy.context().close();
 await browser.close();
 
 const foreign = requests.filter((u) => !u.startsWith(origin + '/') && !u.startsWith('data:') && !u.startsWith('blob:'));

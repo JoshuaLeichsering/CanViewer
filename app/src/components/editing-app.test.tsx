@@ -113,26 +113,79 @@ describe('editing in the app', () => {
     expect(unloadBlocked()).toBe(false);
   });
 
-  it('asks before another file replaces unsaved edits', async () => {
+  it('a reload after saving restores what was saved, not the file before the edits', async () => {
     start();
     editMessage({ 'edt-message-name': 'EngineStatus' });
-    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
-    await openFile('other.dbc', 'BO_ 1 Other: 8 X\n');
-    expect(confirm).toHaveBeenCalledWith('Discard the unsaved edits to demo.dbc?');
-    expect(heading()).toBe('EngineStatus');
+    click(byTestId('edt-save-dbc'));
+    const saved = await downloads[0].text;
+    expect(JSON.parse(localStorage.getItem('canviewer.file')!)).toEqual({ name: 'demo.dbc', text: saved });
 
-    confirm.mockReturnValue(true);
+    view!.unmount();
+    start();
+    expect(document.title).toBe('demo.dbc — CanViewer');
+    expect(heading()).toBe('EngineStatus');
+    expect(queryTestId('edt-unsaved')).toBeNull();
+  });
+
+  it('a file too large to store is not restored on reload, rather than the file before the edits', async () => {
+    start();
+    editMessage({ 'edt-message-name': 'EngineStatus' });
+    const setItem = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new DOMException('quota', 'QuotaExceededError');
+    });
+    click(byTestId('edt-save-dbc'));
+    setItem.mockRestore();
+    expect(downloads.map((d) => d.name)).toEqual(['demo.dbc']);
+    expect(localStorage.getItem('canviewer.file')).toBeNull();
+  });
+
+  it('asks in its own dialog before another file replaces unsaved edits', async () => {
+    start();
+    editMessage({ 'edt-message-name': 'EngineStatus' });
+    const confirm = vi.spyOn(window, 'confirm');
     await openFile('other.dbc', 'BO_ 1 Other: 8 X\n');
+    const dialog = byTestId('edt-discard-dialog');
+    expect(text(dialog.querySelector('h2'))).toBe('Discard unsaved edits?');
+    expect(text(dialog.querySelector('.edt-hint'))).toBe('The edits to demo.dbc are not saved. Opening other.dbc discards them.');
+    expect(text(byTestId('edt-submit'))).toBe('Discard');
+    // The focus starts on Cancel, the safe choice.
+    expect(document.activeElement).toBe(byTestId('edt-cancel'));
+    click(byTestId('edt-cancel'));
+    expect(queryTestId('edt-discard-dialog')).toBeNull();
+    expect(heading()).toBe('EngineStatus');
+    expect(queryTestId('edt-unsaved')).not.toBeNull();
+
+    await openFile('other.dbc', 'BO_ 1 Other: 8 X\n');
+    await act(async () => {
+      byTestId('edt-submit').click();
+      await new Promise((r) => setTimeout(r, 0));
+    });
+    expect(queryTestId('edt-discard-dialog')).toBeNull();
     expect(document.title).toBe('other.dbc — CanViewer');
     expect(queryTestId('edt-unsaved')).toBeNull();
     expect(unloadBlocked()).toBe(false);
+    // The browser's own confirm() is never used: a webview shows it only if its host implements it.
+    expect(confirm).not.toHaveBeenCalled();
+  });
+
+  it('asks in German', async () => {
+    localStorage.setItem('canviewer.lang', 'de');
+    start();
+    editMessage({ 'edt-message-name': 'EngineStatus' });
+    await openFile('other.dbc', 'BO_ 1 Other: 8 X\n');
+    const dialog = byTestId('edt-discard-dialog');
+    expect(text(dialog.querySelector('h2'))).toBe('Ungespeicherte Änderungen verwerfen?');
+    expect(text(dialog.querySelector('.edt-hint'))).toBe(
+      'Die Änderungen an demo.dbc sind nicht gespeichert. Beim Öffnen von other.dbc gehen sie verloren.',
+    );
+    expect(text(byTestId('edt-submit'))).toBe('Verwerfen');
+    expect(text(byTestId('edt-cancel'))).toBe('Abbrechen');
   });
 
   it('does not ask when there is nothing unsaved', async () => {
     start();
-    const confirm = vi.spyOn(window, 'confirm');
     await openFile('other.dbc', 'BO_ 1 Other: 8 X\n');
-    expect(confirm).not.toHaveBeenCalled();
+    expect(queryTestId('edt-discard-dialog')).toBeNull();
     expect(document.title).toBe('other.dbc — CanViewer');
   });
 });

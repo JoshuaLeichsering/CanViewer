@@ -1,5 +1,6 @@
 import { MAX_SIGNAL_BITS } from './parser';
 import type { ByteOrder, DbcDatabase, DbcMessage, DbcSignal, SignalValueType } from './types';
+import { dbcAddressing } from './writer';
 import { hexId } from '../format';
 
 /**
@@ -40,7 +41,9 @@ export type EditErrorKey =
   | 'edtErrNumber'
   | 'edtErrStartBit'
   | 'edtErrLength'
-  | 'edtErrFloatLength';
+  | 'edtErrFloatLength'
+  | 'edtErrUnaddressableMessage'
+  | 'edtErrUnaddressableSignal';
 
 export interface EditError {
   key: EditErrorKey;
@@ -196,10 +199,20 @@ export function editMessage(db: DbcDatabase, message: DbcMessage, draft: Message
   }
   next = withComment(next, draft.comment, commentChanged && !errors.comment);
 
+  // CM_ names a message by its id, so a second message with the same id cannot get a comment.
+  if (commentChanged && draft.comment !== '' && !errors.comment && !dbcAddressing(replaceMessage(db, message, next))(next)) {
+    errors.comment = { key: 'edtErrUnaddressableMessage' };
+  }
+
   return Object.keys(errors).length > 0 ? { errors } : { errors, value: next };
 }
 
-export function editSignal(message: DbcMessage, signal: DbcSignal, draft: SignalDraft): EditResult<DbcSignal, keyof SignalDraft> {
+export function editSignal(
+  db: DbcDatabase,
+  message: DbcMessage,
+  signal: DbcSignal,
+  draft: SignalDraft,
+): EditResult<DbcSignal, keyof SignalDraft> {
   const initial = signalDraft(signal);
   const errors: EditResult<DbcSignal, keyof SignalDraft>['errors'] = {};
   let next: DbcSignal = { ...signal };
@@ -255,6 +268,20 @@ export function editSignal(message: DbcMessage, signal: DbcSignal, draft: Signal
     if (error) errors.comment = error;
   }
   next = withComment(next, draft.comment, commentChanged && !errors.comment);
+
+  // CM_ and SIG_VALTYPE_ name a signal by its message's id and its own name, so a
+  // signal of a second message with the same id, or a second signal with the same
+  // name, can get neither a comment nor a float type. Checked on the edited signal,
+  // since a new name can make it addressable.
+  const newComment = commentChanged && draft.comment !== '' && !errors.comment;
+  const newFloat = draft.valueType !== initial.valueType && (draft.valueType === 'float' || draft.valueType === 'double');
+  if (newComment || newFloat) {
+    const placed = replaceSignal(db, message, signal, next);
+    if (!dbcAddressing(placed.db)(placed.message, next)) {
+      if (newComment) errors.comment = { key: 'edtErrUnaddressableSignal' };
+      if (newFloat) errors.valueType = { key: 'edtErrUnaddressableSignal' };
+    }
+  }
 
   return Object.keys(errors).length > 0 ? { errors } : { errors, value: next };
 }

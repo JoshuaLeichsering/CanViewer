@@ -133,6 +133,33 @@ describe('MessageEditor', () => {
     expect(document.activeElement).toBe(submit);
   });
 
+  it('refuses a comment on a second message with the same id, which DBC cannot address', () => {
+    const duplicates = parseDbc('BU_: A\nBO_ 1 First: 8 A\nBO_ 1 Second: 8 A\n');
+    const second = duplicates.messages[1];
+    const onApply = vi.fn();
+    view = render(
+      <I18nProvider>
+        <MessageEditor db={duplicates} message={second} onApply={onApply} />
+      </I18nProvider>,
+    );
+    click(byTestId('edt-edit-message'));
+    type(input('edt-message-name'), 'SecondRenamed');
+    type(byTestId<HTMLTextAreaElement>('edt-message-comment'), 'second comment');
+    click(byTestId('edt-submit'));
+    expect(onApply).not.toHaveBeenCalled();
+    const comment = byTestId<HTMLTextAreaElement>('edt-message-comment');
+    expect(comment.getAttribute('aria-invalid')).toBe('true');
+    expect(text(document.getElementById(comment.getAttribute('aria-describedby')!))).toBe(
+      'DBC cannot attach a comment to this message: an earlier message has the same ID.',
+    );
+    expect(input('edt-message-name').hasAttribute('aria-invalid')).toBe(false);
+
+    // A new id makes it addressable.
+    type(input('edt-message-id'), '0x2');
+    click(byTestId('edt-submit'));
+    expect(onApply.mock.calls[0][0]).toMatchObject({ name: 'SecondRenamed', id: 2, comment: 'second comment' });
+  });
+
   it('speaks German', () => {
     setup('de');
     expect(text(byTestId('edt-edit-message'))).toBe('Botschaft bearbeiten');

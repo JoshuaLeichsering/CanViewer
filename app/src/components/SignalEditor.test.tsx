@@ -116,6 +116,35 @@ describe('SignalEditor', () => {
     expect(onApply.mock.calls[0][0]).toMatchObject({ valueType: 'float', length: 32, factor: 1, unit: 'in' });
   });
 
+  it('refuses a comment and a float type on a second signal with the same name, which DBC cannot address', () => {
+    const duplicates = parseDbc('BU_: A\nBO_ 1 M: 8 A\n SG_ S : 0|32@1+ (1,0) [0|0] "" A\n SG_ S : 32|32@1+ (1,0) [0|0] "" A\n');
+    const message = duplicates.messages[0];
+    const onApply = vi.fn();
+    view = render(
+      <I18nProvider>
+        <SignalEditor db={duplicates} message={message} signal={message.signals[1]} onApply={onApply} />
+      </I18nProvider>,
+    );
+    click(byTestId('edt-edit-signal'));
+    choose(select('edt-signal-type'), 'float');
+    type(byTestId<HTMLTextAreaElement>('edt-signal-comment'), 'second');
+    click(byTestId('edt-submit'));
+    expect(onApply).not.toHaveBeenCalled();
+    const help = (field: HTMLElement) => {
+      expect(field.getAttribute('aria-invalid')).toBe('true');
+      return text(document.getElementById(field.getAttribute('aria-describedby')!));
+    };
+    const why =
+      'DBC cannot attach this to the signal: an earlier message has the same ID, or an earlier signal in this message has the same name.';
+    expect(help(select('edt-signal-type'))).toBe(why);
+    expect(help(byTestId('edt-signal-comment'))).toBe(why);
+
+    // A new name makes it addressable.
+    type(input('edt-signal-name'), 'S2');
+    click(byTestId('edt-submit'));
+    expect(onApply.mock.calls[0][0]).toMatchObject({ name: 'S2', valueType: 'float', comment: 'second' });
+  });
+
   it('speaks German', () => {
     setup('de');
     const dialog = byTestId('edt-signal-dialog');

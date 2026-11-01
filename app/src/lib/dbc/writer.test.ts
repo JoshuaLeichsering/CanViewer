@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { parseDbc } from './parser';
-import { writeDbc, type DbcWriteIssue } from './writer';
+import { dbcAddressing, notWritten, writeDbc, type DbcWriteIssue } from './writer';
 import type { DbcDatabase } from './types';
 import demo from '../../../../examples/demo.dbc?raw';
 
@@ -248,5 +248,89 @@ describe('writeDbc', () => {
       expect(kinds(issues)).toEqual(['ambiguous SG_ D.S comment']);
       expect(text).not.toContain('"second"');
     });
+  });
+});
+
+/** Statements CanViewer recognizes but does not model, and a CM_ for a signal the file does not define. */
+const UNMODELED = [
+  'VERSION ""',
+  'NS_ :',
+  '\tCM_',
+  'BS_:',
+  'BU_: A B',
+  'BO_ 1 M: 8 A',
+  ' SG_ S : 0|8@1+ (1,0) [0|255] "" B',
+  'EV_ Env: 0 [0|1] "" 0 1 DUMMY_NODE_VECTOR0 Vector__XXX;',
+  'CM_ SG_ 1 Ghost "dangling";',
+  'BA_DEF_REL_ BU_SG_REL_ "Timeout" INT 0 100;',
+  'BA_REL_ "Timeout" BU_SG_REL_ A SG_ 1 S 5;',
+  'BA_REL_ "Timeout" BU_SG_REL_ B SG_ 1 S 6;',
+  'SIG_GROUP_ 1 Group 1 : S;',
+  '',
+].join('\n');
+
+describe('notWritten', () => {
+  it('is empty for a file the model holds in full', () => {
+    expect(notWritten(parseDbc(demo))).toEqual({ skipped: [], problems: 0 });
+  });
+
+  it('lists the statements CanViewer does not model and counts the lines it could not use', () => {
+    const db = parseDbc(UNMODELED);
+    expect(db.skipped).toEqual({ NS_: 1, BS_: 1, EV_: 1, BA_DEF_REL_: 1, BA_REL_: 2, SIG_GROUP_: 1 });
+    expect(db.problems.map((p) => p.reason)).toEqual(['CM_ SG_ references unknown signal']);
+    expect(notWritten(db)).toEqual({
+      skipped: [
+        ['EV_', 1],
+        ['BA_DEF_REL_', 1],
+        ['BA_REL_', 2],
+        ['SIG_GROUP_', 1],
+      ],
+      problems: 1,
+    });
+  });
+
+  it('is what the written file lacks: the rest of the model round-trips, and writing again loses nothing more', () => {
+    const first = parseDbc(UNMODELED);
+    const { text, issues } = writeDbc(first);
+    expect(issues).toEqual([]);
+    for (const keyword of ['EV_ ', 'BA_DEF_REL_ ', 'BA_REL_ ', 'SIG_GROUP_ ', 'Ghost']) expect(text).not.toContain(keyword);
+    const second = parseDbc(text);
+    expect({ ...second, problems: first.problems, skipped: first.skipped }).toEqual(first);
+    expect(notWritten(second)).toEqual({ skipped: [], problems: 0 });
+  });
+
+  it('does not count a duplicate message id, whose message is kept and written', () => {
+    const db = parseDbc('BO_ 1 First: 8 A\nBO_ 1 Second: 8 A\n');
+    // Pins the parser wording that notWritten recognizes.
+    expect(db.problems.map((p) => p.reason)).toEqual(['duplicate message id 1 — comments/attributes attach to the first definition']);
+    expect(notWritten(db)).toEqual({ skipped: [], problems: 0 });
+    expect(writeDbc(db).text).toContain('BO_ 1 First: 8 A\n\nBO_ 1 Second: 8 A\n');
+  });
+
+  it('counts what an import reports, which the model does not hold either', () => {
+    const db = parseDbc(demo);
+    db.skipped = { EV_: 2, SIG_GROUP_: 1 };
+    db.problems = [{ line: 12, text: 'canmatrix could not read this line', reason: 'canmatrix warning' }];
+    expect(notWritten(db)).toEqual({
+      skipped: [
+        ['EV_', 2],
+        ['SIG_GROUP_', 1],
+      ],
+      problems: 1,
+    });
+  });
+});
+
+describe('dbcAddressing', () => {
+  it('addresses the first message with an id and the first signal with a name, as the parser attaches statements', () => {
+    const db = parseDbc(
+      'BO_ 1 First: 8 A\n SG_ S : 0|8@1+ (1,0) [0|0] "" A\n SG_ S : 8|8@1+ (1,0) [0|0] "" A\n SG_ T : 16|8@1+ (1,0) [0|0] "" A\n' +
+        'BO_ 1 Second: 8 A\n SG_ U : 0|8@1+ (1,0) [0|0] "" A\nBO_ 2 Other: 8 A\n',
+    );
+    const addressable = dbcAddressing(db);
+    const [first, second, other] = db.messages;
+    expect([first, second, other].map((m) => addressable(m))).toEqual([true, false, true]);
+    expect(first.signals.map((s) => addressable(first, s))).toEqual([true, false, true]);
+    expect(addressable(second, second.signals[0])).toBe(false);
   });
 });
