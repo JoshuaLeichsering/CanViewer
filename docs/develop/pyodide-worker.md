@@ -81,6 +81,17 @@ workflow on the app as published under `/app/`. See [Tests and baselines](./test
 ## In the desktop app
 
 The desktop app serves the same files from inside the binary. Tauri sends its content
-security policy only with HTML responses, so the worker, loaded from its own URL, runs
-without one; what keeps it local is the app's own code, which the checks verify. The
-[Tauri spike report](../spikes/2026-11-01-tauri-desktop/README.md) has the details.
+security policy only with HTML responses, so a worker loaded from its own URL would run
+without one. In the desktop app the worker therefore starts from a one-line `blob:`
+module that imports the real worker script
+([`start-worker.ts`](../../app/src/lib/canmatrix/start-worker.ts)): a worker created from
+a `blob:` URL inherits the policy of the page, and the policy allows `blob:` in
+`worker-src` for it. Under `connect-src 'self'` the worker cannot reach another host.
+The web build keeps the plain worker URL: GitHub Pages sends no policy for it to inherit,
+and its service worker must serve the worker's requests offline.
+
+[`e2e/desktop-csp-check.mjs`](../../e2e/desktop-csp-check.mjs) checks the import worker under
+the policy in Chromium in CI. The installed app's self-test checks, in each system's own
+webview, that a worker started from a `blob:` URL is held to the policy
+([decision record 0009](../decisions/0009-desktop-shell.md)). The
+[Tauri spike report](../spikes/2026-11-01-tauri-desktop/README.md) has the measurements.

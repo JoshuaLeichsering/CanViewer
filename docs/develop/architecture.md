@@ -20,8 +20,11 @@ file opened or dropped
                                      │
                      App state: file, selection, search, filter   app/src/App.tsx
                                      │
-     Overview · Messages (list, signal table, bit layout, decoder) · Network · Nodes · Tables
-                                                        app/src/components/
+     Overview · Messages (list, signal table, bit layout, decoder, encoder) · Network
+     · Nodes · Tables · Compare · Traces                app/src/components/
+                                     │
+       export (CSV, JSON, C struct, pseudo-code)        app/src/lib/export/
+       edit, then Save as DBC (writeDbc)                app/src/lib/dbc/edit.ts, writer.ts
 ```
 
 ## The model
@@ -41,6 +44,17 @@ Rules that the views share live next to the model, each with unit tests:
 | [`canfd.ts`](../../app/src/lib/dbc/canfd.ts) | CAN FD and J1939 frame formats (`VFrameFormat`, payload size), valid FD frame sizes |
 | [`j1939.ts`](../../app/src/lib/dbc/j1939.ts) | J1939 databases, identifier decomposition, well-known PGN and address names |
 | [`identity.ts`](../../app/src/lib/dbc/identity.ts) | Telling apart messages that share an ID (invalid, but found in real files) |
+| [`decode.ts`](../../app/src/lib/dbc/decode.ts), [`encode.ts`](../../app/src/lib/dbc/encode.ts) | Decoding a frame into physical values, and the inverse: physical values into a frame's bytes |
+| [`edit.ts`](../../app/src/lib/dbc/edit.ts), [`writer.ts`](../../app/src/lib/dbc/writer.ts) | Checking and applying an edit to a message or signal, and writing the model back out as DBC ([decision record 0008](../decisions/0008-dbc-writer.md)) |
+
+Around the model, in their own directories:
+
+| Directory | What it does |
+|---|---|
+| [`app/src/lib/import/`](../../app/src/lib/import/) | Opening, importing and restoring files: the loader behind the progress panel, the cluster choice, and the stored file (a DBC in `localStorage`, an imported file's bytes in IndexedDB) |
+| [`app/src/lib/export/`](../../app/src/lib/export/) | The message and signal lists as CSV and JSON, and a message as a C struct or as decode pseudo-code |
+| [`app/src/lib/diff/`](../../app/src/lib/diff/) | Comparing two databases: added, removed and changed messages, signals, nodes, value tables and attribute definitions |
+| [`app/src/lib/trace/`](../../app/src/lib/trace/) | Reading candump and Vector ASC logs, and replaying their frames through the database |
 
 ## Reading DBC
 
@@ -64,10 +78,10 @@ can find them.
 ## The app shell
 
 [`App.tsx`](../../app/src/App.tsx) holds the state: the open database and file name,
-the selection (overview, a message and signal, a node, a value table, or the graph),
+the selection (overview, a message and signal, a node, a value table, the graph, the Compare page or the Traces view),
 the search and the filter. The selection is mirrored into the URL fragment
-([deep links](../reference/deep-links.md)). The last DBC file is kept in `localStorage`
-and restored on start.
+([deep links](../reference/deep-links.md)). The last file is restored on start: a DBC
+from `localStorage`, an imported file from IndexedDB, with the cluster it showed.
 
 - **Views** ([`app/src/components/`](../../app/src/components/)) are function components
   that render from the model; the bit layout and the network graph are SVG and CSS, with
@@ -89,10 +103,10 @@ and restored on start.
 [`desktop/`](../../desktop/) wraps the same production build in a Tauri 2 window. The
 build is embedded in the binary and served from a custom protocol, with a strict
 content security policy. The desktop app registers no service worker, since it is
-offline already. A self-test, active only when the environment variable
+offline already. Its import worker starts from a one-line `blob:` module, so that it inherits the
+page's policy ([`start-worker.ts`](../../app/src/lib/canmatrix/start-worker.ts)); the web
+build starts it from its own URL. A self-test, active only when the environment variable
 `CANVIEWER_SMOKE_FILES` is set, lets CI open files in the installed app on every system.
-The [Tauri spike report](../spikes/2026-11-01-tauri-desktop/README.md) has the evidence
-behind the choice.
-
-<!-- TODO(phase-2, W4): link the decision record on the desktop shell, and the release
-workflow. -->
+[Decision record 0009](../decisions/0009-desktop-shell.md) records the choice of Tauri
+and its evidence, and the [release process](./release.md) how the packages are built,
+tested and published.

@@ -9,23 +9,25 @@
   navigation rail, opens your system's file dialog.
 - **Drag and drop**: drop a file anywhere on the window. While you drag, an overlay
   says *Drop the file to open it*.
-- **Reload**: the last DBC file you opened comes back when you reload the page or open
-  the app again (see [below](#the-last-file-comes-back)).
+- **Reload**: the last file you opened comes back when you reload the page or open the
+  app again (see [below](#the-last-file-comes-back)).
 
-Only one file is open at a time; opening another replaces it.
-
-<!-- TODO(phase-2, W3): the file dialog accepts every format and a file with several
-clusters lets you pick one. Update the two lists below when the import UI lands. -->
+Only one database is open at a time; opening another replaces it. With unsaved
+[edits](./editing.md), CanViewer asks first.
 
 Which files go where:
 
 - A file whose extension is one that canmatrix reads (`.arxml`, `.kcd`, `.sym`, `.dbf`,
   `.xlsx`, `.json`, `.yaml`, `.yml`, `.xml` for FIBEX, `.odx`) is imported through
   canmatrix. See [Importing other formats](./import.md).
+- A log, `.asc` or `.log`, opens in the [Traces view](./traces.md) and leaves the
+  database as it is.
 - Every other file is read as DBC text, whatever its extension (`.dbc`, `.txt`, or
   none).
-- The file dialog currently offers `.dbc`, `.txt` and `.arxml` files. Drag and drop
-  takes every format.
+- The file dialog offers every format, and so does drag and drop. A file with several
+  clusters lets you [pick one](./import.md#what-you-get).
+- Dropped on the [Compare](./diff.md) page, a file opens as the other version to compare
+  with, and the open file stays open.
 
 ## Encodings
 
@@ -53,15 +55,14 @@ lines its own readers drop) becomes a parse problem in the same list.
 
 ## The last file comes back
 
-The last DBC file you opened is kept in your browser's local storage, on your machine
-only, and opened again on the next visit. Two limits:
+The last file you opened is kept in your browser, on your machine only, and opened
+again on the next visit: a DBC file in local storage, a file imported through canmatrix
+in IndexedDB, with the cluster you picked. A file too large for the browser's storage
+quota is not kept. It opens normally, it just does not come back after a reload.
 
-- A file too large for the browser's storage quota is not kept. It opens normally, it
-  just does not come back after a reload.
-- Files imported through canmatrix are not kept yet; opening one forgets the stored DBC
-  file, so that a reload does not show a different file.
-
-<!-- TODO(phase-2, W3): imported files are restored from IndexedDB on reload. -->
+If the stored file ever makes CanViewer fail, the recovery screen it shows instead
+offers **Reset stored file**, which forgets it and starts CanViewer empty, and
+**Reload**.
 
 ## Links to a message
 

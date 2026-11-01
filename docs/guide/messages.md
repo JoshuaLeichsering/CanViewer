@@ -17,14 +17,22 @@ signals and the cycle time, with the same **FD**, **J1939** and **EXT** tags as 
 - **Filter chips** narrow the list to **Extended** (29-bit) messages or **CAN FD**
   frames.
 
-<!-- TODO(phase-2, W6): keyboard navigation (up and down through the messages, `/` to
-focus the search). TODO(phase-2, W7): sortable and filterable signal columns, and the
-virtualized list for databases with more than 1000 messages. -->
+- **The keyboard**: `/` anywhere outside a text field focuses the search, also while
+  the settings menu is open. In the list, ↑ and ↓ move from message to message, and
+  Home and End go to the first and the last. From the search field, ↓ goes to the
+  selected message (or the first match), and Enter opens it.
+- **Large databases**: above 1000 messages the list renders only the rows in view, so
+  scrolling, the search and the filter chips stay quick (it is checked with 5000
+  messages). A row with the keyboard focus keeps it while it scrolls out of view, and a
+  message opened elsewhere, from the overview say, is scrolled into view.
 
 ## The message page
 
 - **The header**: the name, the ID in hex and decimal, and chips for extended, CAN FD
-  and J1939 frames. **Copy link** copies a [link to this message](./opening-files.md#links-to-a-message).
+  and J1939 frames. **Copy link** copies a [link to this message](./opening-files.md#links-to-a-message),
+  **Copy as** copies the message as a C struct or as decode pseudo-code
+  ([Exporting](./export.md)), and **Edit message** opens its editor
+  ([Editing](./editing.md)).
 - **Facts**: DLC in bytes, sender (and further transmitters from `BO_TX_BU_`), cycle
   time, send type (`GenMsgSendType`) and the number of signals.
 - **J1939**: for a J1939 frame, the identifier broken down into priority, PGN (with the
@@ -63,6 +71,16 @@ One row per signal: name, multiplexing, start bit and length as written in the D
 byte order (Intel or Motorola), value type (`unsigned`, `signed`, or `float` and
 `double` from `SIG_VALTYPE_`), factor, offset, minimum, maximum, unit and receivers.
 
+- **Sorting**: every column header is a button. The first click sorts ascending, the
+  next descending, the third goes back to the order of the file.
+- **Filtering**: **Filter** opens a row of filter fields under the headers. A text
+  column keeps the signals that contain the text, and `=text` matches the whole cell. A
+  number column takes a value, a comparison such as `>8` or `<=16`, or a range such as
+  `8..15`. A filter that cannot be read is marked in red and ignored; Escape clears a
+  field, and closing the filter row drops every filter. The count above the table says
+  how many signals are shown.
+- The sort and the filters stay when you open another message.
+
 The multiplexing column shows `M` for the multiplexor and `m0`, `m1`, … for the signals
 that are present only when the multiplexor has that value. Extended multiplexing
 (`SG_MUL_VAL_`, a signal switched by a value range of another multiplexed signal) is
@@ -74,4 +92,5 @@ For the selected signal: how the raw value becomes a physical one (`raw × facto
 offset`), the range and unit, the bits (start, length, byte order), receivers, value
 type, multiplexing, its comment, its value descriptions (`VAL_`) and its attributes.
 When a frame is being [decoded](./decoding.md), the value description that matches
-the decoded value is marked.
+the decoded value is marked. **Edit signal** opens the signal's editor
+([Editing](./editing.md)).

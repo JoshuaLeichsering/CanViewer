@@ -9,9 +9,13 @@ share it with anyone.
   never uploaded: the app has no server to upload to.
 - DBC files are parsed by JavaScript in the page. Other formats are read by canmatrix
   running in a Web Worker in the same browser, from a runtime the app ships itself.
-- The last DBC file you opened is kept in your browser's local storage, so that it comes
-  back after a reload. It stays on your machine; clearing the site's data in your
-  browser removes it.
+- The last file you opened is kept in your browser's storage (a DBC file in local
+  storage, an imported file in IndexedDB), so that it comes back after a reload. It
+  stays on your machine; clearing the site's data in your browser removes it.
+- A log you replay in the [Traces view](./traces.md), the other version on the
+  [Compare page](./diff.md), and the files you [export](./export.md) or
+  [save as DBC](./editing.md) are made in the page too. A log and the other version
+  are not stored at all.
 - Links to a view (`#msg=…`) name a message, not its content, and the part after `#`
   is never sent to the web server.
 
@@ -50,4 +54,7 @@ machine (see the [developer guide](../develop/index.md)).
   A browser that has never imported a file cannot do so offline: the import then fails
   with a message, and the app keeps working for DBC files.
 - **Desktop app**: everything is inside the program. It works offline from the start
-  and makes no network requests at all.
+  and makes no network requests at all. Its content security policy allows the window
+  to load only the app's own files, and the worker that reads non-DBC formats runs under
+  the same policy, so it cannot reach another host either. The web app sends no such
+  policy (GitHub Pages cannot set one); there, the checks above stand in for it.

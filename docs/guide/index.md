@@ -3,7 +3,8 @@
 CanViewer is a viewer for CAN databases: the files that describe which messages a CAN
 bus carries, which signals each message packs into its bytes, and how to turn raw bits
 into physical values. It runs in your browser, or as a desktop app, and reads the file
-on your own machine.
+on your own machine. Beyond viewing, it decodes and encodes frames, replays logs,
+compares two versions, exports lists and code, and edits and saves DBC files.
 
 ![CanViewer with examples/demo.dbc open, showing the message EngineData](./images/message-en-light.webp#gh-light-mode-only)
 ![CanViewer with examples/demo.dbc open, showing the message EngineData](./images/message-en-dark.webp#gh-dark-mode-only)
@@ -42,6 +43,17 @@ How faithfully each format comes across is measured, not guessed: see
 | [Network graph](./network.md) | Which ECU sends messages to which, as an interactive graph |
 | [Nodes](./nodes.md) | Per ECU, the messages it transmits and the signals it receives |
 | [Value tables](./value-tables.md) | Named value tables and the signals that use the same values |
+
+## What it does with a database
+
+| Page | What you do |
+|---|---|
+| [Importing other formats](./import.md) | Read ARXML and the other formats through canmatrix, pick a cluster |
+| [Exporting](./export.md) | Save the message and signal lists as CSV or JSON, copy a message as a C struct or decode pseudo-code |
+| [Comparing two databases](./diff.md) | See what was added, removed or changed between two versions |
+| [Replaying traces](./traces.md) | Decode every frame of a candump or Vector ASC log |
+| [Encoding frames](./encoder.md) | Enter physical values and get a frame's bytes |
+| [Editing](./editing.md) | Change messages and signals, and save the result as DBC |
 
 The interface follows Material 3, in English and German, light and dark: see
 [Language and theme](./settings.md).

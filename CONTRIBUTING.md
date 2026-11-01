@@ -104,13 +104,38 @@ itself with the desktop app's Content Security Policy, the way Tauri sends it, a
 unless the import worker runs under that policy and the desktop self-test script passes
 there. Stop the preview servers afterwards.
 
+The documentation site and the web app under `/app/` are checked the way the Pages
+workflow (`.github/workflows/pages.yml`) checks them, which runs for changes to the app,
+the docs or their scripts:
+
+```sh
+npx tsc -p docs/.vitepress                       # the site's configuration
+npm run docs:links                               # every relative link in every Markdown file
+node scripts/docs/fidelity-tables.mjs --check    # the generated tables match the baselines
+npm run build -- --base ./                       # the app with a relative base, for /app/
+DOCS_BASE=/CanViewer/ npm run docs:build
+rm -rf _pages && mkdir -p _pages/CanViewer && cp -R docs/.vitepress/dist/. _pages/CanViewer/ && cp -R dist _pages/CanViewer/app
+node scripts/docs/check-links.mjs --site _pages/CanViewer --base /CanViewer/
+node e2e/static-server.mjs _pages 4181 &        # serves it the way GitHub Pages does
+PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS=1 \
+node e2e/network-check.mjs http://localhost:4181/CanViewer/app/ network-check \
+  third_party/canmatrix/tests/files/arxml/test.arxml \
+  third_party/canmatrix/tests/files/arxml/ARXMLContainerTest.arxml \
+  examples/demo.dbc _pages
+node e2e/docs-crawl.mjs http://localhost:4181/CanViewer/ docs-crawl   # every page, no foreign request
+```
+
+Run `npm run build` again afterwards for the other checks. After a change to the
+interface, regenerate the screenshots with `node scripts/screenshots.mjs <app-url>`
+against a running build ([the documentation guide](docs/develop/documentation.md#screenshots)).
+
 If you change a dependency, also run `npm run notices` (it needs Rust's `cargo` and
 `rustc`, for the desktop crates and the Rust standard library) and commit the regenerated
 `THIRD_PARTY_NOTICES.md`. CI checks that it is up to date, and checks the crates' licenses
 with `cargo deny --manifest-path desktop/Cargo.toml check licenses`. The outputs of the
 check above (`test-report.json`, `network-check/`, `coverage/`, `test-results/`,
 `import-ui/`, `tbl-checks/`, `export-check/`, `diff-check/`, `trc-traces-encoder/`, `editing-check/`,
-`desktop-csp/`) are ignored by git, so the sweep for identifying information does not read them.
+`desktop-csp/`, `_pages/`, `docs-crawl/`) are ignored by git, so the sweep for identifying information does not read them.
 
 ## Conventions
 

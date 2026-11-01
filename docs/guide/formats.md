@@ -50,11 +50,11 @@ runtime is cached, so imports work offline too.
 
 ### Files with several buses
 
-Some formats can describe several buses (clusters) in one file. CanViewer currently
-shows the first cluster that has messages.
-
-<!-- TODO(phase-2, W3): a file with several clusters lets you pick one, and an imported
-database shows its source format with a note that conversion may be lossy. -->
+Some formats can describe several buses (clusters) in one file. CanViewer shows the
+first cluster that has messages, and the overview lets you pick another. An imported
+database also shows its source format there, with a note that the conversion may be
+lossy and a link to the problems canmatrix reported
+([Importing other formats](./import.md#what-you-get)).
 
 ### Why no `.xls`
 
@@ -67,5 +67,6 @@ different library and is supported.
 - **LIN (`.ldf`)**: canmatrix's LDF reader needs a library that has no WebAssembly
   build.
 - **CANopen (`.eds`)**: not part of the formats CanViewer loads.
-- **Writing files**: CanViewer is a viewer. See [Exporting](./export.md) and
-  [Editing](./editing.md) for what is planned.
+- **Writing other formats**: CanViewer writes DBC only ([Save as DBC](./editing.md#saving-as-dbc)),
+  and [exports](./export.md) CSV, JSON and code. It does not write ARXML or the other
+  formats it imports.

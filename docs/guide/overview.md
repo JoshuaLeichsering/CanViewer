@@ -12,6 +12,12 @@ everything that applies to it as a whole.
   them.
 - Five counts: **messages**, **signals**, **nodes**, **value tables** and **attribute
   definitions**.
+- For a file imported from another format, a card that names the format, says that
+  the conversion may be lossy, and links to the problems canmatrix reported
+  ([Importing other formats](./import.md)); for a file with several clusters, the
+  choice of cluster.
+- **Export**, a menu that saves the message and signal lists as CSV or JSON
+  ([Exporting](./export.md)).
 - A status line. Either the file *parsed without problems*, with what was detected,
   such as *3 J1939 parameter groups and 1 CAN FD frame detected*, or a red banner with
   the number of parse problems, followed by the table of problems (line, reason,
@@ -24,6 +30,10 @@ cycle time (from the `GenMsgCycleTime` attribute) and the first line of its comm
 A tag marks CAN FD frames (**FD**), J1939 parameter groups (**J1939**) and other
 extended frames (**EXT**). In a J1939 database a **PGN** column is added. Click a row to
 open the message.
+
+A database with more than 1000 messages shows them 200 to a page, with buttons for the
+first, previous, next and last page and the range on screen, such as *1–200 of 5000*.
+The page stays while you look at a message you opened from it.
 
 How CanViewer decides what is CAN FD or J1939:
 

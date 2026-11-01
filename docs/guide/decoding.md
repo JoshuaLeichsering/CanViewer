@@ -35,11 +35,15 @@ multiplexor. The decoder reads the multiplexor first. Signals whose switch value
 not match are still decoded, but marked *mux inactive*. With extended multiplexing, a
 signal is active only when its whole chain of switches is.
 
-<!-- TODO(phase-2, W10): the frame encoder (physical values in, hex frame out) and trace
-replay link here. -->
+## The other way round, and many frames
+
+- The [frame encoder](./encoder.md) does the inverse: you enter physical values, and it
+  gives the frame's bytes. **Decode** in the encoder shows its frame here, and **From
+  decoder** starts the encoder from the frame decoded here.
+- The [Traces view](./traces.md) decodes every frame of a log file recorded from a bus.
 
 ## Limits
 
 - The decoder decodes one frame at a time, typed or pasted by you. It does not connect
-  to a bus or read a log file.
+  to a bus; for a log file, use the [Traces view](./traces.md).
 - Decoding is plain arithmetic in your browser. Nothing is sent anywhere.

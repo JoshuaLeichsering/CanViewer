@@ -4,7 +4,7 @@ layout: home
 hero:
   name: CanViewer
   text: CAN databases, in your browser
-  tagline: Open a DBC file, or ARXML, KCD, SYM and more, and browse its messages, signals, bit layouts and network. Nothing leaves your machine.
+  tagline: Open a DBC file, or ARXML, KCD, SYM and more, and browse its messages, signals, bit layouts and network. Decode, replay logs, compare, export and edit. Nothing leaves your machine.
   image:
     src: /icon.svg
     alt: CanViewer
@@ -29,4 +29,6 @@ features:
     details: DBC opens instantly with CanViewer's own parser. Other formats are read with canmatrix, running in the browser, into the same model, so every view works for every format.
   - title: Made for real databases
     details: CAN FD and J1939 aware, multiplexing (extended too), value tables, attributes and comments. Tested against 58 OEM databases and 114 files in other formats.
+  - title: More than a viewer
+    details: Encode frames and replay candump and Vector ASC logs, compare two versions of a database, export CSV, JSON and C structs, and edit messages and signals and save them as DBC, with a list of anything the saved file would lack.
 ---

@@ -14,6 +14,7 @@
 - [ ] `npm run e2e`, `node e2e/ui-checks.mjs` and `node --test e2e/import-ui.test.mjs`
 - [ ] `node e2e/signal-table.mjs`, `node e2e/large-database.mjs`, `node e2e/export-check.mjs`, `node e2e/diff-check.mjs`, `node e2e/trc-traces-encoder.mjs`, `node e2e/editing.mjs` and `node e2e/desktop-csp-check.mjs`
 - [ ] `npm run check:identifying-info` and `npm run check:licenses`
+- [ ] for the docs or the app: `npm run docs:links`, the docs build, the site link check, the network check under `/app/` and `node e2e/docs-crawl.mjs`
 
 ## Checklist
 

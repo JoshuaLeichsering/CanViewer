@@ -8,6 +8,8 @@ VitePress. Everything runs from the repository root.
 
 - Node.js 22 and npm.
 - git, with the submodules for the corpus suites.
+- A C compiler (`cc`, or the one `CC` names): the export tests compile the generated C
+  structs, and fail rather than skip without one.
 - For the browser checks and the screenshots: Playwright's Chromium. Playwright is a
   pinned dev dependency; fetch its browser once with `npx playwright install chromium`.
 - For the desktop app: Rust and the [Tauri prerequisites](https://tauri.app/start/prerequisites/)
@@ -40,25 +42,35 @@ Without `--recurse-submodules`, fetch the corpora later with
 |---|---|
 | `npm run dev` | The app with hot reload, on port 5173 |
 | `npm test` | Every unit test and the corpus suites ([Tests and baselines](./testing.md)) |
+| `npm run test:coverage` | The same, with the coverage thresholds of `vite.config.ts` |
+| `npm run e2e` | The Playwright flows in `e2e/flows/` against the production build |
+| `npm run test:scripts` | The tests of the scripts: licenses, notices, the release tooling, the link check |
 | `npx tsc --noEmit` | Type-check the app |
 | `npm run build` | Type-check and build the app into `dist/` |
 | `npm run preview` | Serve `dist/` as built, service worker included |
+| `npm run check:licenses`, `npm run check:identifying-info` | SPDX headers and dependency licenses; no personal data in the tree |
+| `npm run notices` | Regenerate `THIRD_PARTY_NOTICES.md` after a dependency changes |
 | `npm run docs:dev` | This site with hot reload ([Documentation](./documentation.md)) |
 | `npm run docs:build` | Build this site into `docs/.vitepress/dist/` |
+| `npm run docs:links`, `npm run docs:tables` | Check every Markdown link; regenerate the reference tables |
 | `npx tauri dev`, `npx tauri build` | Run or package the desktop app |
+
+[CONTRIBUTING.md](../../CONTRIBUTING.md#the-local-check) lists every check CI runs, with
+the commands to run them before you push.
 
 ## Repository layout
 
 | Path | What it holds |
 |---|---|
-| `app/` | The web app, and Vite's root: `index.html` and `src/` (the views in `src/components/`, the DBC parser in `src/lib/dbc/`, the canmatrix import in `src/lib/canmatrix/`, each with its tests next to it) |
-| `desktop/` | The Tauri desktop shell, which packages the build in `dist/` |
-| `e2e/` | Checks that drive a browser or the packaged app: the network check, the documentation crawl, the desktop smoke test |
-| `scripts/` | Build and maintenance scripts: `fetch-wheels.mjs`, the Vite plugins, the test report check, the screenshots, and the documentation scripts in `scripts/docs/` |
-| `examples/` | Sample files, such as `demo.dbc` |
+| `app/` | The web app, and Vite's root: `index.html` and `src/` (the views in `src/components/`; the DBC parser and writer in `src/lib/dbc/`, the canmatrix import in `src/lib/canmatrix/` and `src/lib/import/`, export in `src/lib/export/`, diff mode in `src/lib/diff/`, traces in `src/lib/trace/`; each with its tests next to it) |
+| `desktop/` | The Tauri desktop shell, which packages the build in `dist/`, with its self-test (`src/smoke.rs`, `src/smoke.js`) |
+| `e2e/` | Checks that drive a browser or the packaged app: the network check, the Playwright flows in `flows/`, the UI checks (`ui-checks.mjs`), the import UI's checks (`import-ui.test.mjs`), the signal table and large database checks, the export, diff mode, Traces and editing checks, the desktop CSP check and smoke test, the documentation crawl and the Pages-like static server |
+| `scripts/` | Build and maintenance scripts: `fetch-wheels.mjs`, the Vite plugins, the test report check, the coverage summary, the license and identifying-information checks, the generator of `THIRD_PARTY_NOTICES.md`, the release tooling (`release-version.mjs`, `desktop-release.mjs`, `runbook.mjs`), the screenshots, the ARXML reader comparison in `scripts/arxml-readers/`, and the documentation scripts in `scripts/docs/` |
+| `examples/` | Sample files: `demo.dbc`, its later version `demo-v2.dbc`, and the logs `demo.asc` and `demo-candump.log` |
 | `docs/` | This site's sources; the working notes in `docs/handover/`, `docs/spikes/` and `docs/design/` are kept but not published ([archive](../archive/index.md)) |
 | `third_party/` | The corpus submodules (opendbc, model3dbc, canmatrix, cantools) |
-| `.github/workflows/` | CI, the desktop builds and the Pages site |
+| `.github/` | The workflows (CI, the desktop builds, the release and the Pages site), issue and pull request templates, `CODEOWNERS` |
+| the root | Config only: `package.json`, `package-lock.json`, `tsconfig.json`, `vite.config.ts`, `playwright.config.ts`, `.gitignore`, `.gitattributes`, `.gitmodules`; and `README.md`, `BACKLOG.md`, `LICENSE`, `THIRD_PARTY_NOTICES.md`, `CONTRIBUTING.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md` |
 
 Why the web app is not at the root, as in Vite's templates: [decision record
 0001](../decisions/0001-repository-layout.md).
@@ -72,3 +84,8 @@ Why the web app is not at the root, as in Vite's templates: [decision record
   Python runtime are all self-hosted ([decision record 0003](../decisions/0003-self-hosted-pyodide-worker.md)).
 - A behaviour change shows up in a pinned baseline. Regenerate a baseline only for an
   intended change, and explain the diff.
+- Source files start with their license: `// SPDX-License-Identifier: GPL-2.0-or-later`
+  (`#` in Python, `/* */` in CSS). `node scripts/check-spdx-headers.mjs --fix` adds it.
+- A new dependency is pinned, under a license `scripts/license-policy.mjs` allows, and
+  `THIRD_PARTY_NOTICES.md` is regenerated. Removing one also removes its entry in the
+  policy: the license check fails on entries that match nothing.

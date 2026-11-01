@@ -1,9 +1,5 @@
 # The desktop app
 
-<!-- TODO(phase-2, W4): complete this page from the release workflow: the packages per
-system and their sizes, the link to the latest release, and what differs from the web
-app. -->
-
 CanViewer also runs as a desktop program for Windows, macOS and Linux. It is the same
 app as the web version, in a window of its own:
 
@@ -16,23 +12,47 @@ app as the web version, in a window of its own:
   system's own web view (WebView2 on Windows, WebKit on macOS and Linux) instead of
   bundling a browser.
 - **Locked down.** A strict content security policy allows the window to load only the
-  app's own files.
+  app's own files. The worker that reads non-DBC formats runs under the same policy, so
+  it cannot reach another host either.
 
-The desktop app is built with [Tauri](https://tauri.app/). CI builds it on all three
-systems, installs each package the way a user would, has the installed app open a DBC
-and an ARXML file, and uninstalls it again.
+The desktop app is built with [Tauri](https://tauri.app/) ([decision record
+0009](../decisions/0009-desktop-shell.md)). CI builds it on all three systems, installs
+each package the way the [install guide](./install.md) says, has the installed app open a
+DBC and an ARXML file, and uninstalls it again.
 
-## Install
+## The packages
 
-From the first release on, the packages are published on the repository's GitHub
-Releases page:
+Each release on the repository's GitHub Releases page has:
 
-| System | Package |
-|---|---|
-| Windows | `.msi` installer, or the setup `.exe` |
-| macOS | `.dmg` |
-| Linux | `.deb` (Debian, Ubuntu and their derivatives) |
+| System | Package | Installs |
+|---|---|---|
+| Windows | `CanViewer_<version>_x64-setup.exe` | for you alone, in `%LOCALAPPDATA%\CanViewer`, without administrator rights |
+| Windows | `CanViewer_<version>_x64_en-US.msi` | for every user of the computer, in `C:\Program Files\CanViewer` |
+| macOS | `CanViewer_<version>_universal.dmg` | `CanViewer.app`, for Apple silicon and Intel |
+| Linux | `CanViewer_<version>_amd64.deb` | the package `can-viewer`, with the program `/usr/bin/canviewer` |
+
+Next to them are `SHA256SUMS`, to check the download, `THIRD_PARTY_NOTICES.md`, and
+`demo.dbc`, a sample database to open once the app is installed. The release notes give
+each package's size.
 
 The builds are not signed with a paid certificate, so Windows and macOS ask you to
-confirm the first launch. The [install guide](./install.md) walks through checking the
-download, the first launch, updating and uninstalling on each system.
+confirm the first launch. There is no AppImage: Linux gets the `.deb`, built and tested on
+Ubuntu. The [install guide](./install.md) walks through checking the download, the first
+launch, updating and uninstalling on each system.
+
+## What is different from the web app
+
+- **Exports** are saved in your Downloads folder: on Windows the user's Downloads
+  folder, on macOS `~/Downloads`, on Linux the XDG Downloads folder. A name that is
+  taken gets a number rather than overwriting the file.
+- **The app keeps its data** (the last file you opened, the theme, the language) in a
+  folder of its own instead of the browser's storage. The
+  [install guide](./install.md#where-the-app-keeps-its-files) says where, and how to
+  remove it.
+- **No service worker.** The web app caches itself for offline use; the desktop app is
+  offline already.
+- **A self-test.** Started with the environment variable `CANVIEWER_SMOKE_FILES` set to
+  the path of `demo.dbc`, the app opens the file, prints a report that ends with
+  `"passed": true`, and quits. The install guide uses it to confirm an install. It starts
+  from a clean profile, so the theme, the language and the last file are reset
+  afterwards.

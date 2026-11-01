@@ -21,8 +21,9 @@ for the renders those three files were served from local npm copies of the same 
 
 When the redesign landed, `app/` also held the implementation in the same six states, for
 a side-by-side review. Those screenshots duplicated the renders above and went stale with
-every UI change, so they were removed; current screenshots of the app are to come from a
-script that the documentation work adds. `app/` keeps the screens the design does not show, as first implemented
+every UI change, so they were removed; current screenshots of the app come from
+[`scripts/screenshots.mjs`](../../../scripts/screenshots.mjs), which writes them to
+[`docs/guide/images/`](../../guide/images/). `app/` keeps the screens the design does not show, as first implemented
 (a production build with `examples/demo.dbc` open):
 
 | Screen | App |

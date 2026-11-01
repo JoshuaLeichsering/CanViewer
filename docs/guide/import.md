@@ -1,13 +1,9 @@
 # Importing other formats
 
-<!-- TODO(phase-2, W3): complete this page with the import UI: every format in the file
-dialog, picking one of several clusters, the source format with its "conversion may be
-lossy" note linking to the problems, and imported files restored on reload. Replace the
-screenshot with one from scripts/screenshots.mjs that shows these. -->
-
 Files in formats other than DBC are read by [canmatrix](./formats.md#other-formats-through-canmatrix),
-which runs in your browser. Drop such a file onto the window and CanViewer imports it
-into the same model as a DBC file, so every view works with it.
+which runs in your browser. Open such a file with **Open file…**, whose dialog offers
+every format, or drop it onto the window, and CanViewer imports it into the same model
+as a DBC file, so every view works with it.
 
 ![test.arxml from canmatrix's test files, imported](./images/import-en-light.webp#gh-light-mode-only)
 ![test.arxml from canmatrix's test files, imported](./images/import-en-dark.webp#gh-dark-mode-only)
@@ -21,22 +17,43 @@ into the same model as a DBC file, so every view works with it.
    for ARXML, KCD and FIBEX.
 3. **Reading the file with canmatrix**, and mapping what it read into CanViewer's model.
 
-Each stage shows at the bottom of the window. If the import fails, a message there
-says why, and the file that was open before stays open.
+Each stage shows at the bottom of the window, from the first moment to the last, with
+the format's extra package named (such as *lxml* or *openpyxl*). If the import fails, a
+message there says why, and the file that was open before stays open.
+
+When CanViewer knows the reason, it says it in your language: *canmatrix found no CAN
+database in this file*, or that the Python runtime or a format's support could not be
+loaded because the browser is offline and has never downloaded it (both are downloaded
+with their first use and work offline from then on; try again once online). Errors of
+canmatrix's own readers are shown as canmatrix wrote them.
 
 ## What you get
 
-- The database as canmatrix read it. Where a format can describe several buses, the
-  first one with messages is shown.
+- The database as canmatrix read it.
+- **Its source**, on the [overview](./overview.md): *Imported from ARXML* (or the format
+  it came in), with a note that the conversion to CanViewer's model may be lossy, and a
+  link to the problems canmatrix reported.
+- **A choice of cluster.** Where a file describes several buses (clusters), as ARXML,
+  KCD and FIBEX files can, the overview lists them, and you pick the one to show. The
+  first one with messages is shown to start with. cantools' `the_homer.kcd` holds three.
 - Every warning or error canmatrix reported, and every line it dropped, as a parse
-  problem on the [overview](./overview.md). The screenshot above shows one: the file
-  was read a second time with the cluster information ignored.
+  problem on the overview. The screenshot above shows one: the file was read a second
+  time with the cluster information ignored.
 - No invented values: what the file does not say stays empty.
+
+## The file comes back
+
+An imported file is restored when you reload the page or open the app again, like a
+DBC file: CanViewer keeps its bytes in your browser's IndexedDB, on your machine only,
+with the cluster you picked and the view you were on. A restore reads the file through
+canmatrix again, so it needs the runtime too; offline, that works once the runtime and
+the format's support have been downloaded before.
 
 How well each format comes across is in the [format reference](../reference/formats.md).
 
-## Current limits
+## Limits
 
-- The file dialog offers only `.dbc`, `.txt` and `.arxml`; drag and drop takes every
-  format.
-- An imported file does not come back after a reload.
+- One cluster is shown at a time. [Comparing](./diff.md) two clusters of one file is not
+  possible; compare two files instead.
+- What canmatrix does not read, CanViewer cannot show: the
+  [format reference](../reference/formats.md) measures it for each format.

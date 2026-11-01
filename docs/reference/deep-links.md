@@ -13,6 +13,8 @@ current as you navigate, and reads it when the app starts with a stored file (se
 | `#node=<name>` | A node |
 | `#vt=<name>` | A value table |
 | `#graph` | The network graph |
+| `#diff` | The Compare page ([comparing two databases](../guide/diff.md)); the other version is not part of the link, so it opens empty |
+| `#trace` | The Traces view ([replaying traces](../guide/traces.md)); the log is not part of the link either |
 
 - `<id>` is the message ID as written in the DBC file, in decimal. For an extended
   (29-bit) message that includes the extended-frame flag, bit 31: the message with ID
