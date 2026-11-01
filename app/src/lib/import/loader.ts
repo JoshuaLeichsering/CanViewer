@@ -158,6 +158,19 @@ export class DatabaseLoader {
     void storage.clearImportedFile();
   };
 
+  /**
+   * Close the database shown and forget the stored copy (localStorage for a
+   * DBC, IndexedDB for an imported file), so that a reload starts empty. An
+   * import still running is dropped.
+   */
+  close = (): void => {
+    ++this.generation;
+    const { storage } = this.deps;
+    storage.clearDbcText();
+    void storage.clearImportedFile();
+    this.set(EMPTY);
+  };
+
   /** Show another cluster of the imported file. */
   selectCluster = (index: number): void => {
     const { source, fileName } = this.state;

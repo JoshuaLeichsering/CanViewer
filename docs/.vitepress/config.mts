@@ -175,7 +175,8 @@ export default defineConfig({
       // The license and the third-party notices are published next to the pages (scripts/docs/site-legal.mjs).
       message:
         'Released under the GNU General Public License, version 2 or later: ' +
-        `<a href="${base}LICENSE.txt">license</a>, <a href="${base}THIRD_PARTY_NOTICES.txt">third-party notices</a>.`,
+        `<a href="${base}COPYRIGHT.txt">copyright notice</a>, <a href="${base}LICENSE.txt">GPL version 2</a>, ` +
+        `<a href="${base}LICENSE-GPL-3.0.txt">GPL version 3</a>, <a href="${base}THIRD_PARTY_NOTICES.txt">third-party notices</a>.`,
     },
   },
   vite: {

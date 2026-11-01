@@ -24,6 +24,7 @@ import { TraceView } from './components/TraceView';
 import { isTraceFileName, openTraceFile, type LoadedTrace } from './lib/trace';
 import { SaveAsDbcButton } from './components/SaveAsDbc';
 import { DiscardEditsDialog } from './components/DiscardEditsDialog';
+import { AboutDialog } from './components/AboutDialog';
 import { messageEditActions, type OnEdit } from './components/editActions';
 
 export type Selection =
@@ -117,7 +118,9 @@ export function App() {
   const [edited, setEdited] = useState(false);
   // What waits for the answer to "discard the unsaved edits?": opening another
   // file, or showing another cluster of the imported one.
-  const [discardFor, setDiscardFor] = useState<{ name: string; proceed: () => void } | null>(null);
+  // Without a name, the question is about closing the file.
+  const [discardFor, setDiscardFor] = useState<{ name?: string; proceed: () => void } | null>(null);
+  const [aboutOpen, setAboutOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dragDepth = useRef(0);
   const initialHash = useRef(window.location.hash);
@@ -163,7 +166,22 @@ export function App() {
     selectCluster,
     edit: editDatabase,
     savedAsDbc,
+    close: closeDatabase,
   } = useDatabaseLoader(onLoaderEvent);
+
+  // Close file (settings menu): back to the welcome screen, and the stored
+  // copy is forgotten, so that a reload starts empty too.
+  const closeFile = useCallback(() => {
+    const close = () => {
+      closeDatabase();
+      resetView();
+      setEdited(false);
+      setSnack(null);
+      history.replaceState(null, '', window.location.pathname + window.location.search);
+    };
+    if (edited) setDiscardFor({ proceed: close });
+    else close();
+  }, [closeDatabase, resetView, edited]);
 
   // Logs (.asc, .log) open in the Traces view and leave the database as it is.
   const openTrace = useCallback(
@@ -423,6 +441,8 @@ export function App() {
         badges={db ? { overview: db.problems.length } : {}}
         onNavigate={navigate}
         onOpenFile={openFileDialog}
+        onCloseFile={db ? closeFile : undefined}
+        onAbout={() => setAboutOpen(true)}
         actions={
           db && (
             <SaveAsDbcButton
@@ -450,6 +470,7 @@ export function App() {
           onCancel={() => setDiscardFor(null)}
         />
       )}
+      {aboutOpen && <AboutDialog onClose={() => setAboutOpen(false)} />}
 
       {db && listKind && (
         <ListPane

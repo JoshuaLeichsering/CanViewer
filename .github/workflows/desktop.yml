@@ -151,7 +151,7 @@ jobs:
           $dir = "$env:LOCALAPPDATA\CanViewer"
           Get-ChildItem $dir | Format-Table Name, Length
           if (-not (Test-Path "$dir\canviewer.exe")) { throw "canviewer.exe is not in $dir" }
-          foreach ($f in 'THIRD_PARTY_NOTICES.md', 'LICENSE') {
+          foreach ($f in (node scripts/desktop-release.mjs resources)) {
             if ((Test-Path $f) -and -not (Test-Path "$dir\$f")) { throw "$f is not installed with the app" }
           }
       - name: 'Runbook: self-test (setup.exe installation)'
@@ -177,7 +177,7 @@ jobs:
           $dir = "$env:ProgramFiles\CanViewer"
           Get-ChildItem $dir | Format-Table Name, Length
           if (-not (Test-Path "$dir\canviewer.exe")) { throw "canviewer.exe is not in $dir" }
-          foreach ($f in 'THIRD_PARTY_NOTICES.md', 'LICENSE') {
+          foreach ($f in (node scripts/desktop-release.mjs resources)) {
             if ((Test-Path $f) -and -not (Test-Path "$dir\$f")) { throw "$f is not installed with the app" }
           }
       - name: 'Runbook: self-test (MSI installation)'
@@ -338,7 +338,7 @@ jobs:
           if xattr -p com.apple.quarantine /Applications/CanViewer.app 2>/dev/null; then echo "still quarantined"; exit 1; fi
           echo "no quarantine attribute"
           ls /Applications/CanViewer.app/Contents/Resources/
-          for f in THIRD_PARTY_NOTICES.md LICENSE; do
+          for f in $(node scripts/desktop-release.mjs resources); do
             if [ -e "$f" ] && [ ! -e "/Applications/CanViewer.app/Contents/Resources/$f" ]; then echo "$f is not in the app"; exit 1; fi
           done
       - name: 'Runbook: self-test'
@@ -474,9 +474,12 @@ jobs:
           . /etc/os-release
           echo "built and installed on $PRETTY_NAME; $(ldd --version | head -1)"
           echo "the binary needs glibc $(objdump -T /usr/bin/canviewer | grep -o 'GLIBC_[0-9.]*' | sort -uV | tail -1)"
-          for f in THIRD_PARTY_NOTICES.md LICENSE; do
+          for f in $(node scripts/desktop-release.mjs resources); do
             if [ -e "$f" ] && ! dpkg -L can-viewer | grep -q "/$f\$"; then echo "$f is not in the package"; exit 1; fi
           done
+          # Debian's place for the copyright notice (bundle.linux.deb.files).
+          dpkg -L can-viewer | grep -qx /usr/share/doc/can-viewer/copyright || { echo "no /usr/share/doc/can-viewer/copyright"; exit 1; }
+          cmp /usr/share/doc/can-viewer/copyright COPYRIGHT
       - name: 'Runbook: self-test'
         env:
           # No GPU under Xvfb.

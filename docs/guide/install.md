@@ -354,7 +354,7 @@ it has been opened.
 | | Windows | macOS | Linux |
 |---|---|---|---|
 | The app | `%LOCALAPPDATA%\CanViewer\` (`setup.exe`) or `C:\Program Files\CanViewer\` (`.msi`) | `/Applications/CanViewer.app` | `/usr/bin/canviewer`, and `/usr/lib/CanViewer/` |
-| The license and `THIRD_PARTY_NOTICES.md` | in the app's folder | in `CanViewer.app/Contents/Resources/` | in `/usr/lib/CanViewer/` |
+| The license files (`COPYRIGHT`, `LICENSE`, `LICENSE-GPL-3.0`) and `THIRD_PARTY_NOTICES.md` | in the app's folder | in `CanViewer.app/Contents/Resources/` | in `/usr/lib/CanViewer/`, and the notice as `/usr/share/doc/can-viewer/copyright` |
 | Its data (the last file, the theme and the language) | `%LOCALAPPDATA%\io.github.joshualeichsering.canviewer\` | `~/Library/WebKit/io.github.joshualeichsering.canviewer/` and other folders of that name in `~/Library/` | `~/.local/share/io.github.joshualeichsering.canviewer/` |
 
 ## For maintainers: making a release

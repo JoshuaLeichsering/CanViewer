@@ -327,6 +327,36 @@ describe('edits made in the app', () => {
   });
 });
 
+describe('closing the file', () => {
+  it('shows nothing and forgets the stored copy, so that the next start is empty', async () => {
+    const { loader, stored, events } = setup();
+    await loader.open('demo.dbc', bytesOf(DEMO));
+    stored.log.length = 0;
+    loader.close();
+    expect(loader.getState()).toEqual({ db: null, fileName: '', source: null, progress: null });
+    expect(stored.log).toEqual(['clearDbc', 'clearImported']);
+    expect(stored.state.dbc).toBeUndefined();
+    // No event: the app closed it itself.
+    expect(events).toEqual([{ kind: 'shown', restored: false }]);
+    await loader.restore();
+    expect(loader.getState().db).toBeNull();
+  });
+
+  it('forgets an imported file too, and drops an import still running', async () => {
+    const { loader, importer, stored, events } = setup({ imported: { name: 'old.kcd', bytes: bytesOf('x'), cluster: 'Motor' } });
+    const running = loader.open('big.arxml', bytesOf('<AUTOSAR/>'));
+    await tick();
+    loader.close();
+    expect(loader.getState().progress).toBeNull();
+    importer.calls[0].resolve({ clusters: [cluster('Bus', 3)] });
+    await running;
+    await tick();
+    expect(loader.getState().db).toBeNull();
+    expect(stored.state.imported).toBeUndefined();
+    expect(events).toEqual([]);
+  });
+});
+
 describe('restoring on startup', () => {
   it('restores a stored DBC first, and drops a stale imported file', async () => {
     const { loader, importer, stored, events } = setup({

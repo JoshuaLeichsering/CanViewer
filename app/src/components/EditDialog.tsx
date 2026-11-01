@@ -11,20 +11,23 @@ const FOCUSABLE = 'input, select, textarea, button, [href], [tabindex]:not([tabi
  * A Material 3 dialog holding a form, for the editors and the Save as DBC
  * check. It is modal: it takes the focus when it opens and gives it back when
  * it closes, keeps Tab inside, and Escape cancels. Clicking the scrim does not
- * close it, so a stray click cannot throw away what was typed.
+ * close it, so a stray click cannot throw away what was typed. Without
+ * `onSubmit` it has one button, which closes it (the About dialog).
  */
 export function EditDialog({
   title,
   submitLabel,
   onSubmit,
   onCancel,
+  cancelLabel,
   children,
   testId,
 }: {
   title: string;
-  submitLabel: string;
-  onSubmit: () => void;
+  submitLabel?: string;
+  onSubmit?: () => void;
   onCancel: () => void;
+  cancelLabel?: string;
   children: React.ReactNode;
   testId?: string;
 }) {
@@ -75,7 +78,7 @@ export function EditDialog({
         onKeyDown={onKeyDown}
         onSubmit={(e) => {
           e.preventDefault();
-          onSubmit();
+          (onSubmit ?? onCancel)();
         }}
       >
         <h2 id={titleId} className="edt-dialog-title">
@@ -84,11 +87,13 @@ export function EditDialog({
         <div className="edt-dialog-body">{children}</div>
         <div className="edt-dialog-actions">
           <button type="button" className="btn text state" data-testid="edt-cancel" onClick={onCancel}>
-            {t('edtCancel')}
+            {cancelLabel ?? t('edtCancel')}
           </button>
-          <button type="submit" className="btn filled state" data-testid="edt-submit">
-            {submitLabel}
-          </button>
+          {onSubmit && (
+            <button type="submit" className="btn filled state" data-testid="edt-submit">
+              {submitLabel}
+            </button>
+          )}
         </div>
       </form>
     </div>,

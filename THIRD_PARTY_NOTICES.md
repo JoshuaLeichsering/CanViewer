@@ -2,7 +2,10 @@
 
 CanViewer is free software: you can redistribute it and/or modify it under the terms of
 the GNU General Public License as published by the Free Software Foundation, either
-version 2 of the License, or (at your option) any later version. See [LICENSE](LICENSE).
+version 2 of the License, or (at your option) any later version. [COPYRIGHT](COPYRIGHT)
+holds the notice, with an additional permission for linking the Windows build with
+Microsoft’s WebView2 loader and Visual C++ runtime; [LICENSE](LICENSE) holds the text of
+version 2 of the GPL, and [LICENSE-GPL-3.0](LICENSE-GPL-3.0) the text of version 3.
 
 CanViewer ships the third-party components below, each under its own license. Some are
 under the Apache License 2.0, which is compatible with version 3 of the GNU GPL but not

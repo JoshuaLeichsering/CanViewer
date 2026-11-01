@@ -106,8 +106,9 @@ The site's pages carry VitePress's default theme, Vue and a few small libraries,
 the app's fonts. [`scripts/docs/site-legal.mjs`](../../scripts/docs/site-legal.mjs), a
 plugin of the site's build, fails the build when `THIRD_PARTY_NOTICES.md` has no row for
 a package the pages bundle, or when `DOCS_SITE` in `scripts/license-policy.mjs` lists one
-they do not. It publishes `LICENSE.txt` and `THIRD_PARTY_NOTICES.txt` next to the pages,
-and the footer of the home page links both.
+they do not. It publishes CanViewer's license files (`COPYRIGHT.txt`, `LICENSE.txt` and
+`LICENSE-GPL-3.0.txt`) and `THIRD_PARTY_NOTICES.txt` next to the pages, and the footer of
+the home page links them.
 
 ## Publishing
 

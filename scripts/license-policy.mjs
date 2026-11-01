@@ -11,6 +11,15 @@
 // distributed under the terms of the GPL version 3, which "or any later
 // version" allows.
 
+/**
+ * CanViewer's own license files, at the repository root: the notice with the
+ * additional permission for the Windows build, and the texts of the GPL
+ * versions 2 and 3 (the binaries are conveyed under version 3). The web build
+ * carries each as <name>.txt (scripts/vite-legal.ts), and every desktop
+ * package as a resource (RESOURCES in scripts/desktop-release.mjs).
+ */
+export const LICENSE_FILES = ['COPYRIGHT', 'LICENSE', 'LICENSE-GPL-3.0'];
+
 /** SPDX identifiers that bundled third-party code may carry. */
 export const ALLOWED = new Set([
   '0BSD',
@@ -107,6 +116,13 @@ export const WHEELS = {
   'et-xmlfile': { license: 'MIT AND PSF-2.0', metadata: ['License: MIT'] },
   // LICENSES.txt: parts derived from ElementTree and CPython (PSF), and the
   // ISO Schematron resources; libxml2 and libxslt are compiled in (see WHEEL_BUNDLED).
+  // Two of those resources, isoschematron/resources/xsl/RNG2Schtrn.xsl and
+  // XSD2Schtrn.xsl, carry no license at all ("unlicensed and copyright the
+  // respective authors", LICENSES.txt). They stay in the wheel, as in every
+  // lxml wheel on PyPI and in Pyodide's own build: CanViewer never loads them
+  // (canmatrix imports lxml.etree only, never lxml.isoschematron), and
+  // stripping them would make the vendored wheel differ from the release that
+  // wheels.lock.json pins by its SHA-256. Decision record 0005 has the reasoning.
   lxml: { license: 'BSD-3-Clause AND PSF-2.0 AND MIT', metadata: ['License: BSD-3-Clause'] },
   openpyxl: { license: 'MIT', metadata: ['License: MIT'] },
   pyyaml: { license: 'MIT', metadata: ['License: MIT'] },

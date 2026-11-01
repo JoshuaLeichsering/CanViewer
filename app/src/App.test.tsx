@@ -465,3 +465,59 @@ describe('App: unsaved edits and what would replace them', () => {
     expect(unsaved()).toBe(true);
   });
 });
+
+describe('App: the settings menu’s Close file and About', () => {
+  const menuItem = (name: string) => {
+    fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
+    return screen.queryByRole('menuitem', { name });
+  };
+
+  it('closes the file: back to the welcome screen, and nothing is restored on the next start', async () => {
+    renderWithProviders(<App />);
+    expect(menuItem('Close file')).toBeNull();
+    fireEvent.keyDown(document, { key: 'Escape' });
+    await openDemo();
+    fireEvent.click(rail('Network'));
+    expect(hash()).toBe('#graph');
+    expect(localStorage.getItem('canviewer.file')).toMatch(/demo\.dbc/);
+
+    fireEvent.click(menuItem('Close file')!);
+    expect(document.querySelector('.welcome')).not.toBeNull();
+    expect(document.title).toBe('CanViewer — CAN Database Viewer');
+    expect(localStorage.getItem('canviewer.file')).toBeNull();
+    expect(hash()).toBe('');
+    expect(rail('Overview').disabled).toBe(true);
+    expect(screen.queryByTestId('edt-save-dbc')).toBeNull();
+  });
+
+  it('asks first when the file has unsaved edits', async () => {
+    renderWithProviders(<App />);
+    await openDemo();
+    fireEvent.click(rail('Messages'));
+    fireEvent.click(screen.getByTestId('edt-edit-message'));
+    fireEvent.change(screen.getByTestId('edt-message-name'), { target: { value: 'Renamed' } });
+    fireEvent.click(screen.getByTestId('edt-submit'));
+    await screen.findByRole('heading', { level: 1, name: 'Renamed' });
+
+    fireEvent.click(menuItem('Close file')!);
+    const dialog = screen.getByTestId('edt-discard-dialog');
+    expect(dialog.querySelector('.edt-hint')?.textContent).toBe('The edits to demo.dbc are not saved. Closing the file discards them.');
+    fireEvent.click(screen.getByTestId('edt-cancel'));
+    expect(h1()).toBe('Renamed');
+    expect(screen.getByTestId('edt-unsaved')).toBeTruthy();
+
+    fireEvent.click(menuItem('Close file')!);
+    fireEvent.click(screen.getByTestId('edt-submit'));
+    expect(document.querySelector('.welcome')).not.toBeNull();
+    expect(screen.queryByTestId('edt-unsaved')).toBeNull();
+  });
+
+  it('opens About from the menu, on the welcome screen too, and gives the focus back when it closes', () => {
+    renderWithProviders(<App />);
+    fireEvent.click(menuItem('About CanViewer')!);
+    expect(screen.getByRole('dialog', { name: 'About CanViewer' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Settings' }));
+  });
+});

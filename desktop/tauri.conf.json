@@ -54,10 +54,22 @@
       "icons/icon.ico"
     ],
     "category": "DeveloperTool",
+    "publisher": "The CanViewer authors",
+    "copyright": "Copyright (C) 2026 The CanViewer authors",
+    "license": "GPL-2.0-or-later",
+    "licenseFile": "../COPYRIGHT",
     "shortDescription": "A viewer for CAN database files",
+    "longDescription": "CanViewer shows CAN databases: DBC files, and ARXML, KCD and the other formats canmatrix reads. It decodes and encodes frames, replays candump and Vector ASC logs, compares two versions of a database, and saves edits as DBC. Everything runs on this computer, offline.",
     "macOS": {
       "signingIdentity": "-",
       "hardenedRuntime": false
+    },
+    "linux": {
+      "deb": {
+        "files": {
+          "/usr/share/doc/can-viewer/copyright": "../COPYRIGHT"
+        }
+      }
     }
   }
 }

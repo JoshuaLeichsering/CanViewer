@@ -16,11 +16,11 @@ move items up/down freely and check them off when done. The
 - [x] Show which signals use a given value table (VAL_TABLE_ back-references;
       DBC does not record the link, so signals with identical VAL_ maps are shown)
 - [x] Virtualize the message tree for very large databases (1000+ messages)
-- [ ] An About entry with the license, the no-warranty statement, a link to the
+- [x] An About entry with the license, the no-warranty statement, a link to the
       source and the third-party notices, as the license audit asks
-      ([docs/handover/2026-11-01-license-audit.md](docs/handover/2026-11-01-license-audit.md)).
-      The web app and every package already carry `LICENSE` and
-      `THIRD_PARTY_NOTICES.md`; nothing in the interface points to them yet
+      ([docs/handover/2026-11-01-license-audit.md](docs/handover/2026-11-01-license-audit.md)):
+      **About CanViewer** in the settings menu
+- [x] Close the file and forget the stored copy (**Close file** in the settings menu)
 - [ ] Parse large DBC files in a worker: opening a file of 5000 messages blocks
       the page for 0.1 to 0.25 s while it parses
 

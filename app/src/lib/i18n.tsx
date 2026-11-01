@@ -264,6 +264,28 @@ const en = {
   edtDiscardTitle: 'Discard unsaved edits?',
   edtDiscardText: 'The edits to {name} are not saved. Opening {next} discards them.',
   edtDiscard: 'Discard',
+  edtDiscardCloseText: 'The edits to {name} are not saved. Closing the file discards them.',
+
+  // settings menu: close the file, about
+  closeFile: 'Close file',
+  abtMenu: 'About CanViewer',
+  abtVersion: 'Version {version}',
+  abtLicense:
+    'CanViewer is free software: you can redistribute it and change it under the terms of the GNU General Public License, version 2 or (at your option) any later version. The web app and the desktop app include parts under the Apache License 2.0, so they are distributed under version 3 of the GPL.',
+  abtPermission:
+    'An additional permission in the copyright notice allows the Windows app to be linked with Microsoft’s WebView2 loader and Visual C++ runtime.',
+  abtWarranty:
+    'CanViewer is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.',
+  abtSource: 'Source code',
+  abtDocuments: 'License and notices',
+  abtDocCopyright: 'Copyright notice and additional permission',
+  abtDocGpl2: 'GNU General Public License, version 2',
+  abtDocGpl3: 'GNU General Public License, version 3',
+  abtDocNotices: 'Third-party notices',
+  abtDocsHint: 'The same files come with the web app and are installed with the desktop app.',
+  abtLoading: 'Loading {name}…',
+  abtLoadFailed: 'Could not load {name}: {error}',
+  abtClose: 'Close',
   edtIssuesTitle: 'Not everything can be written as DBC',
   edtIssuesHint:
     'The DBC format cannot hold these items as they are. A saved file would read back without them, or with them changed.',
@@ -656,6 +678,27 @@ const de: Record<MsgKey, string> = {
   edtDiscardTitle: 'Ungespeicherte Änderungen verwerfen?',
   edtDiscardText: 'Die Änderungen an {name} sind nicht gespeichert. Beim Öffnen von {next} gehen sie verloren.',
   edtDiscard: 'Verwerfen',
+  edtDiscardCloseText: 'Die Änderungen an {name} sind nicht gespeichert. Beim Schließen der Datei gehen sie verloren.',
+
+  closeFile: 'Datei schließen',
+  abtMenu: 'Über CanViewer',
+  abtVersion: 'Version {version}',
+  abtLicense:
+    'CanViewer ist freie Software: Sie können sie unter den Bedingungen der GNU General Public License, Version 2 oder (nach Ihrer Wahl) jeder späteren Version, weitergeben und verändern. Die Web-App und die Desktop-App enthalten Teile unter der Apache License 2.0 und werden deshalb unter Version 3 der GPL verbreitet.',
+  abtPermission:
+    'Eine zusätzliche Erlaubnis im Copyright-Hinweis erlaubt es, die Windows-App mit Microsofts WebView2-Loader und der Visual-C++-Laufzeitbibliothek zu verbinden.',
+  abtWarranty:
+    'CanViewer wird in der Hoffnung verbreitet, dass es nützlich ist, aber OHNE JEDE GEWÄHRLEISTUNG; sogar ohne die implizite Gewährleistung der MARKTREIFE oder der VERWENDBARKEIT FÜR EINEN BESTIMMTEN ZWECK. Einzelheiten stehen in der GNU General Public License.',
+  abtSource: 'Quellcode',
+  abtDocuments: 'Lizenz und Hinweise',
+  abtDocCopyright: 'Copyright-Hinweis und zusätzliche Erlaubnis',
+  abtDocGpl2: 'GNU General Public License, Version 2',
+  abtDocGpl3: 'GNU General Public License, Version 3',
+  abtDocNotices: 'Hinweise zu Drittkomponenten',
+  abtDocsHint: 'Dieselben Dateien liegen der Web-App bei und werden mit der Desktop-App installiert.',
+  abtLoading: '{name} wird geladen …',
+  abtLoadFailed: '{name} konnte nicht geladen werden: {error}',
+  abtClose: 'Schließen',
   edtIssuesTitle: 'Nicht alles lässt sich als DBC schreiben',
   edtIssuesHint:
     'Das DBC-Format kann diese Einträge so nicht aufnehmen. Eine gespeicherte Datei würde ohne sie oder mit veränderten Werten wieder eingelesen.',

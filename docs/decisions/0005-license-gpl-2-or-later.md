@@ -37,6 +37,14 @@ package and the icons.
   conveying the result, worded so that it also works as a GPLv3 section 7 permission.
 - **Builds stay unsigned**, and the design renders may be published, as they come from a
   design generated for this project.
+- **lxml's two unlicensed stylesheets stay in its wheel.** lxml 6.1.3 includes
+  `isoschematron/resources/xsl/RNG2Schtrn.xsl` and `XSD2Schtrn.xsl`, which its
+  `LICENSES.txt` calls "unlicensed and copyright the respective authors". CanViewer never
+  loads them: canmatrix imports `lxml.etree` only, never `lxml.isoschematron`. Every lxml
+  wheel on PyPI and Pyodide's own build carry them, and stripping them would make the
+  vendored wheel differ from the release that `wheels.lock.json` pins by its SHA-256. The
+  risk is the one every lxml redistributor carries; the notices quote lxml's
+  `LICENSES.txt`, which names both files.
 
 ## Consequences
 
@@ -44,6 +52,11 @@ The audit lists the duties that follow. In short:
 
 - The repository must carry the GPL-2.0 and GPL-3.0 texts, license metadata in
   `package.json`, `desktop/Cargo.toml` and `desktop/tauri.conf.json`, and SPDX headers.
+  `COPYRIGHT` holds the notice with the additional permission, `LICENSE` the text of
+  version 2 and `LICENSE-GPL-3.0` that of version 3; the web build carries all three
+  (as `.txt`), and every desktop package carries them as resources, with `COPYRIGHT`
+  as the installers' license page and, in the `.deb`, as
+  `/usr/share/doc/can-viewer/copyright`.
 - Every package and the web build must carry third-party notices for the runtime, the
   wheels, the fonts, the icons and the crates, and an About entry must show the license,
   a source link and the notices.

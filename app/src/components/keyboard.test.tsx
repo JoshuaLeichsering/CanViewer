@@ -172,7 +172,7 @@ describe('the settings menu', () => {
   };
   const open = () => {
     renderWithProviders(
-      <NavRail active="overview" enabled={ALL} badges={{}} onNavigate={() => {}} onOpenFile={() => {}} />,
+      <NavRail active="overview" enabled={ALL} badges={{}} onNavigate={() => {}} onOpenFile={() => {}} onAbout={() => {}} />,
     );
     fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
   };
@@ -186,6 +186,8 @@ describe('the settings menu', () => {
     press('Home');
     expect(focusedItem()).toBe('English');
     press('End');
+    expect(focusedItem()).toBe('About CanViewer');
+    press('ArrowUp');
     expect(focusedItem()).toBe('Deutsch');
     press('ArrowUp');
     expect(focusedItem()).toBe('English');

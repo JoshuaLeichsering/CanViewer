@@ -8,9 +8,11 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { RUNBOOK } from './release-version.mjs';
+import { LICENSE_FILES } from './license-policy.mjs';
 import {
   NOTICES,
   PACKAGES,
+  RESOURCES,
   SUMS,
   collect,
   finish,
@@ -33,7 +35,7 @@ function repo(version, { notices = false, license = false } = {}) {
   mkdirSync(join(root, 'examples'));
   writeFileSync(join(root, 'examples/demo.dbc'), 'VERSION ""\n');
   if (notices) writeFileSync(join(root, NOTICES), '# Third-party notices\n');
-  if (license) writeFileSync(join(root, 'LICENSE'), 'GNU GENERAL PUBLIC LICENSE\n');
+  if (license) for (const name of LICENSE_FILES) writeFileSync(join(root, name), `${name}\n`);
   return root;
 }
 
@@ -63,17 +65,64 @@ test('SHA256SUMS: sha256sum format, sorted, and parsed back', () => {
   assert.throws(() => parseSums(text + text), /twice/);
 });
 
-test('the overlay bundles the license files that exist, and a release needs both', () => {
+test('every package bundles the notices, the copyright notice and both GPL texts', () => {
+  assert.deepEqual(RESOURCES, [NOTICES, 'COPYRIGHT', 'LICENSE', 'LICENSE-GPL-3.0']);
+  // The repository has them all.
+  assert.doesNotThrow(() => tauriOverlay({ release: true }));
+  // The workflows' checks of an installed package read the same list.
+  const listed = execFileSync(process.execPath, [new URL('./desktop-release.mjs', import.meta.url).pathname, 'resources'], { encoding: 'utf8' });
+  assert.deepEqual(listed.trim().split('\n'), RESOURCES);
+  const workflow = readFileSync(new URL('../.github/workflows/desktop.yml', import.meta.url), 'utf8');
+  assert.equal(workflow.match(/desktop-release\.mjs resources/g)?.length, 4, 'each system checks the installed files against the list');
+  assert.doesNotMatch(workflow, /'THIRD_PARTY_NOTICES\.md', 'LICENSE'|THIRD_PARTY_NOTICES\.md LICENSE;/, 'no check keeps a list of its own');
+});
+
+test('the overlay bundles the license files that exist, and a release needs them all', () => {
   assert.deepEqual(tauriOverlay({ root: repo('0.2.0') }), { build: { beforeBuildCommand: '' } });
   assert.deepEqual(tauriOverlay({ root: repo('0.2.0', { notices: true }) }), {
     build: { beforeBuildCommand: '' },
     bundle: { resources: { [`../${NOTICES}`]: NOTICES } },
   });
-  assert.throws(() => tauriOverlay({ root: repo('0.2.0', { notices: true }), release: true }), /must bundle LICENSE/);
+  assert.throws(
+    () => tauriOverlay({ root: repo('0.2.0', { notices: true }), release: true }),
+    /must bundle COPYRIGHT and LICENSE and LICENSE-GPL-3\.0/,
+  );
   assert.deepEqual(tauriOverlay({ root: repo('0.2.0-rc.1', { notices: true, license: true }), release: true }), {
     build: { beforeBuildCommand: '' },
-    bundle: { resources: { [`../${NOTICES}`]: NOTICES, '../LICENSE': 'LICENSE' }, windows: { wix: { version: '0.2.0.1' } } },
+    bundle: {
+      resources: {
+        [`../${NOTICES}`]: NOTICES,
+        '../COPYRIGHT': 'COPYRIGHT',
+        '../LICENSE': 'LICENSE',
+        '../LICENSE-GPL-3.0': 'LICENSE-GPL-3.0',
+      },
+      windows: { wix: { version: '0.2.0.1' } },
+    },
   });
+});
+
+test('the desktop config carries the license metadata, so a release cannot lack it', () => {
+  const config = JSON.parse(readFileSync(new URL('../desktop/tauri.conf.json', import.meta.url), 'utf8'));
+  const cargo = readFileSync(new URL('../desktop/Cargo.toml', import.meta.url), 'utf8');
+  assert.equal(config.bundle.license, 'GPL-2.0-or-later');
+  assert.match(cargo, /^license = "GPL-2\.0-or-later"$/m);
+  // The license page of the installers (WiX converts the text to RTF): the
+  // notice with the additional permission, which names both GPL texts.
+  assert.equal(config.bundle.licenseFile, '../COPYRIGHT');
+  const notice = readFileSync(new URL('../COPYRIGHT', import.meta.url), 'utf8');
+  assert.match(notice, /either version 2 of the License, or \(at your option\)\s+any later version/);
+  assert.match(notice, /Additional permission under GNU GPL version 3 section 7/);
+  assert.match(notice, /WITHOUT\s+ANY WARRANTY/);
+  // ASCII only: WiX's RTF conversion reads it as Windows-1252.
+  assert.match(notice, /^[\x09\x0a\x20-\x7e]*$/);
+  assert.match(config.bundle.copyright, /^Copyright \(C\) \d{4} The CanViewer authors$/);
+  assert.equal(config.bundle.publisher, 'The CanViewer authors');
+  assert.ok(config.bundle.longDescription.length > config.bundle.shortDescription.length);
+  // The .deb carries the notice where Debian keeps it.
+  assert.deepEqual(config.bundle.linux.deb.files, { '/usr/share/doc/can-viewer/copyright': '../COPYRIGHT' });
+  // Both GPL texts as published by the FSF.
+  assert.match(readFileSync(new URL('../LICENSE', import.meta.url), 'utf8'), /^\s+GNU GENERAL PUBLIC LICENSE\n\s+Version 2, June 1991\n/);
+  assert.match(readFileSync(new URL('../LICENSE-GPL-3.0', import.meta.url), 'utf8'), /^\s+GNU GENERAL PUBLIC LICENSE\n\s+Version 3, 29 June 2007\n/);
 });
 
 test('collect copies each system\'s packages under their release names, with demo.dbc and SHA256SUMS', () => {

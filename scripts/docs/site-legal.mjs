@@ -10,20 +10,25 @@
 //   list is exact in both directions.
 // - Every virtual module (code a plugin or a build tool generates rather than
 //   reads from a file) must be one of DOCS_SITE's helpers, with its row.
-// - LICENSE.txt and THIRD_PARTY_NOTICES.txt are published next to the pages,
-//   as plain text that every browser shows, and served by the dev server too.
+// - CanViewer's license files (COPYRIGHT.txt, LICENSE.txt, LICENSE-GPL-3.0.txt,
+//   from LICENSE_FILES in scripts/license-policy.mjs) and THIRD_PARTY_NOTICES.txt
+//   are published next to the pages, as plain text that every browser shows,
+//   and served by the dev server too.
 //
 // Regenerate the notices with `node scripts/third-party-notices.mjs`.
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { DOCS_SITE } from '../license-policy.mjs';
+import { DOCS_SITE, LICENSE_FILES } from '../license-policy.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '../..');
 const SITE = 'documentation site';
 
 /** The files published next to the pages, and where they come from. */
-export const SITE_FILES = { 'LICENSE.txt': 'LICENSE', 'THIRD_PARTY_NOTICES.txt': 'THIRD_PARTY_NOTICES.md' };
+export const SITE_FILES = {
+  ...Object.fromEntries(LICENSE_FILES.map((name) => [`${name}.txt`, name])),
+  'THIRD_PARTY_NOTICES.txt': 'THIRD_PARTY_NOTICES.md',
+};
 
 /**
  * The npm package a module or asset path belongs to, with the directory of the

@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
@@ -18,6 +19,8 @@ declare module 'vite' {
 const repoRoot = fileURLToPath(new URL('.', import.meta.url));
 const fromRoot = (path: string) => fileURLToPath(new URL(path, import.meta.url));
 
+const { version } = JSON.parse(readFileSync(fromRoot('package.json'), 'utf8')) as { version: string };
+
 export default defineConfig({
   // The web app (index.html and src/) lives in app/, see
   // docs/decisions/0001-repository-layout.md. Paths are absolute so that they do
@@ -32,6 +35,10 @@ export default defineConfig({
     emptyOutDir: true,
   },
   plugins: [react(), pyodideLock(), pyodideAssets(), legalFiles({ emit: true }), serviceWorker()],
+  // The version the About dialog shows (app/src/app-version.d.ts).
+  define: {
+    __APP_VERSION__: JSON.stringify(version),
+  },
   server: {
     port: 5173,
   },

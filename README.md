@@ -49,6 +49,12 @@ explain why things are the way they are. Planned work is in [`BACKLOG.md`](BACKL
 ## License
 
 CanViewer is free software under the GNU General Public License, version 2 or (at your
-option) any later version: see [LICENSE](LICENSE). The third-party components it ships,
-and their licenses, are listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). To
-report a vulnerability, see [SECURITY.md](SECURITY.md).
+option) any later version, with no warranty. [COPYRIGHT](COPYRIGHT) holds the notice and
+an additional permission for the Windows build, which links Microsoft's WebView2 loader
+and Visual C++ runtime; [LICENSE](LICENSE) is the text of version 2, and
+[LICENSE-GPL-3.0](LICENSE-GPL-3.0) that of version 3, under which the web app and the
+desktop packages are distributed because they include Apache-2.0 parts. The third-party
+components CanViewer ships, and their licenses, are listed in
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md); the app shows all of these under
+**About CanViewer** in its settings menu. To report a vulnerability, see
+[SECURITY.md](SECURITY.md).

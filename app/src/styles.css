@@ -308,6 +308,11 @@ h3 {
   margin-left: auto;
   color: var(--primary);
 }
+.menu-divider {
+  height: 1px;
+  margin: 8px 0;
+  background: var(--outline-var);
+}
 
 /* list pane */
 .list-pane {

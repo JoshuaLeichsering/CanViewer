@@ -12,5 +12,5 @@ export function siteBundleProblems(input: {
   versionAt: (dir: string) => string;
 }): string[];
 
-/** The Vite plugin that checks the site's bundle against the notices and publishes LICENSE.txt and THIRD_PARTY_NOTICES.txt. */
+/** The Vite plugin that checks the site's bundle against the notices and publishes the license files and THIRD_PARTY_NOTICES.txt. */
 export function siteLegalFiles(options: { base: string }): { name: string };

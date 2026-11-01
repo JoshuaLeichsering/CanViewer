@@ -167,6 +167,8 @@ check above (`test-report.json`, `network-check/`, `coverage/`, `test-results/`,
 ## License
 
 CanViewer is licensed under the GNU General Public License, version 2 or (at your
-option) any later version ([LICENSE](LICENSE)). By contributing, you agree that your
+option) any later version, with the additional permission for the Windows build in
+[COPYRIGHT](COPYRIGHT) ([LICENSE](LICENSE) and [LICENSE-GPL-3.0](LICENSE-GPL-3.0) hold
+the license texts). By contributing, you agree that your
 contribution is licensed under the same terms. Third-party components keep their own
 licenses, listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

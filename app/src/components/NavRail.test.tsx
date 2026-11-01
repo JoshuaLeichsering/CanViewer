@@ -19,13 +19,24 @@ function show({
   active = 'overview' as Destination | null,
   enabled = ALL,
   badges = {} as Partial<Record<Destination, number>>,
+  fileOpen = false,
 } = {}) {
   const onNavigate = vi.fn();
   const onOpenFile = vi.fn();
+  const onCloseFile = vi.fn();
+  const onAbout = vi.fn();
   renderWithProviders(
-    <NavRail active={active} enabled={enabled} badges={badges} onNavigate={onNavigate} onOpenFile={onOpenFile} />,
+    <NavRail
+      active={active}
+      enabled={enabled}
+      badges={badges}
+      onNavigate={onNavigate}
+      onOpenFile={onOpenFile}
+      onCloseFile={fileOpen ? onCloseFile : undefined}
+      onAbout={onAbout}
+    />,
   );
-  return { onNavigate, onOpenFile };
+  return { onNavigate, onOpenFile, onCloseFile, onAbout };
 }
 
 const railLabels = () => [...document.querySelectorAll('.rail-item .label')].map((e) => e.textContent);
@@ -74,6 +85,35 @@ describe('NavRail: destinations', () => {
     const { onOpenFile } = show();
     fireEvent.click(screen.getByRole('button', { name: 'Open file' }));
     expect(onOpenFile).toHaveBeenCalledOnce();
+  });
+});
+
+describe('NavRail: settings menu, About and Close file', () => {
+  it('offers About always, and Close file only while a file is open', () => {
+    const { onAbout } = show();
+    fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
+    expect(screen.getAllByRole('menuitem').map((i) => i.textContent)).toEqual(['About CanViewer']);
+    fireEvent.click(screen.getByRole('menuitem', { name: 'About CanViewer' }));
+    expect(onAbout).toHaveBeenCalledOnce();
+    expect(screen.queryByRole('menu')).toBeNull();
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Settings' }));
+  });
+
+  it('closes the file from the menu', () => {
+    const { onCloseFile, onAbout } = show({ fileOpen: true });
+    fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
+    expect(screen.getAllByRole('menuitem').map((i) => i.textContent)).toEqual(['Close file', 'About CanViewer']);
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Close file' }));
+    expect(onCloseFile).toHaveBeenCalledOnce();
+    expect(onAbout).not.toHaveBeenCalled();
+    expect(screen.queryByRole('menu')).toBeNull();
+  });
+
+  it('names both in German', () => {
+    localStorage.setItem('canviewer.lang', 'de');
+    show({ fileOpen: true });
+    fireEvent.click(screen.getByRole('button', { name: 'Einstellungen' }));
+    expect(screen.getAllByRole('menuitem').map((i) => i.textContent)).toEqual(['Datei schließen', 'Über CanViewer']);
   });
 });
 

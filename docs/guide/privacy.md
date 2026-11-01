@@ -11,7 +11,9 @@ share it with anyone.
   running in a Web Worker in the same browser, from a runtime the app ships itself.
 - The last file you opened is kept in your browser's storage (a DBC file in local
   storage, an imported file in IndexedDB), so that it comes back after a reload. It
-  stays on your machine; clearing the site's data in your browser removes it.
+  stays on your machine. **Close file** in the settings menu forgets it, in the web app
+  and in the desktop app; so does clearing the site's data in your browser, or deleting
+  the desktop app's data folder ([where](./install.md#where-the-app-keeps-its-files)).
 - A log you replay in the [Traces view](./traces.md), the other version on the
   [Compare page](./diff.md), and the files you [export](./export.md) or
   [save as DBC](./editing.md) are made in the page too. A log and the other version

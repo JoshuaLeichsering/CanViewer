@@ -71,5 +71,5 @@ export function useDatabaseLoader(onEvent: (event: LoaderEvent) => void) {
     [loader],
   );
 
-  return { ...state, loadFile, selectCluster: loader.selectCluster, edit: loader.edit, savedAsDbc: loader.savedAsDbc };
+  return { ...state, loadFile, selectCluster: loader.selectCluster, edit: loader.edit, savedAsDbc: loader.savedAsDbc, close: loader.close };
 }

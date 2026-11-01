@@ -13,9 +13,10 @@
  *   the build, so that a new helper gets a notice.
  * - Every file under pyodide/ must be covered: the runtime files by the
  *   pyodide row, each wheel by its file name.
- * - dist/LICENSE.txt and dist/THIRD_PARTY_NOTICES.md are written after the
- *   bundle, so the service worker does not precache them: they cost a visitor
- *   nothing until opened.
+ * - CanViewer's license files (COPYRIGHT.txt, LICENSE.txt, LICENSE-GPL-3.0.txt,
+ *   from LICENSE_FILES) and THIRD_PARTY_NOTICES.md are written to dist/ after
+ *   the bundle, so the service worker does not precache them: they cost a
+ *   visitor nothing until opened (the About dialog links them).
  *
  * Regenerate the notices with `node scripts/third-party-notices.mjs`.
  */
@@ -23,7 +24,7 @@ import { copyFileSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Plugin } from 'vite';
-import { NOT_BUNDLED, classifyModule } from './license-policy.mjs';
+import { LICENSE_FILES, NOT_BUNDLED, classifyModule } from './license-policy.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const NOTICES = join(root, 'THIRD_PARTY_NOTICES.md');
@@ -92,7 +93,7 @@ export function legalFiles({ emit }: { emit: boolean }): Plugin {
     },
     writeBundle() {
       if (!emit) return;
-      copyFileSync(join(root, 'LICENSE'), join(outDir, 'LICENSE.txt'));
+      for (const name of LICENSE_FILES) copyFileSync(join(root, name), join(outDir, `${name}.txt`));
       copyFileSync(NOTICES, join(outDir, 'THIRD_PARTY_NOTICES.md'));
     },
   };

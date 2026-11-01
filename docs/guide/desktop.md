@@ -32,7 +32,10 @@ Each release on the repository's GitHub Releases page has:
 | Linux | `CanViewer_<version>_amd64.deb` | the package `can-viewer`, with the program `/usr/bin/canviewer` |
 
 Next to them are `SHA256SUMS`, to check the download, `THIRD_PARTY_NOTICES.md`, and
-`demo.dbc`, a sample database to open once the app is installed. The release notes give
+`demo.dbc`, a sample database to open once the app is installed. Every package installs
+CanViewer's license files (`COPYRIGHT`, `LICENSE` and `LICENSE-GPL-3.0`) and the notices
+with the app, and its installer shows `COPYRIGHT` as the license; **About CanViewer** in
+the app opens them too. The release notes give
 each package's size.
 
 The builds are not signed with a paid certificate, so Windows and macOS ask you to
@@ -47,9 +50,9 @@ launch, updating and uninstalling on each system.
   named in `~/.config/user-dirs.dirs` (or the app's working directory, when that file
   names none). A name that is taken gets a number rather than overwriting the file.
 - **The app keeps its data** (the last file you opened, the theme, the language) in a
-  folder of its own instead of the browser's storage. The
-  [install guide](./install.md#where-the-app-keeps-its-files) says where, and how to
-  remove it.
+  folder of its own instead of the browser's storage. **Close file** in the settings menu
+  forgets the last file; the [install guide](./install.md#where-the-app-keeps-its-files)
+  says where the folder is, and how to remove it.
 - **No service worker.** The web app caches itself for offline use; the desktop app is
   offline already.
 - **A self-test.** Started with the environment variable `CANVIEWER_SMOKE_FILES` set to

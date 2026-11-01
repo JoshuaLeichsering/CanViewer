@@ -25,9 +25,9 @@ const LANGUAGES: Array<[Lang, string]> = [
 ];
 
 /**
- * Material 3 navigation rail: settings menu, the "open file" FAB, the seven
- * destinations and the theme toggle. Below 600 px it becomes a navigation bar
- * at the bottom and a top bar (narrow.css).
+ * Material 3 navigation rail: the settings menu (language, close file, About),
+ * the "open file" FAB, the seven destinations and the theme toggle. Below
+ * 600 px it becomes a navigation bar at the bottom and a top bar (narrow.css).
  */
 export function NavRail({
   active,
@@ -35,6 +35,8 @@ export function NavRail({
   badges,
   onNavigate,
   onOpenFile,
+  onCloseFile,
+  onAbout,
   actions,
 }: {
   active: Destination | null;
@@ -42,6 +44,10 @@ export function NavRail({
   badges: Partial<Record<Destination, number>>;
   onNavigate: (d: Destination) => void;
   onOpenFile: () => void;
+  /** Close the open file and forget the stored copy; only while a file is open. */
+  onCloseFile?: () => void;
+  /** Show the About dialog. */
+  onAbout: () => void;
   /** More file actions under the open-file button (Save as DBC). */
   actions?: React.ReactNode;
 }) {
@@ -148,6 +154,35 @@ export function NavRail({
                 </button>
               ))}
             </div>
+            <div className="menu-divider" role="separator" />
+            {onCloseFile && (
+              <button
+                role="menuitem"
+                tabIndex={-1}
+                className="menu-item state"
+                onClick={() => {
+                  setMenuOpen(false);
+                  menuButtonRef.current?.focus();
+                  onCloseFile();
+                }}
+              >
+                <Icon name="close" size={20} />
+                {t('closeFile')}
+              </button>
+            )}
+            <button
+              role="menuitem"
+              tabIndex={-1}
+              className="menu-item state"
+              onClick={() => {
+                setMenuOpen(false);
+                menuButtonRef.current?.focus();
+                onAbout();
+              }}
+            >
+              <Icon name="info" size={20} />
+              {t('abtMenu')}
+            </button>
           </div>
         )}
       </div>

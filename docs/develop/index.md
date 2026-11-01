@@ -70,7 +70,7 @@ the commands to run them before you push.
 | `docs/` | This site's sources; the working notes in `docs/handover/`, `docs/spikes/` and `docs/design/` are kept but not published ([archive](../archive/index.md)) |
 | `third_party/` | The corpus submodules (opendbc, model3dbc, canmatrix, cantools) |
 | `.github/` | The workflows (CI, the desktop builds, the release and the Pages site), issue and pull request templates, `CODEOWNERS` |
-| the root | Config only: `package.json`, `package-lock.json`, `tsconfig.json`, `vite.config.ts`, `playwright.config.ts`, `.gitignore`, `.gitattributes`, `.gitmodules`; and `README.md`, `BACKLOG.md`, `LICENSE`, `THIRD_PARTY_NOTICES.md`, `CONTRIBUTING.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md` |
+| the root | Config only: `package.json`, `package-lock.json`, `tsconfig.json`, `vite.config.ts`, `playwright.config.ts`, `.gitignore`, `.gitattributes`, `.gitmodules`; and `README.md`, `BACKLOG.md`, `COPYRIGHT`, `LICENSE`, `LICENSE-GPL-3.0`, `THIRD_PARTY_NOTICES.md`, `CONTRIBUTING.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md` |
 
 Why the web app is not at the root, as in Vite's templates: [decision record
 0001](../decisions/0001-repository-layout.md).

@@ -47,8 +47,13 @@ merged commit on `main` with an annotated tag and push the tag.
 - Release builds use the release profile of `desktop/Cargo.toml` as it stands: LTO and
   one codegen unit, for packages about 4.5 % smaller. Pull request builds turn both off
   through `CARGO_PROFILE_RELEASE_*` variables, because they are much faster to build.
-- A release must bundle `LICENSE` and `THIRD_PARTY_NOTICES.md` in every package; the
-  build fails without them.
+- A release must bundle `THIRD_PARTY_NOTICES.md` and CanViewer's license files
+  (`COPYRIGHT`, `LICENSE`, `LICENSE-GPL-3.0`: `RESOURCES` in `scripts/desktop-release.mjs`)
+  in every package; the build fails without them, and the desktop workflow checks each
+  installed package against the same list. `desktop/tauri.conf.json` sets the license
+  metadata (`license`, `licenseFile`, `copyright`, `publisher`); `licenseFile` is
+  `COPYRIGHT`, which the installers show as their license page, and the `.deb` also
+  installs it as `/usr/share/doc/can-viewer/copyright`.
 - The packages are unsigned, by decision; macOS gets Tauri's ad-hoc signature. The
   workflows mark where signing goes once certificates exist, and the decision record has
   a section on it. The install guide explains the first launch of an unsigned build on

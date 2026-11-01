@@ -3,15 +3,18 @@
 // and release.yml:
 //
 //   config   the Tauri config overlay for a CI build: no beforeBuildCommand
-//            (the workflow builds the web app first), the license and the
-//            third-party notices bundled as resources when they exist (always,
-//            for a release), and an MSI version for a pre-release
+//            (the workflow builds the web app first), the license files and
+//            the third-party notices bundled as resources when they exist
+//            (always, for a release), and an MSI version for a pre-release
 //   collect  copies one system's packages out of Tauri's bundle directory under
 //            their release names, adds demo.dbc, and writes SHA256SUMS
 //   finish   joins the systems' parts into the release: checks every part
 //            against its SHA256SUMS, adds THIRD_PARTY_NOTICES.md, writes the
 //            combined SHA256SUMS and the release notes with each package's size
+//   resources prints RESOURCES, one per line, for the workflows' checks of an
+//            installed package
 //
+//   node scripts/desktop-release.mjs resources
 //   node scripts/desktop-release.mjs config --out FILE [--release]
 //   node scripts/desktop-release.mjs collect --system windows|macos|linux --out DIR [--bundle-dir DIR]
 //   node scripts/desktop-release.mjs finish --parts DIR --out DIR --notes FILE [--release] [--tag vX.Y.Z]
@@ -20,13 +23,19 @@ import { createHash } from 'node:crypto';
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { LICENSE_FILES } from './license-policy.mjs';
 import { ROOT, isPrerelease, msiVersion } from './release-version.mjs';
 
 export const SUMS = 'SHA256SUMS';
 export const NOTICES = 'THIRD_PARTY_NOTICES.md';
 export const SAMPLE = 'examples/demo.dbc';
-/** Files bundled with the app when they exist, at the root of its resources. Required for a release. */
-export const RESOURCES = [NOTICES, 'LICENSE'];
+/**
+ * Files bundled with the app when they exist, at the root of its resources:
+ * the third-party notices and CanViewer's license files. Required for a
+ * release. The workflows' checks of an installed package read this list
+ * (`node scripts/desktop-release.mjs resources`).
+ */
+export const RESOURCES = [NOTICES, ...LICENSE_FILES];
 
 /**
  * The packages of each system: where Tauri puts them (under the bundle
@@ -213,6 +222,10 @@ function main(argv) {
     return i >= 0 ? argv[i + 1] : undefined;
   };
   const flag = (name) => argv.includes(`--${name}`);
+  if (command === 'resources') {
+    console.log(RESOURCES.join('\n'));
+    return 0;
+  }
   if (command === 'config' && opt('out')) {
     const overlay = tauriOverlay({ release: flag('release') });
     writeFileSync(opt('out'), JSON.stringify(overlay, null, 2) + '\n');

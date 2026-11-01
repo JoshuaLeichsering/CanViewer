@@ -67,11 +67,15 @@ and cannot see.
 
 ## Free software
 
-CanViewer is free software under the GNU General Public License, version 2 or later.
-Its license and the notices of the third-party software it includes come with every
-copy: next to the web app as `LICENSE.txt` and `THIRD_PARTY_NOTICES.md`, inside every
-desktop package ([where](./install.md#where-the-app-keeps-its-files)), and with this site,
-linked at the foot of its home page. The source is on
+CanViewer is free software under the GNU General Public License, version 2 or later,
+and comes with no warranty. **About CanViewer**, in the app's settings menu, says so, with
+the version, the source link, and the license files and third-party notices, which it
+opens in the app itself (see [Language and theme](./settings.md#about-canviewer)). The
+same files come with every copy: next to the web app as `COPYRIGHT.txt` (the notice, with
+an additional permission for the Windows build), `LICENSE.txt` and `LICENSE-GPL-3.0.txt`
+(the texts of the GPL versions 2 and 3) and `THIRD_PARTY_NOTICES.md`, inside every desktop
+package ([where](./install.md#where-the-app-keeps-its-files)), and with this site, linked at
+the foot of its home page. The source is on
 [GitHub](https://github.com/JoshuaLeichsering/CanViewer).
 
 ## Where to go next
