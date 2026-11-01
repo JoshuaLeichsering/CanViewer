@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /**
  * Round-trip properties of the frame encoder, shared by the property tests
  * for examples/demo.dbc (encode.property.test.ts) and for the OEM corpus

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 import { describe, expect, it } from 'vitest';
 import fc from 'fast-check';
 import { frameWindow, scrollTopForNewList } from './trc-window';

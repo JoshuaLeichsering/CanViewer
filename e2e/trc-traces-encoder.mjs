@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 // End-to-end check of the Traces view and the frame encoder (W10), against a
 // production build served by `vite preview`, in Chromium.
 //

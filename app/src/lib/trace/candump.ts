@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 import { emptyLog, parseHexPayload, splitLines, type TraceFrame, type TraceLog, type TraceProblemReason } from './types';
 
 /**

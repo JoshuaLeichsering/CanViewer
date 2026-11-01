@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /**
  * UI strings of the trace view and the frame encoder, merged into the
  * dictionaries in i18n.tsx. Kept apart so that the trace and encoder work

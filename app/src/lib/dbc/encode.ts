@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 import { decodeFrame, extractRawValue, signalBitPositions, signalOutOfBounds, toPhysical, type DecodedSignal } from './bits';
 import type { DbcSignal } from './types';
 

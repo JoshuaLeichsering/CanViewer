@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { Selection } from '../App';
 import type { DbcDatabase } from '../lib/dbc/types';

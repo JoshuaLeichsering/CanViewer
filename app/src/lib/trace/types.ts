@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /** A CAN trace read from a log file: the frames as they were recorded, plus what could not be read. */
 
 export type TraceFormat = 'candump' | 'asc';

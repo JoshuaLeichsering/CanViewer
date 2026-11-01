@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /**
  * The arithmetic of the Traces table, which renders only the rows in view: kept
  * apart from the component so that it can be tested without a browser.

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 import { decodeFrame, type DecodedSignal } from '../dbc/bits';
 import { isJ1939Pg } from '../dbc/canfd';
 import { decomposeJ1939Id, isJ1939Database } from '../dbc/j1939';

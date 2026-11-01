@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 import { parseAsc } from './asc';
 import { parseCandump } from './candump';
 import type { TraceFormat, TraceLog } from './types';

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 import { useEffect, useMemo, useState } from 'react';
 import type { DbcMessage, DbcSignal } from '../lib/dbc/types';
 import { toPhysical } from '../lib/dbc/bits';
