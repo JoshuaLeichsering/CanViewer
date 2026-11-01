@@ -51,7 +51,7 @@ describe('NetworkGraph', () => {
     ]);
     // J1939_EEC1's signals name no receiver.
     expect(document.querySelector('.graph-note')?.textContent).toBe(
-      '1 message(s) have no sender or no receivers and are not shown.',
+      '1 message has no sender or no receivers and is not shown.',
     );
     expect(screen.getByText('Click an ECU or a connection in the graph to list the messages behind it.')).toBeTruthy();
   });
@@ -132,7 +132,7 @@ describe('NetworkGraph', () => {
     show(db);
     expect([...document.querySelectorAll('.ng-label')].map((e) => e.textContent)).toEqual(['A', 'B']);
     expect(document.querySelector('.graph-note')?.textContent).toBe(
-      'Not connected: Lonely. 1 message(s) have no sender or no receivers and are not shown.',
+      'Not connected: Lonely. 1 message has no sender or no receivers and is not shown.',
     );
     // B is not declared in BU_, so there is no node view to open.
     fireEvent.click(nodeGroup('B'));

@@ -127,7 +127,8 @@ const en = {
   openNode: 'Open node',
   sendsToLabel: 'Sends to',
   receivesFromLabel: 'Receives from',
-  msgCount: '{n} msg',
+  msgCountOne: '{n} msg',
+  msgCountMany: '{n} msg',
 
   // list pane
   searchPlaceholder: 'Search messages, signals, IDs',
@@ -317,7 +318,8 @@ const en = {
   graphEmpty:
     'This file contains no sender → receiver relationships, so there is nothing to draw. Many reverse-engineered DBC files assign all messages to a single placeholder node and leave receivers empty.',
   notConnected: 'Not connected:',
-  unrouted: '{n} message(s) have no sender or no receivers and are not shown.',
+  unroutedOne: '{n} message has no sender or no receivers and is not shown.',
+  unroutedMany: '{n} messages have no sender or no receivers and are not shown.',
   edgeTitleOne: '{from} → {to}: {n} message',
   edgeTitleMany: '{from} → {to}: {n} messages',
   nothing: 'nothing',
@@ -380,6 +382,32 @@ const en = {
   difNo: 'no',
   difAbsent: 'not present',
   difSignalsSummary: '+{added} −{removed} ~{changed}',
+
+  // window title without a file
+  appTitle: 'CanViewer — CAN Database Viewer',
+
+  // reasons of parse problems (lib/problem-reasons.ts): the English text is
+  // exactly what the parser and the canmatrix adapter store
+  prbMalformedMessage: 'malformed BO_ message definition',
+  prbMalformedSignal: 'malformed SG_ signal definition',
+  prbMalformedComment: 'malformed CM_ comment',
+  prbMalformedValuePairs: 'malformed {stmt} value pairs',
+  prbMalformed: 'malformed {stmt}',
+  prbUnknownMessage: '{stmt} references unknown message id',
+  prbUnknownNode: '{stmt} references unknown node',
+  prbUnknownSignal: '{stmt} references unknown signal',
+  prbDuplicateId: 'duplicate message id {id} — comments/attributes attach to the first definition',
+  prbSignalOutside: 'SG_ signal outside of a BO_ message block',
+  prbSignalBits: 'signal "{name}" has an invalid start bit or length — skipped',
+  prbUnrecognized: 'unrecognized statement',
+  prbUnrecognizedKeyword: 'unrecognized statement "{keyword}"',
+  prbTooMany: 'more than {n} problems — this is probably not a DBC file; further problems suppressed',
+  prbCanmatrixUnreadable: 'canmatrix could not read this line',
+  prbCanmatrixPrinted: 'canmatrix printed',
+  prbCanmatrixError: 'canmatrix error',
+  prbCanmatrixWarning: 'canmatrix warning',
+  prbCanmatrixLogged: 'canmatrix {level}',
+  prbImportNote: 'import note',
 };
 
 export type MsgKey = keyof typeof en;
@@ -496,7 +524,8 @@ const de: Record<MsgKey, string> = {
   openNode: 'Knoten öffnen',
   sendsToLabel: 'Sendet an',
   receivesFromLabel: 'Empfängt von',
-  msgCount: '{n} Botschaft(en)',
+  msgCountOne: '{n} Botschaft',
+  msgCountMany: '{n} Botschaften',
 
   searchPlaceholder: 'Botschaft, Signal, ID suchen',
   ecuNetwork: 'ECU-Netzwerk',
@@ -571,7 +600,7 @@ const de: Record<MsgKey, string> = {
   tblSortAsc: 'Aufsteigend sortieren',
   tblSortDesc: 'Absteigend sortieren',
   tblSortReset: 'Zurück zur Dateireihenfolge',
-  tblPages: 'Seiten der Nachrichtentabelle',
+  tblPages: 'Seiten der Botschaftstabelle',
   tblPageRange: '{from}–{to} von {total}',
   tblFirstPage: 'Erste Seite',
   tblPrevPage: 'Vorherige Seite',
@@ -679,7 +708,8 @@ const de: Record<MsgKey, string> = {
   graphEmpty:
     'Diese Datei enthält keine Sender-→-Empfänger-Beziehungen, es gibt also nichts zu zeichnen. Viele reverse-engineerte DBC-Dateien hängen alle Botschaften an einen Platzhalterknoten und lassen die Empfänger leer.',
   notConnected: 'Nicht verbunden:',
-  unrouted: '{n} Botschaft(en) haben keinen Sender oder keine Empfänger und werden nicht gezeigt.',
+  unroutedOne: '{n} Botschaft hat keinen Sender oder keine Empfänger und wird nicht gezeigt.',
+  unroutedMany: '{n} Botschaften haben keinen Sender oder keine Empfänger und werden nicht gezeigt.',
   edgeTitleOne: '{from} → {to}: {n} Botschaft',
   edgeTitleMany: '{from} → {to}: {n} Botschaften',
   nothing: 'nichts',
@@ -740,11 +770,39 @@ const de: Record<MsgKey, string> = {
   difNo: 'nein',
   difAbsent: 'nicht vorhanden',
   difSignalsSummary: '+{added} −{removed} ~{changed}',
+
+  appTitle: 'CanViewer — CAN-Datenbank-Viewer',
+
+  prbMalformedMessage: 'fehlerhafte Botschaftsdefinition (BO_)',
+  prbMalformedSignal: 'fehlerhafte Signaldefinition (SG_)',
+  prbMalformedComment: 'fehlerhafter Kommentar (CM_)',
+  prbMalformedValuePairs: 'fehlerhafte Wertepaare in {stmt}',
+  prbMalformed: 'fehlerhaftes {stmt}',
+  prbUnknownMessage: '{stmt} verweist auf eine unbekannte Botschafts-ID',
+  prbUnknownNode: '{stmt} verweist auf einen unbekannten Knoten',
+  prbUnknownSignal: '{stmt} verweist auf ein unbekanntes Signal',
+  prbDuplicateId: 'doppelte Botschafts-ID {id} — Kommentare und Attribute gehören zur ersten Definition',
+  prbSignalOutside: 'SG_-Signal außerhalb eines BO_-Botschaftsblocks',
+  prbSignalBits: 'Signal „{name}“ hat ein ungültiges Startbit oder eine ungültige Länge — übersprungen',
+  prbUnrecognized: 'unbekannte Anweisung',
+  prbUnrecognizedKeyword: 'unbekannte Anweisung „{keyword}“',
+  prbTooMany: 'mehr als {n} Probleme — vermutlich keine DBC-Datei; weitere Probleme werden nicht gemeldet',
+  prbCanmatrixUnreadable: 'canmatrix konnte diese Zeile nicht lesen',
+  prbCanmatrixPrinted: 'Ausgabe von canmatrix',
+  prbCanmatrixError: 'Fehler von canmatrix',
+  prbCanmatrixWarning: 'Warnung von canmatrix',
+  prbCanmatrixLogged: 'Meldung von canmatrix ({level})',
+  prbImportNote: 'Hinweis zum Import',
 };
 
 const dictionaries: Record<Lang, Record<MsgKey, string>> = { en, de };
 
 export type TParams = Record<string, string | number>;
+
+/** A string in a language, outside React (the hook below uses the same). */
+export function translate(lang: Lang, key: MsgKey, params?: TParams): string {
+  return interpolate(dictionaries[lang][key], params);
+}
 
 function interpolate(template: string, params?: TParams): string {
   if (!params) return template;
@@ -786,7 +844,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
 export function useI18n() {
   const { lang, setLang } = useContext(I18nContext);
   const t = useCallback(
-    (key: MsgKey, params?: TParams) => interpolate(dictionaries[lang][key], params),
+    (key: MsgKey, params?: TParams) => translate(lang, key, params),
     [lang],
   );
   /** Count-aware variant: picks the singular or plural key by params.n. */

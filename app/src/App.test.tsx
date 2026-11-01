@@ -55,6 +55,12 @@ describe('App: welcome', () => {
     expect(document.querySelector('.snackbar')).toBeNull();
   });
 
+  it('titles the window in the UI language', () => {
+    localStorage.setItem('canviewer.lang', 'de');
+    renderWithProviders(<App />);
+    expect(document.title).toBe('CanViewer — CAN-Datenbank-Viewer');
+  });
+
   it('opens the file dialog from the welcome card and from the rail', () => {
     renderWithProviders(<App />);
     const click = vi.spyOn(fileInput(), 'click').mockImplementation(() => {});

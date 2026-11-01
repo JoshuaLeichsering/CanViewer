@@ -290,7 +290,7 @@ export function NetworkGraph({
                   {t('notConnected')} {graph.isolated.join(', ')}.{' '}
                 </>
               )}
-              {graph.unroutedMessages > 0 && t('unrouted', { n: graph.unroutedMessages })}
+              {graph.unroutedMessages > 0 && tn('unroutedOne', 'unroutedMany', graph.unroutedMessages)}
             </div>
           )}
         </div>
@@ -347,7 +347,7 @@ function NodeLinks({
   onSelectEdge: (l: GraphLink) => void;
   onOpenNode?: () => void;
 }) {
-  const { t } = useI18n();
+  const { t, tn } = useI18n();
   const outgoing = links.filter((l) => l.from === name);
   const incoming = links.filter((l) => l.to === name);
   return (
@@ -370,7 +370,7 @@ function NodeLinks({
       {outgoing.map((l) => (
         <button key={l.to} className="link-row state" onClick={() => onSelectEdge(l)}>
           <span>→ {l.to}</span>
-          <span className="count">{t('msgCount', { n: l.messages.length })}</span>
+          <span className="count">{tn('msgCountOne', 'msgCountMany', l.messages.length)}</span>
         </button>
       ))}
       <div className="side-sub" style={{ marginTop: 12 }}>
@@ -384,7 +384,7 @@ function NodeLinks({
       {incoming.map((l) => (
         <button key={l.from} className="link-row state" onClick={() => onSelectEdge(l)}>
           <span>← {l.from}</span>
-          <span className="count">{t('msgCount', { n: l.messages.length })}</span>
+          <span className="count">{tn('msgCountOne', 'msgCountMany', l.messages.length)}</span>
         </button>
       ))}
     </>

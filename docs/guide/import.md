@@ -25,7 +25,10 @@ When CanViewer knows the reason, it says it in your language: *canmatrix found n
 database in this file*, or that the Python runtime or a format's support could not be
 loaded because the browser is offline and has never downloaded it (both are downloaded
 with their first use and work offline from then on; try again once online). Errors of
-canmatrix's own readers are shown as canmatrix wrote them.
+canmatrix's own readers are shown as canmatrix wrote them. On the overview's list of
+parse problems, the reason column is in your language (for example *Warnung von
+canmatrix* for a warning canmatrix logged), and the line or message next to it stays as
+canmatrix wrote it.
 
 ## What you get
 

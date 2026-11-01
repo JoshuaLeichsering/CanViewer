@@ -8,7 +8,10 @@ navigation rail (the three lines) and pick **English** or **Deutsch**. The choic
 remembered in your browser.
 
 Technical terms that German automotive usage keeps as they are, such as Intel and
-Motorola, DLC, PGN, Mux and CAN FD, stay untranslated.
+Motorola, DLC, PGN, Mux and CAN FD, stay untranslated. So does what comes from a file or
+a reader rather than from CanViewer: the names, comments and values in the file, the
+line a parse problem quotes, and what canmatrix printed or logged about it. The reason
+CanViewer gives for a parse problem is in your language.
 
 ![The overview in German](./images/overview-de-light.webp#gh-light-mode-only)
 ![The overview in German](./images/overview-de-dark.webp#gh-dark-mode-only)

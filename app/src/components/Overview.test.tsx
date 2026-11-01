@@ -134,6 +134,18 @@ describe('Overview', () => {
     expect(rows[0]).toEqual([String(db.problems[0].line), db.problems[0].reason, db.problems[0].text]);
   });
 
+  it('gives the reasons in German, and the lines as the file has them', () => {
+    localStorage.setItem('canviewer.lang', 'de');
+    const db = dbcOf('BU_: A\nBO_ 1 M: 8 A\nCM_ SG_ 1 Nope "x";\nBO_ nonsense\nFOO_ bar;');
+    show(db, 'broken.dbc');
+    const rows = rowsOf(card(`Parse-Probleme (${db.problems.length})`));
+    expect(rows).toEqual([
+      [String(db.problems[0].line), 'CM_ SG_ verweist auf ein unbekanntes Signal', 'CM_ SG_ 1 Nope "x";'],
+      [String(db.problems[1].line), 'fehlerhafte Botschaftsdefinition (BO_)', 'BO_ nonsense'],
+      [String(db.problems[2].line), 'unbekannte Anweisung „FOO_“', 'FOO_ bar;'],
+    ]);
+  });
+
   it('says "1 parse problem" for one', () => {
     show(dbcOf('BU_: A\nBO_ nonsense'), 'one.dbc');
     expect(within(document.querySelector('.banner.error') as HTMLElement).getByText('1 parse problem.')).toBeTruthy();

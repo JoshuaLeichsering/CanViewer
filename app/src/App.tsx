@@ -223,8 +223,8 @@ export function App() {
   }, [db, selection]);
 
   useEffect(() => {
-    document.title = db ? `${fileName} — CanViewer` : 'CanViewer — CAN Database Viewer';
-  }, [db, fileName]);
+    document.title = db ? `${fileName} — CanViewer` : t('appTitle');
+  }, [db, fileName, t]);
 
   // Unsaved edits live only in this page: ask before it is closed or reloaded.
   useEffect(() => {
