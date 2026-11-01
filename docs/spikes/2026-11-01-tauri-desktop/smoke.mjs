@@ -1,10 +1,12 @@
 // Smoke test for the packaged desktop app (Tauri on Windows): request evidence.
 //
-// Drives the app's own WebView2 over the Chrome DevTools Protocol, the way
-// Playwright documents for WebView2 apps: start the app with
-//   WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--remote-debugging-port=9222
-// and connect with --cdp. For a local dry run against a static server with
-// the same CSP, --url launches Playwright's Chromium instead.
+// Drives the app's own WebView2 over the Chrome DevTools Protocol. The app
+// must be started with --remote-debugging-port=9222 among WebView2's browser
+// arguments: the WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS variable that
+// Playwright documents has no effect, because wry always passes its own
+// arguments, so CI builds a variant with the flag in its window config
+// (cdp.conf.json). Connect with --cdp. For a local dry run against a static
+// server with the same CSP, --url launches Playwright's Chromium instead.
 //
 // It reloads the page so that every request is seen from the start, opens a
 // DBC and an ARXML file through the app's file input, and records:
@@ -126,7 +128,7 @@ const summary = () =>
   page.evaluate(() => {
     const alert = document.querySelector('[role=alert]');
     if (alert) return { failed: true, info: alert.textContent.trim() };
-    const facts = [...document.querySelectorAll('.facts .fact')].map((f) => f.innerText.replace(/\s*\n\s*/, ' '));
+    const facts = [...document.querySelectorAll('.facts .fact')].map((f) => f.innerText.trim().replace(/\s*\n\s*/g, ' '));
     return { failed: false, info: [document.title.split(' — ')[0], ...facts].join(' · ') };
   });
 

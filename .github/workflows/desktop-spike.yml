@@ -4,8 +4,9 @@
 #
 # Every job opens examples/demo.dbc and canmatrix's test.arxml in the
 # installed app with its built-in self-test (src-tauri/src/smoke.rs).
-# Windows also drives the app over WebView2's DevTools port and records every
-# request (smoke.mjs); macOS and Linux have no such port in their webview.
+# Windows also drives a CI-only variant with WebView2's DevTools port open and
+# records every request (smoke.mjs); macOS and Linux have no such port in
+# their webview.
 name: Desktop spike (Tauri)
 
 on:
@@ -105,22 +106,6 @@ jobs:
           if (Test-Path $env:CANVIEWER_SMOKE_OUT) { Get-Content $env:CANVIEWER_SMOKE_OUT }
           exit $p.ExitCode
 
-      - name: Drive the installed app over CDP and record every request
-        shell: pwsh
-        env:
-          # Playwright's documented way to drive a WebView2 app. wry's default
-          # arguments are repeated in case this list replaces them.
-          WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS: --remote-debugging-port=9222 --disable-features=msWebOOUI,msPdfOOUI,msSmartScreenProtection
-        run: |
-          npm install --no-save --no-package-lock --prefix "$env:RUNNER_TEMP\pw" playwright-core@1.63.0 | Out-Null
-          $env:NODE_PATH = "$env:RUNNER_TEMP\pw\node_modules"
-          $app = Start-Process $env:CANVIEWER_EXE -PassThru
-          node docs/spikes/2026-11-01-tauri-desktop/smoke.mjs --cdp http://127.0.0.1:9222 --out smoke/cdp-windows `
-            --dbc $env:SMOKE_DBC --arxml $env:SMOKE_ARXML
-          $code = $LASTEXITCODE
-          if (-not $app.HasExited) { Stop-Process -Id $app.Id -Force }
-          exit $code
-
       - name: Uninstall
         if: always() && env.CANVIEWER_EXE != ''
         shell: pwsh
@@ -131,6 +116,26 @@ jobs:
           "msiexec /x exit code: $($p.ExitCode)"
           "executable still present: $(Test-Path $env:CANVIEWER_EXE)"
           if ($p.ExitCode -ne 0 -or (Test-Path $env:CANVIEWER_EXE)) { exit 1 }
+
+      # WebView2 ignores WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS here because wry
+      # always passes its own browser arguments, so the DevTools port needs a
+      # build that adds it to the window config. That build is for this check
+      # only; it differs from the shipped one in that flag alone.
+      - name: Build a CI-only variant with the DevTools port open
+        shell: bash
+        run: npx tauri build --ci --no-bundle --config docs/spikes/2026-11-01-tauri-desktop/cdp.conf.json
+
+      - name: Drive the CI-only variant over CDP and record every request
+        shell: pwsh
+        run: |
+          npm install --no-save --no-package-lock --prefix "$env:RUNNER_TEMP\pw" playwright-core@1.63.0 | Out-Null
+          $env:NODE_PATH = "$env:RUNNER_TEMP\pw\node_modules"
+          $app = Start-Process src-tauri/target/release/canviewer.exe -PassThru
+          node docs/spikes/2026-11-01-tauri-desktop/smoke.mjs --cdp http://127.0.0.1:9222 --out smoke/cdp-windows `
+            --dbc $env:SMOKE_DBC --arxml $env:SMOKE_ARXML
+          $code = $LASTEXITCODE
+          if (-not $app.HasExited) { Stop-Process -Id $app.Id -Force }
+          exit $code
 
       - uses: actions/upload-artifact@v4
         if: always()

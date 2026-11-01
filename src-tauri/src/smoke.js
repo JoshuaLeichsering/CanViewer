@@ -42,7 +42,7 @@
       240_000,
     );
     const alert = document.querySelector('[role=alert]');
-    const facts = [...document.querySelectorAll('.facts .fact')].map((f) => f.innerText.replace(/\s*\n\s*/, ' '));
+    const facts = [...document.querySelectorAll('.facts .fact')].map((f) => f.innerText.trim().replace(/\s*\n\s*/g, ' '));
     return {
       file: file.name,
       ms: Math.round(performance.now() - t0),
