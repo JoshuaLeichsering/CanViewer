@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
 import { importWithCanmatrix } from '../canmatrix/client';
 import { DatabaseLoader, type LoaderEvent } from './loader';
 import * as storage from './storage';
@@ -29,11 +30,22 @@ export function useDatabaseLoader(onEvent: (event: LoaderEvent) => void) {
   // database with the old selection, and the app would remember that
   // selection for the new file. As state, both changes render together.
   // Subscribed in a layout effect, so before the restore below runs.
+  //
+  // A change of the import's stage alone renders at once, as the worker
+  // reports it. Batched with the next update, a stage shorter than React's
+  // next render (reading a small file in a runtime that is already loaded)
+  // would never reach the screen, and the progress panel would skip it.
   const [state, setState] = useState(loader.getState);
   useLayoutEffect(() => {
-    const update = () => setState(loader.getState());
-    update();
-    return loader.subscribe(update);
+    let shown = loader.getState();
+    setState(shown);
+    return loader.subscribe(() => {
+      const next = loader.getState();
+      const stageOnly = next.db === shown.db && next.fileName === shown.fileName && next.source === shown.source;
+      shown = next;
+      if (stageOnly) flushSync(() => setState(next));
+      else setState(next);
+    });
   }, [loader]);
 
   // Guarded by a ref so StrictMode's double effect run cannot restore twice.
