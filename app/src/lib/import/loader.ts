@@ -17,6 +17,7 @@
  *   on startup; an imported file is read through canmatrix again, with the
  *   cluster picked before.
  */
+import { decodeDbc } from '../dbc/decode';
 import { parseDbc } from '../dbc/parser';
 import type { DbcDatabase } from '../dbc/types';
 import { canmatrixFormatFor, type CanmatrixFormat } from '../canmatrix/formats';
@@ -84,15 +85,6 @@ export interface LoaderDeps {
   storage: LoaderStorage;
 }
 
-/** DBC files from Vector tools are often Latin-1; fall back when UTF-8 fails. */
-export function decodeText(bytes: ArrayBuffer): string {
-  try {
-    return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
-  } catch {
-    return new TextDecoder('windows-1252').decode(bytes);
-  }
-}
-
 const EMPTY: LoaderState = { db: null, fileName: '', source: null, progress: null };
 
 export class DatabaseLoader {
@@ -118,7 +110,7 @@ export class DatabaseLoader {
     const generation = ++this.generation;
     const { storage } = this.deps;
     if (!canmatrixFormatFor(name)) {
-      const text = decodeText(bytes);
+      const text = decodeDbc(bytes);
       this.showDbc(name, text, false);
       storage.saveDbcText(name, text);
       void storage.clearImportedFile();

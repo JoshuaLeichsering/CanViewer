@@ -352,6 +352,7 @@ export function App() {
             ref={diffRef}
             db={db}
             fileName={fileName}
+            cluster={source ? source.clusters[source.cluster].name : undefined}
             comparison={comparison}
             onComparison={setComparison}
             onSelect={show}

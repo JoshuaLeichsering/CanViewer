@@ -7,7 +7,7 @@ import { parseDbc } from '../dbc/parser';
 import { ImportFailure } from '../canmatrix/import-failure';
 import type { ImportedCluster } from '../canmatrix/types';
 import type { ImportStage } from '../canmatrix/worker-protocol';
-import { DatabaseLoader, decodeText, type LoaderEvent, type LoaderStorage } from './loader';
+import { DatabaseLoader, type LoaderEvent, type LoaderStorage } from './loader';
 import type { StoredImport } from './storage';
 
 const DEMO = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '../../../../examples/demo.dbc'), 'utf8');
@@ -107,9 +107,15 @@ describe('opening a DBC', () => {
     expect(events).toEqual([{ kind: 'shown', restored: false }]);
   });
 
-  it('decodes Windows-1252 when the bytes are not UTF-8, as Vector tools often write', () => {
-    expect(decodeText(new Uint8Array([0x43, 0x4d, 0x5f, 0x20, 0x22, 0xe4, 0x22]).buffer)).toBe('CM_ "ä"');
-    expect(decodeText(bytesOf('CM_ "ä"'))).toBe('CM_ "ä"');
+  it('decodes Windows-1252 when the bytes are not UTF-8, as Vector tools often write', async () => {
+    // The decoding is app/src/lib/dbc/decode.ts, which diff mode shares.
+    const { loader } = setup();
+    const head = bytesOf('BU_: ECU\nBO_ 1 M: 8 ECU\nCM_ BO_ 1 "');
+    const latin1 = new Uint8Array([...new Uint8Array(head), 0xe4, 0x22, 0x3b, 0x0a]);
+    await loader.open('latin1.dbc', latin1.buffer);
+    expect(loader.getState().db?.messages[0].comment).toBe('ä');
+    await loader.open('utf8.dbc', bytesOf('BU_: ECU\nBO_ 1 M: 8 ECU\nCM_ BO_ 1 "ä";\n'));
+    expect(loader.getState().db?.messages[0].comment).toBe('ä');
   });
 
   it('treats .txt and unknown extensions as DBC', async () => {

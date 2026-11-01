@@ -1,7 +1,8 @@
 import { Fragment, forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import type { Selection } from '../App';
 import type { ImportStage } from '../lib/canmatrix/client';
-import { CANMATRIX_FORMATS } from '../lib/canmatrix/formats';
+import { FILE_INPUT_ACCEPT } from '../lib/canmatrix/formats';
+import { ImportFailure } from '../lib/canmatrix/import-failure';
 import { occurrenceOf } from '../lib/dbc/identity';
 import type { DbcAttributeDefinition, DbcDatabase, DbcMessage, DbcNode, DbcValueTable } from '../lib/dbc/types';
 import {
@@ -16,6 +17,7 @@ import {
 } from '../lib/diff/diff';
 import type { FieldChange } from '../lib/diff/fields';
 import { readDatabaseFile } from '../lib/diff/open';
+import { IMP_FAILURE_TEXT } from '../lib/import/messages';
 import { hexId } from '../lib/format';
 import { useI18n, type MsgKey } from '../lib/i18n';
 import { changedFields, fieldLabel, formatValue, signalNotation, signalTally } from './diffFormat';
@@ -49,8 +51,6 @@ const IMPORT_STAGE_KEYS = {
   reading: 'importReading',
 } as const;
 
-/** Every format the app opens: DBC (and DBC text saved as .txt) and the formats canmatrix reads. */
-const ACCEPT = ['.dbc', '.txt', ...Object.keys(CANMATRIX_FORMATS).map((ext) => `.${ext}`)].join(',');
 
 /**
  * Diff mode: the open file against another version of the same database.
@@ -68,11 +68,13 @@ export const DiffView = forwardRef<
   {
     db: DbcDatabase;
     fileName: string;
+    /** The cluster the open file shows, when it was imported from a file with clusters. */
+    cluster?: string;
     comparison: Comparison | null;
     onComparison: (c: Comparison | null) => void;
     onSelect: (s: Selection) => void;
   }
->(function DiffView({ db, fileName, comparison, onComparison, onSelect }, ref) {
+>(function DiffView({ db, fileName, cluster, comparison, onComparison, onSelect }, ref) {
   const { t, tn } = useI18n();
   const inputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState<{ name: string; stage: ImportStage | null } | null>(null);
@@ -101,12 +103,15 @@ export const DiffView = forwardRef<
     setError(null);
     setLoading({ name: file.name, stage: null });
     try {
-      const otherDb = await readDatabaseFile(file, (stage) => setLoading({ name: file.name, stage }));
+      const otherDb = await readDatabaseFile(file, (stage) => setLoading({ name: file.name, stage }), cluster);
       onComparison({ name: file.name, db: otherDb, openIsLater: comparison?.openIsLater ?? false });
       setFilter('all');
       setExpanded(new Set());
     } catch (e) {
-      setError(t('importFailed', { name: file.name, error: e instanceof Error ? e.message : String(e) }));
+      // A failure CanViewer names (no database, runtime or format support not
+      // loaded) is told in the user's language, as when a file is opened.
+      const error = e instanceof ImportFailure ? t(IMP_FAILURE_TEXT[e.reason]) : e instanceof Error ? e.message : String(e);
+      setError(t('importFailed', { name: file.name, error }));
     } finally {
       setLoading(null);
     }
@@ -149,7 +154,7 @@ export const DiffView = forwardRef<
       <input
         ref={inputRef}
         type="file"
-        accept={ACCEPT}
+        accept={FILE_INPUT_ACCEPT}
         className="visually-hidden"
         tabIndex={-1}
         aria-hidden="true"
