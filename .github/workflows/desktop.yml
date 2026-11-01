@@ -1,24 +1,34 @@
-# Spike: can CI build CanViewer as a Tauri desktop app on Windows, macOS and
-# Linux, install each package, and use it, ARXML import through Pyodide
-# included? See docs/spikes/2026-11-01-tauri-desktop/README.md.
+# The Tauri desktop app (desktop/) on Windows, macOS and Linux: build each
+# package, install it, use it, ARXML import through Pyodide included, and
+# uninstall it. It started as the spike in
+# docs/spikes/2026-11-01-tauri-desktop/README.md.
 #
 # Every job opens examples/demo.dbc and canmatrix's test.arxml in the
 # installed app with its built-in self-test (desktop/src/smoke.rs).
 # Windows also drives a CI-only variant with WebView2's DevTools port open and
 # records every request (e2e/desktop-cdp-smoke.mjs); macOS and Linux have no
 # such port in their webview.
-name: Desktop spike (Tauri)
+#
+# Windows and macOS minutes are expensive, so this runs only for pull requests
+# that change the desktop shell, its checks or this workflow, for v* tags, and
+# on demand.
+name: Desktop (Tauri)
 
 on:
+  pull_request:
+    paths:
+      - desktop/**
+      - e2e/desktop-*
+      - .github/workflows/desktop.yml
   push:
-    branches: [claude/elegant-ptolemy-w4idkj-tauri-windows]
+    tags: ['v*']
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: desktop-spike-${{ github.ref }}
+  group: desktop-${{ github.ref }}
   cancel-in-progress: true
 
 env:
