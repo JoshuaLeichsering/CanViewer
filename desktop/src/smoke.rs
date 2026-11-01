@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 //! Self-test of the packaged app, for CI on systems without a WebDriver for
 //! the system webview (macOS) and as a second check elsewhere.
 //!

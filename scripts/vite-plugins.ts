@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /**
  * Vite plugins that keep the canmatrix import adapter self-hosted.
  *

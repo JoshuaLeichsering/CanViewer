@@ -1,8 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import type { InlineConfig } from 'vitest/node';
 import { pyodideAssets, pyodideLock, serviceWorker } from './scripts/vite-plugins';
+import { legalFiles } from './scripts/vite-legal';
 
 // Vitest 2 brings its own copy of Vite 5 and adds `test` to that copy's config
 // type only, so add it to this Vite's as well.
@@ -29,7 +31,7 @@ export default defineConfig({
     // dist/ is outside the Vite root, which Vite does not empty unless told to.
     emptyOutDir: true,
   },
-  plugins: [react(), pyodideLock(), pyodideAssets(), serviceWorker()],
+  plugins: [react(), pyodideLock(), pyodideAssets(), legalFiles({ emit: true }), serviceWorker()],
   server: {
     port: 5173,
   },
@@ -37,7 +39,7 @@ export default defineConfig({
   // a dynamic import), which the default 'iife' worker format cannot hold.
   worker: {
     format: 'es',
-    plugins: () => [pyodideLock()],
+    plugins: () => [pyodideLock(), legalFiles({ emit: false })],
   },
   optimizeDeps: {
     // Pyodide locates its own files at run time; esbuild pre-bundling breaks that.

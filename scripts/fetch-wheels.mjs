@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// SPDX-License-Identifier: GPL-2.0-or-later
 // Fetches the Python wheels that the canmatrix import adapter runs on into
 // vendor/pyodide/, verifying each against the SHA-256 pinned in
 // app/src/lib/canmatrix/wheels.lock.json. The Pyodide runtime itself comes from the

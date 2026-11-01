@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 // Smoke test for the packaged desktop app (Tauri on Windows): request evidence.
 //
 // Drives the app's own WebView2 over the Chrome DevTools Protocol. The app

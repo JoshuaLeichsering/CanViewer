@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 import { ICON_PATHS, type IconName } from './icon-paths';
 
 /** A Material Symbols icon as inline SVG; it takes the surrounding text color. */

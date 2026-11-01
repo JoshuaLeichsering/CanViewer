@@ -2,6 +2,7 @@
   "name": "canviewer",
   "private": true,
   "version": "0.1.0",
+  "license": "GPL-2.0-or-later",
   "type": "module",
   "scripts": {
     "predev": "node scripts/fetch-wheels.mjs --quiet",
@@ -13,6 +14,10 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "fetch-wheels": "node scripts/fetch-wheels.mjs",
+    "test:scripts": "node --test \"scripts/*.test.mjs\"",
+    "notices": "node scripts/third-party-notices.mjs",
+    "check:licenses": "node scripts/check-spdx-headers.mjs && node scripts/check-licenses.mjs",
+    "check:identifying-info": "node scripts/check-identifying-info.mjs",
     "tauri": "tauri"
   },
   "dependencies": {

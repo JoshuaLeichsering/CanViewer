@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 
 export type Theme = 'light' | 'dark';

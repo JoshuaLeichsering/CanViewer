@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
 """Reads a CAN database with canmatrix and returns it shaped like CanViewer's
 DbcDatabase (app/src/lib/dbc/types.ts), as plain dicts and lists that convert to
 JavaScript objects without any PyProxy left over.

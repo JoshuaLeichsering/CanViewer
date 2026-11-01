@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 // Checks a Vitest JSON report for CI: every test file loaded and passed, every
 // test passed, nothing was skipped, and each corpus suite ran over exactly the
 // expected number of files.

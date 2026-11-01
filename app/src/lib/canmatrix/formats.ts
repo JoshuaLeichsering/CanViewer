@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /**
  * File formats read through canmatrix, and the Python packages each one needs
  * beyond canmatrix itself (attrs, click and six come with it). Packages are

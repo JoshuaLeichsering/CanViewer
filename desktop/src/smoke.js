@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 // Injected by smoke.rs only when CANVIEWER_SMOKE_FILES is set: opens each
 // file through the app's file input, then reports what the app showed.
 (() => {

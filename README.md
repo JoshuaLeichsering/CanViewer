@@ -44,12 +44,12 @@ No data leaves your machine — files are parsed locally.
 | `app/` | The web app, and Vite's root: `index.html` and `src/` (the views, the DBC parser in `src/lib/dbc/`, the canmatrix import in `src/lib/canmatrix/`, each with its tests next to it) |
 | `desktop/` | The Tauri desktop shell, which packages the build in `dist/` |
 | `e2e/` | Checks that drive a browser or the packaged app: `network-check.mjs`, and the desktop smoke test over CDP with its build config (`desktop-cdp-smoke.mjs`, `desktop-cdp.conf.json`) |
-| `scripts/` | Build and maintenance scripts: `fetch-wheels.mjs`, the Vite plugins, the CI check of the test report |
+| `scripts/` | Build and maintenance scripts: `fetch-wheels.mjs`, the Vite plugins, the CI check of the test report, the license and identifying-information checks, the generator of `THIRD_PARTY_NOTICES.md` |
 | `examples/` | Sample files, such as `demo.dbc` |
 | `docs/` | Handover notes, spike reports, design notes and [decision records](docs/decisions/) |
 | `third_party/` | The corpus submodules (opendbc, model3dbc, canmatrix, cantools) |
-| `.github/workflows/` | CI (`ci.yml`) and the desktop builds (`desktop.yml`) |
-| the root | Config only: `package.json`, `package-lock.json`, `tsconfig.json`, `vite.config.ts`, `.gitignore`, `.gitattributes`, `.gitmodules`; and `README.md`, `BACKLOG.md` |
+| `.github/` | CI (`workflows/ci.yml`), the desktop builds (`workflows/desktop.yml`), issue and pull request templates, `CODEOWNERS` |
+| the root | Config only: `package.json`, `package-lock.json`, `tsconfig.json`, `vite.config.ts`, `.gitignore`, `.gitattributes`, `.gitmodules`; and `README.md`, `BACKLOG.md`, `LICENSE`, `THIRD_PARTY_NOTICES.md`, `CONTRIBUTING.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md` |
 
 Every command runs from the repository root. Vite's root is `app/`, so dev server URLs
 start there (`/src/main.tsx` is `app/src/main.tsx`), while the build still goes to
@@ -138,3 +138,11 @@ pinned in [mapper-dbc-baseline.json](app/src/lib/canmatrix/mapper-dbc-baseline.j
 (network/node/message/signal), `VAL_`, `VAL_TABLE_`, `BA_DEF_`, `BA_DEF_DEF_`, `BA_`,
 `SIG_VALTYPE_`, `SG_MUL_VAL_`. Statements that are recognized but not modeled
 (`EV_`, `SIG_GROUP_`, relation attributes, …) are counted and listed in the overview.
+
+## License
+
+CanViewer is free software under the GNU General Public License, version 2 or (at your
+option) any later version: see [LICENSE](LICENSE). The third-party components it ships,
+and their licenses, are listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+[CONTRIBUTING.md](CONTRIBUTING.md) says how to set up and check a change, and
+[SECURITY.md](SECURITY.md) how to report a vulnerability.

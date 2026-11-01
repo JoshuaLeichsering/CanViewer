@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 import { useEffect, useRef, useState } from 'react';
 import { useI18n, type Lang, type MsgKey } from '../lib/i18n';
 import { useTheme } from '../lib/theme';

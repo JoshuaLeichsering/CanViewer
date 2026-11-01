@@ -3,3 +3,7 @@ dist
 *.local
 .DS_Store
 vendor
+# What the local check (CONTRIBUTING.md) and CI write into the checkout
+test-report.json
+network-check/
+vite-preview.log

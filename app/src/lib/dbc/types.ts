@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /** Attribute value: number for INT/HEX/FLOAT/ENUM-index-resolved, string for STRING/ENUM. */
 export type AttrValue = number | string;
 
