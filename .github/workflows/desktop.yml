@@ -266,14 +266,14 @@ jobs:
           workspaces: desktop
           cache-on-failure: true
 
-      - name: Build the packages (deb and AppImage)
-        run: npx tauri build --ci --bundles deb,appimage --config "$NO_BEFORE_BUILD"
+      - name: Build the package (deb; no AppImage, see the license audit)
+        run: npx tauri build --ci --bundles deb --config "$NO_BEFORE_BUILD"
 
       - name: Package sizes
         run: |
           {
             echo '### Linux'; echo; echo '| File | Bytes |'; echo '|---|---|'
-            for f in desktop/target/release/bundle/deb/*.deb desktop/target/release/bundle/appimage/*.AppImage; do
+            for f in desktop/target/release/bundle/deb/*.deb; do
               echo "| $(basename "$f") | $(stat -c %s "$f") |"
             done
           } | tee -a "$GITHUB_STEP_SUMMARY"
@@ -283,7 +283,6 @@ jobs:
           name: canviewer-linux
           path: |
             desktop/target/release/bundle/deb/*.deb
-            desktop/target/release/bundle/appimage/*.AppImage
           if-no-files-found: error
 
       - name: Install the deb
@@ -311,24 +310,6 @@ jobs:
           set -e
           echo "self-test exit code: $code"
           cat "$CANVIEWER_SMOKE_OUT" 2>/dev/null || tail -50 smoke/stderr-linux-deb.txt
-          exit $code
-
-      - name: Self-test of the AppImage
-        env:
-          WEBKIT_DISABLE_DMABUF_RENDERER: '1'
-          # The runner has no FUSE 2; extract and run instead of mounting.
-          APPIMAGE_EXTRACT_AND_RUN: '1'
-        run: |
-          appimage=$(ls desktop/target/release/bundle/appimage/*.AppImage | head -1)
-          chmod +x "$appimage"
-          export CANVIEWER_SMOKE_FILES="$PWD/$SMOKE_DBC:$PWD/$SMOKE_ARXML"
-          export CANVIEWER_SMOKE_OUT="$PWD/smoke/self-test-linux-appimage.json"
-          set +e
-          xvfb-run -a "$appimage" > smoke/stdout-linux-appimage.txt 2> smoke/stderr-linux-appimage.txt
-          code=$?
-          set -e
-          echo "self-test exit code: $code"
-          cat "$CANVIEWER_SMOKE_OUT" 2>/dev/null || tail -50 smoke/stderr-linux-appimage.txt
           exit $code
 
       - name: Uninstall the deb
