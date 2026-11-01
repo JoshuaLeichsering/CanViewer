@@ -10,7 +10,10 @@ applyInitialTheme();
 
 // Production only: the service worker caches the app shell for offline use,
 // and the Pyodide files once a non-DBC import has fetched them.
-if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+// The desktop app (Tauri) serves the build from inside the binary, so it is
+// offline already and must not keep a second, possibly stale, copy.
+const desktop = '__TAURI_INTERNALS__' in window;
+if (import.meta.env.PROD && !desktop && 'serviceWorker' in navigator) {
   void navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).catch(() => {
     // Not available (e.g. file:// or a private window): the app works without it.
   });
