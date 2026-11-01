@@ -15,8 +15,8 @@ each job:
   error;
 - uninstalled them again.
 
-macOS was the fastest of the three. The only gap is Windows' request recording over
-CDP, which needs a CI-only variant of the build ([below](#windows-request-recording)).
+macOS was the fastest of the three. On Windows, a CI-only variant of the build, driven over CDP, recorded every request:
+all went to the app's own origin ([below](#windows-request-recording)).
 
 ## What was built
 
@@ -128,7 +128,25 @@ variable did not take effect alongside them. CI therefore builds a second binary
 only for this check, whose window config adds the flag (`cdp.conf.json`, built with
 `--no-bundle`), and drives that one.
 
-The first run of that variant is [41314152587](https://github.com/JoshuaLeichsering/CanViewer/actions/runs/41314152587); its result is added here when it finishes.
+In run [41314152587](https://github.com/JoshuaLeichsering/CanViewer/actions/runs/41314152587)
+(commit `af67d86`), all three jobs passed again, and the variant was driven over CDP:
+
+```
+app page: http://tauri.localhost/
+user agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36 Edg/156.0.0.0
+tauri: true, service worker controls page: false
+open demo.dbc: 62 ms -> demo.dbc · Messages 9 · Signals 33 · Nodes 5 · Value tables 2 · Attribute defs 6
+open test.arxml: 2881 ms -> test.arxml · Messages 28 · Signals 152 · Nodes 0 · Value tables 0 · Attribute defs 0
+ARXML import fetched 8 runtime files from http://tauri.localhost/pyodide/
+requests: 14, origins: http://tauri.localhost
+CSP violations: 0
+console errors and warnings: 0
+smoke test passed
+```
+
+Every request went to the app's own origin, the worker's Pyodide requests included, and
+the service worker stayed off. The full request list is in the run's `smoke-windows`
+artifact (`cdp-windows/report.json`).
 
 ## Findings for G4
 
