@@ -319,17 +319,22 @@ describe('App: importing other formats through canmatrix', () => {
     storeFile('demo.dbc', DEMO_DBC_TEXT);
     renderWithProviders(<App />);
     openFile(fileOf('system.arxml', '<AUTOSAR/>'));
-    expect((await screen.findByRole('status')).textContent).toBe('Loading the Python runtime to read system.arxml…');
+    // The import progress's status; the overview's export menu has a live region of its own.
+    const progress = () => within(screen.getByTestId('imp-progress')).getByRole('status').textContent;
+    await screen.findByTestId('imp-progress');
+    expect(progress()).toBe('Loading the Python runtime to read system.arxml…');
     // Progress cannot be dismissed.
     expect(screen.queryByRole('button', { name: 'Dismiss' })).toBeNull();
     act(() => stage('packages'));
-    expect(screen.getByRole('status').textContent).toBe('Loading format support for system.arxml…');
+    expect(progress()).toBe('Loading format support for system.arxml…');
     act(() => stage('reading'));
-    expect(screen.getByRole('status').textContent).toBe('Reading system.arxml with canmatrix…');
+    expect(progress()).toBe('Reading system.arxml with canmatrix…');
     await act(async () => finish());
 
     expect(h1()).toBe('system.arxml');
-    expect(screen.queryByRole('status')).toBeNull();
+    // The progress is gone, and no snackbar took its place.
+    expect(screen.queryByTestId('imp-progress')).toBeNull();
+    expect(document.querySelector('.snackbar')).toBeNull();
     expect(document.title).toBe('system.arxml — CanViewer');
     expect(localStorage.getItem('canviewer.file')).toBeNull();
     expect(importMock.mock.calls[0][0]).toBe('system.arxml');

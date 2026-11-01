@@ -53,10 +53,12 @@ test.describe('opening files', () => {
     test.setTimeout(180_000);
     await page.goto('/');
     await page.locator('input[type=file]').setInputFiles(TEST_ARXML);
-    // The first import loads the runtime: its stage shows while it does.
-    await expect(page.getByRole('status')).toContainText('test.arxml');
+    // The first import loads the runtime: its stage shows while it does. (The
+    // overview's export menu has a live region of its own.)
+    const progress = page.getByTestId('imp-progress');
+    await expect(progress.getByRole('status')).toContainText('test.arxml');
     await expect(page.getByRole('heading', { level: 1, name: 'test.arxml' })).toBeVisible({ timeout: 150_000 });
-    await expect(page.getByRole('status')).toBeHidden();
+    await expect(progress).toBeHidden();
     await rail(page, 'Messages').click();
     await expect(page.locator('.list-pane .list-item').first()).toBeVisible();
 

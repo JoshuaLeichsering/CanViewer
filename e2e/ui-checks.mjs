@@ -195,7 +195,8 @@ describe('accessibility (axe-core): no serious or critical issues', () => {
       await page.locator('tr.clickable', { hasText: 'EngineSpeed' }).click();
       await page.locator('.text-field input').fill('10 27 40 1F 00 64 00 00');
       await check('message with a signal and a payload');
-      await page.locator('.page-header .btn').click();
+      // The header also holds W8's copy-as-code menu button.
+      await page.locator('.page-header').getByRole('button', { name: combo.lang === 'de' ? 'Link kopieren' : 'Copy link' }).click();
       await page.waitForSelector('.snackbar');
       await check('message with the copy-link snackbar');
       await selectMessage(page, 'J1939_EEC1');
