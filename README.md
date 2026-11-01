@@ -37,10 +37,19 @@ No data leaves your machine — files are parsed locally.
 
 ```sh
 npm install
-npm run dev        # dev server on http://localhost:5173
-npm test           # parser + bit-layout unit tests
-npm run build      # typecheck + production build (dist/)
+npm run fetch-wheels   # Python wheels for the import adapter, into vendor/pyodide/
+npm run dev            # dev server on http://localhost:5173
+npm test               # unit tests + corpus suites (runs fetch-wheels first)
+npm run build          # typecheck + production build (dist/)
 ```
+
+`fetch-wheels` downloads the wheels listed in
+[wheels.lock.json](src/lib/canmatrix/wheels.lock.json) from jsDelivr (the
+Pyodide-built ones) and PyPI, and checks each against its pinned SHA-256. Files
+already present are left alone, so it works offline once they are there. Where
+those hosts are unreachable, `node scripts/fetch-wheels.mjs --from <dir>` takes
+them from a local directory, such as an unpacked
+[Pyodide release](https://github.com/pyodide/pyodide/releases/tag/314.0.7).
 
 An example database ships with the repository: open
 [examples/demo.dbc](examples/demo.dbc) via **Open DBC…** or drag & drop it into
@@ -66,6 +75,20 @@ parse result is also pinned in [corpus-baseline.json](src/lib/dbc/corpus-baselin
 parses fails the suite; regenerate it after an intended change with
 `UPDATE_CORPUS_BASELINE=1 npx vitest run src/lib/dbc/corpus.test.ts`. Without the
 submodules the corpus suite is skipped automatically.
+
+Two more submodules hold files in other formats, for the canmatrix import adapter
+that is being built (see [the handover](docs/handover/2026-11-01-multi-format-import.md)):
+the test files of [ebroecker/canmatrix](https://github.com/ebroecker/canmatrix)
+(tag 1.3.3.1, BSD-2-Clause) and [cantools/cantools](https://github.com/cantools/cantools)
+(tag 45.1.2, MIT), 122 ARXML, KCD, SYM, DBF, FIBEX, JSON, YAML, XLS and XLSX files.
+[import-corpus.test.ts](src/lib/canmatrix/import-corpus.test.ts) reads each one
+through canmatrix under Pyodide in Node, the same runtime the app will use, with
+the network blocked. Where a file has a DBC twin (78 of them), it compares the two
+through CanViewer's model. What the readers produce, including every difference
+from the twin, is pinned in
+[import-corpus-baseline.json](src/lib/canmatrix/import-corpus-baseline.json);
+regenerate it with `UPDATE_IMPORT_BASELINE=1 npx vitest run src/lib/canmatrix/import-corpus.test.ts`.
+The suite is skipped without the submodules and fails without the wheels.
 
 ## Supported DBC statements
 
