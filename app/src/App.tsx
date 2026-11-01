@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FILE_INPUT_ACCEPT } from './lib/canmatrix/formats';
 import type { LoaderEvent } from './lib/import/loader';
 import { useDatabaseLoader } from './lib/import/useDatabaseLoader';
+import { IMP_FAILURE_TEXT } from './lib/import/messages';
 import { findMessageByOccurrence, occurrenceOf } from './lib/dbc/identity';
 import type { DbcDatabase } from './lib/dbc/types';
 import { useI18n } from './lib/i18n';
@@ -97,7 +98,10 @@ export function App() {
       if (event.kind === 'failed') {
         setSnack({
           kind: 'error',
-          text: t(event.restored ? 'impRestoreFailed' : 'importFailed', { name: event.name, error: event.error }),
+          text: t(event.restored ? 'impRestoreFailed' : 'importFailed', {
+            name: event.name,
+            error: event.reason ? t(IMP_FAILURE_TEXT[event.reason]) : event.error,
+          }),
         });
         return;
       }

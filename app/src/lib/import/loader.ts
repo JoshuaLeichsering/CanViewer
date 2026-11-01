@@ -19,6 +19,7 @@
 import { parseDbc } from '../dbc/parser';
 import type { DbcDatabase } from '../dbc/types';
 import { canmatrixFormatFor, type CanmatrixFormat } from '../canmatrix/formats';
+import { ImportFailure, noDatabase, type ImportFailureReason } from '../canmatrix/import-failure';
 import type { ImportedCluster } from '../canmatrix/types';
 import type { ImportStage } from '../canmatrix/worker-protocol';
 import { initialCluster } from './clusters';
@@ -51,7 +52,12 @@ export interface LoaderState {
 export type LoaderEvent =
   /** A database replaced the one shown (or a cluster replaced the cluster shown). */
   | { kind: 'shown'; restored: boolean }
-  | { kind: 'failed'; name: string; error: string; restored: boolean };
+  /**
+   * `error` is the technical message (canmatrix's own, or the browser's);
+   * `reason` is set when CanViewer knows why (import-failure.ts), and the UI
+   * then says so in the user's language.
+   */
+  | { kind: 'failed'; name: string; error: string; reason?: ImportFailureReason; restored: boolean };
 
 export type LoaderStorage = Pick<
   typeof Storage,
@@ -65,7 +71,10 @@ export type LoaderStorage = Pick<
 >;
 
 export interface LoaderDeps {
-  /** Read a non-DBC file; rejects when canmatrix cannot (app/src/lib/canmatrix/client.ts). */
+  /**
+   * Read a non-DBC file; rejects when canmatrix cannot, or with an
+   * ImportFailure when CanViewer knows why (app/src/lib/canmatrix/client.ts).
+   */
   importFile(
     name: string,
     bytes: ArrayBuffer,
@@ -174,7 +183,7 @@ export class DatabaseLoader {
         if (current()) this.set({ progress: progress(stage) });
       });
       if (!current()) return undefined;
-      if (clusters.length === 0) throw new Error('canmatrix found no CAN database in this file');
+      if (clusters.length === 0) throw noDatabase();
       const index = initialCluster(clusters, picked);
       this.set({ db: clusters[index].db, fileName: name, source: { format, clusters, cluster: index }, progress: null });
       this.emit({ kind: 'shown', restored });
@@ -182,7 +191,8 @@ export class DatabaseLoader {
     } catch (e) {
       if (!current()) return undefined;
       this.set({ progress: null });
-      this.emit({ kind: 'failed', name, error: e instanceof Error ? e.message : String(e), restored });
+      const reason = e instanceof ImportFailure ? { reason: e.reason } : {};
+      this.emit({ kind: 'failed', name, error: e instanceof Error ? e.message : String(e), ...reason, restored });
       return undefined;
     }
   }

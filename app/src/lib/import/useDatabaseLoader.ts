@@ -14,7 +14,13 @@ export function useDatabaseLoader(onEvent: (event: LoaderEvent) => void) {
     onEventRef.current = onEvent;
   }, [onEvent]);
   const [loader] = useState(
-    () => new DatabaseLoader({ importFile: importWithCanmatrix, storage }, (event) => onEventRef.current(event)),
+    () =>
+      new DatabaseLoader({ importFile: importWithCanmatrix, storage }, (event) => {
+        // A failure CanViewer names is shown in the user's language instead of
+        // the technical message (the browser's, say); keep that for the console.
+        if (event.kind === 'failed' && event.reason) console.warn(`${event.name}: ${event.error}`);
+        onEventRef.current(event);
+      }),
   );
   const state = useSyncExternalStore(loader.subscribe, loader.getState);
 

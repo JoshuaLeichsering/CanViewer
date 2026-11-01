@@ -1,7 +1,9 @@
 // End-to-end checks of the import UI (handover task 5): opening and dropping
 // every format in app/src/lib/canmatrix/formats.ts, the cluster picker, the
 // source format with its lossy-conversion note, restoring an imported file on
-// reload, and the loading stages of a cold start, in English and German.
+// reload, the loading stages of a cold start, and the reasons CanViewer gives
+// when an import fails (no database, offline before the runtime or a format's
+// packages were ever loaded), in English and German.
 //
 // Drives a production build served by `vite preview` in Chromium. Every test
 // starts from a fresh browser profile, so the first import of each pays the
@@ -78,6 +80,29 @@ const HOMER = corpusFile('third_party/cantools/tests/files/kcd/the_homer.kcd');
 const TEST_SYM = corpusFile('third_party/canmatrix/tests/files/sym/test.sym');
 const TEST_ARXML = corpusFile('third_party/canmatrix/tests/files/arxml/test.arxml');
 const TEST_XML = corpusFile('third_party/canmatrix/tests/reference/from_dbc/test.xml');
+const TEST_XLSX = corpusFile('third_party/canmatrix/tests/files/xlsx/test.xlsx');
+// A KCD file with no bus: canmatrix reads it and finds nothing (pinned: no clusters, no error).
+const EMPTY_KCD = corpusFile('third_party/cantools/tests/files/kcd/empty.kcd');
+
+// The reasons CanViewer gives itself (impNoDatabase, impRuntimeUnavailable and
+// impPackagesUnavailable in app/src/lib/import/messages.ts), spelt out so a
+// change to them is a deliberate one.
+const REASONS = {
+  en: {
+    noDatabase: 'canmatrix found no CAN database in this file',
+    runtime:
+      'the Python runtime could not be loaded. It is downloaded with the first import and is available offline from then on. Try again once you are online.',
+    packages:
+      'the support for this format could not be loaded. It is downloaded the first time a file of this format is opened and is available offline from then on. Try again once you are online.',
+  },
+  de: {
+    noDatabase: 'canmatrix hat in dieser Datei keine CAN-Datenbank gefunden',
+    runtime:
+      'die Python-Laufzeit konnte nicht geladen werden. Sie wird beim ersten Import heruntergeladen und steht danach auch offline zur Verfügung. Bitte erneut versuchen, sobald eine Verbindung besteht.',
+    packages:
+      'die Unterstützung für dieses Format konnte nicht geladen werden. Sie wird beim ersten Öffnen einer Datei in diesem Format heruntergeladen und steht danach auch offline zur Verfügung. Bitte erneut versuchen, sobald eine Verbindung besteht.',
+  },
+};
 
 // Runs in the page before the app: records every state of the import
 // progress panel as it happens (a MutationObserver sees each React commit,
@@ -200,6 +225,29 @@ async function open(page, trigger, name, { imported = true } = {}) {
   return { states, ...(await shown(page)) };
 }
 
+/** The stored import (IndexedDB, app/src/lib/import/storage.ts): name, cluster and size, or null. */
+const storedImport = (page) =>
+  page.evaluate(
+    () =>
+      new Promise((resolve) => {
+        const req = indexedDB.open('canviewer-import');
+        req.onsuccess = () => {
+          const get = req.result.transaction('files').objectStore('files').get('last');
+          get.onsuccess = () => {
+            const v = get.result;
+            resolve(v ? { name: v.name, cluster: v.cluster, size: v.bytes.byteLength } : null);
+            req.result.close();
+          };
+        };
+      }),
+  );
+
+/** The error snackbar's text, once there is one. */
+async function alertText(page) {
+  await page.waitForSelector('[role=alert]', { timeout: IMPORT_TIMEOUT });
+  return (await page.locator('[role=alert] .msg').innerText()).trim();
+}
+
 async function dismissAlert(page) {
   const close = page.locator('.snackbar .close');
   if (await close.count()) await close.click();
@@ -216,7 +264,7 @@ function assertPinned(file, result) {
   if (file.pinned.error || file.pinned.clusters.length === 0) {
     assert.ok(result.alert, `${file.name}: expected canmatrix's error, got ${JSON.stringify(result)}`);
     assert.ok(result.alert.includes(file.name), result.alert);
-    const reason = file.pinned.error ? file.pinned.error.split('\n')[0] : 'canmatrix found no CAN database in this file';
+    const reason = file.pinned.error ? file.pinned.error.split('\n')[0] : REASONS.en.noDatabase;
     assert.ok(result.alert.includes(reason), `${file.name}: ${result.alert} lacks ${reason}`);
   } else {
     assert.equal(result.alert, null, `${file.name}: ${result.alert}`);
@@ -416,21 +464,7 @@ describe('import UI', () => {
     const hash = await page.evaluate(() => location.hash);
     const heading = await page.locator('.page-header h1').innerText();
 
-    const stored = await page.evaluate(
-      () =>
-        new Promise((resolve) => {
-          const req = indexedDB.open('canviewer-import');
-          req.onsuccess = () => {
-            const get = req.result.transaction('files').objectStore('files').get('last');
-            get.onsuccess = () => {
-              const v = get.result;
-              resolve(v && { name: v.name, cluster: v.cluster, size: v.bytes.byteLength });
-              req.result.close();
-            };
-          };
-        }),
-    );
-    assert.deepEqual(stored, { name: 'the_homer.kcd', cluster: 'Comfort', size: HOMER.buffer.length });
+    assert.deepEqual(await storedImport(page), { name: 'the_homer.kcd', cluster: 'Comfort', size: HOMER.buffer.length });
     assert.equal(await page.evaluate(() => localStorage.getItem('canviewer.file')), null);
 
     // Reload: the file is read through canmatrix again, with its stages on screen.
@@ -457,20 +491,7 @@ describe('import UI', () => {
     r = await shown(page);
     assert.equal(r.format, null);
     assert.equal(JSON.parse(await page.evaluate(() => localStorage.getItem('canviewer.file'))).name, 'demo.dbc');
-    const afterDbc = await page.evaluate(
-      () =>
-        new Promise((resolve) => {
-          const req = indexedDB.open('canviewer-import');
-          req.onsuccess = () => {
-            const get = req.result.transaction('files').objectStore('files').get('last');
-            get.onsuccess = () => {
-              resolve(get.result ?? null);
-              req.result.close();
-            };
-          };
-        }),
-    );
-    assert.equal(afterDbc, null);
+    assert.equal(await storedImport(page), null);
 
     // And an import after a DBC replaces the stored DBC.
     await open(page, viaInput(page, TEST_SYM), TEST_SYM.name);
@@ -482,6 +503,84 @@ describe('import UI', () => {
     assert.equal(r.messages, 28);
     assert.deepEqual(errors, []);
     await context.close();
+  });
+
+  test('the reasons CanViewer gives itself are translated: no database, no runtime, no format support', async () => {
+    const { context, page, errors } = await freshPage();
+    // A file canmatrix reads without finding a bus: CanViewer's reason, in English.
+    let r = await open(page, viaInput(page, EMPTY_KCD), EMPTY_KCD.name);
+    assert.equal(r.alert, `Could not read empty.kcd: ${REASONS.en.noDatabase}`);
+    await dismissAlert(page);
+    await context.close();
+
+    // Offline before the first import: the runtime was never cached. A file
+    // stored by an earlier session cannot be restored, and says why, without
+    // the browser's message (a URL) in the text.
+    const offline = await freshPage();
+    const p = offline.page;
+    await p.evaluate(() => navigator.serviceWorker.ready);
+    await p.evaluate(
+      ({ name, base64 }) =>
+        new Promise((resolve, reject) => {
+          const req = indexedDB.open('canviewer-import', 1);
+          req.onupgradeneeded = () => req.result.createObjectStore('files');
+          req.onsuccess = () => {
+            const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0)).buffer;
+            const tx = req.result.transaction('files', 'readwrite');
+            tx.objectStore('files').put({ name, bytes, cluster: 'Comfort' }, 'last');
+            tx.oncomplete = () => {
+              req.result.close();
+              resolve();
+            };
+            tx.onerror = () => reject(tx.error);
+          };
+        }),
+      { name: HOMER.name, base64: HOMER.buffer.toString('base64') },
+    );
+    await offline.context.setOffline(true);
+    await p.reload();
+    let text = await alertText(p);
+    assert.equal(text, `Could not restore the_homer.kcd: ${REASONS.en.runtime}`);
+    await shot(p, 'error-runtime-offline-en');
+    // The file stays stored, and the app stays usable.
+    assert.deepEqual(await storedImport(p), { name: 'the_homer.kcd', cluster: 'Comfort', size: HOMER.buffer.length });
+    assert.equal(await p.locator('.welcome').count(), 1);
+
+    // Online again: the restore works, as the message said.
+    await offline.context.setOffline(false);
+    await p.reload();
+    await p.waitForFunction(() => document.title.startsWith('the_homer.kcd '), null, { timeout: IMPORT_TIMEOUT });
+    r = await shown(p);
+    assert.equal(r.alert, null);
+    assert.equal(r.clusters.find((c) => c.checked).name, 'Comfort');
+
+    // Offline again, now in German: the runtime and lxml are cached, so the
+    // restore works offline; XLSX needs openpyxl, which was never loaded.
+    await offline.context.setOffline(true);
+    await p.evaluate(() => localStorage.setItem('canviewer.lang', 'de'));
+    await p.reload();
+    await p.waitForFunction(() => document.title.startsWith('the_homer.kcd '), null, { timeout: IMPORT_TIMEOUT });
+    assert.equal((await shown(p)).alert, null);
+    r = await open(p, viaInput(p, TEST_XLSX), TEST_XLSX.name);
+    assert.ok(r.states.some((s) => s.stage === 'packages'), JSON.stringify(r.states));
+    assert.equal(r.alert, `test.xlsx konnte nicht gelesen werden: ${REASONS.de.packages}`);
+    await shot(p, 'error-packages-offline-de');
+    // The database shown before stays.
+    assert.equal(r.title, 'the_homer.kcd');
+    await dismissAlert(p);
+    r = await open(p, viaInput(p, EMPTY_KCD), EMPTY_KCD.name);
+    assert.equal(r.alert, `empty.kcd konnte nicht gelesen werden: ${REASONS.de.noDatabase}`);
+    await dismissAlert(p);
+
+    // Online again: openpyxl loads this time (a failed package is not taken for loaded).
+    await offline.context.setOffline(false);
+    r = await open(p, viaInput(p, TEST_XLSX), TEST_XLSX.name);
+    assert.equal(r.alert, null);
+    assert.equal(r.title, 'test.xlsx');
+    assert.equal(r.messages, 27);
+    assert.deepEqual(errors, []);
+    assert.deepEqual(offline.errors, []);
+    await offline.context.close();
   });
 
   test('German: progress, source note, clusters, problems link and errors', async () => {

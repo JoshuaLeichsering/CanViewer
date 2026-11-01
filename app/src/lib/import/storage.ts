@@ -35,8 +35,6 @@ export interface StoredImport {
   bytes: ArrayBuffer;
   /** The cluster shown, by name; absent until one is known. */
   cluster?: string;
-  /** When it was stored (ms since the epoch), for the record. */
-  savedAt: number;
 }
 
 // ---------------------------------------------------------------- DBC text
@@ -92,7 +90,6 @@ export function toStoredImport(value: unknown): StoredImport | undefined {
     name: v.name,
     bytes: v.bytes,
     ...(typeof v.cluster === 'string' ? { cluster: v.cluster } : {}),
-    savedAt: typeof v.savedAt === 'number' ? v.savedAt : 0,
   };
 }
 
@@ -155,12 +152,11 @@ export function loadImportedFile(): Promise<StoredImport | undefined> {
 }
 
 /** Resolves true once the file is stored. */
-export function saveImportedFile(file: { name: string; bytes: ArrayBuffer; cluster?: string }): Promise<boolean> {
+export function saveImportedFile(file: StoredImport): Promise<boolean> {
   const record: StoredImport = {
     name: file.name,
     bytes: file.bytes,
     ...(file.cluster !== undefined ? { cluster: file.cluster } : {}),
-    savedAt: Date.now(),
   };
   return transact(
     'readwrite',

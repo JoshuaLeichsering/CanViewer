@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { impDe, impEn } from './messages';
+import { IMP_FAILURE_TEXT, impDe, impEn } from './messages';
 
 const placeholders = (s: string) => [...s.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort();
 
@@ -25,5 +25,13 @@ describe('import UI strings', () => {
 
   it('never leave a string empty', () => {
     for (const value of [...Object.values(impEn), ...Object.values(impDe)]) expect(value.trim()).not.toBe('');
+  });
+
+  it('name every failure CanViewer knows, without placeholders, since the app shows them as they are', () => {
+    expect(Object.keys(IMP_FAILURE_TEXT).sort()).toEqual(['no-database', 'packages', 'runtime']);
+    for (const key of Object.values(IMP_FAILURE_TEXT)) {
+      expect(placeholders(impEn[key]), key).toEqual([]);
+      expect(placeholders(impDe[key]), key).toEqual([]);
+    }
   });
 });

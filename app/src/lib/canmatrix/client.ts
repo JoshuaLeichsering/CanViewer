@@ -1,4 +1,5 @@
 import { canmatrixFormatFor } from './formats';
+import { ImportFailure, noDatabase } from './import-failure';
 import type { CanmatrixReadResult, ImportedCluster } from './types';
 import type { ImportStage, ImportTimings, WorkerReply, WorkerRequest } from './worker-protocol';
 
@@ -28,10 +29,12 @@ function getWorker(): Worker {
     }
     pending.delete(reply.id);
     if (reply.kind === 'result') p.resolve({ result: reply.result, timings: reply.timings });
-    else p.reject(new Error(reply.message));
+    else if (reply.stage === 'reading') p.reject(new Error(reply.message));
+    // The runtime or a package did not load: CanViewer's failure, not the file's.
+    else p.reject(new ImportFailure(reply.stage, reply.message));
   };
   worker.onerror = (e) => {
-    const error = new Error(e.message || 'the import worker failed to start');
+    const error = new ImportFailure('runtime', e.message || 'the import worker failed to start');
     for (const p of pending.values()) p.reject(error);
     pending.clear();
     worker?.terminate();
@@ -47,15 +50,15 @@ export interface ImportedFile {
    * choice (app/src/lib/import/clusters.ts).
    */
   clusters: ImportedCluster[];
-  /** Everything canmatrix printed or logged; canviewer_adapter.py has already turned it into problems. */
-  log: string[];
   timings: ImportTimings;
 }
 
 /**
  * Read a non-DBC file through canmatrix in the worker. Rejects with
- * canmatrix's error, or when the file holds no CAN database at all. `bytes`
- * stays usable (the worker gets a copy), so the caller can store it.
+ * canmatrix's error, or with an ImportFailure (import-failure.ts) when the
+ * file holds no CAN database at all or the runtime or a package did not
+ * load. `bytes` stays usable (the worker gets a copy), so the caller can
+ * store it.
  */
 export async function importWithCanmatrix(
   name: string,
@@ -79,6 +82,9 @@ export async function importWithCanmatrix(
       getWorker().postMessage(request, [copy]);
     },
   );
-  if (result.clusters.length === 0) throw new Error(result.error ?? 'canmatrix found no CAN database in this file');
-  return { clusters: result.clusters, log: result.log, timings };
+  if (result.clusters.length === 0) {
+    if (result.error) throw new Error(result.error);
+    throw noDatabase();
+  }
+  return { clusters: result.clusters, timings };
 }

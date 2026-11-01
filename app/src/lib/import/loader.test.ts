@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseDbc } from '../dbc/parser';
+import { ImportFailure } from '../canmatrix/import-failure';
 import type { ImportedCluster } from '../canmatrix/types';
 import type { ImportStage } from '../canmatrix/worker-protocol';
 import { DatabaseLoader, decodeText, type LoaderEvent, type LoaderStorage } from './loader';
@@ -57,7 +58,7 @@ function memoryStorage(initial: { dbc?: { name: string; text: string }; imported
     },
     saveImportedFile: async (f) => {
       log.push(`saveImported ${f.name} ${JSON.stringify(f.cluster)}`);
-      state.imported = { ...f, savedAt: 1 };
+      state.imported = { ...f };
       return true;
     },
     setImportedCluster: async (name, c) => {
@@ -167,9 +168,37 @@ describe('importing a file through canmatrix', () => {
     expect(loader.getState().db).toBe(before);
     expect(loader.getState().fileName).toBe('demo.dbc');
     expect(loader.getState().progress).toBeNull();
-    expect(events[events.length - 1]).toEqual({ kind: 'failed', name: 'broken.xml', error: "KeyError: 'CANCHANNEL01'", restored: false });
+    // canmatrix's own error: shown as canmatrix wrote it, with no reason to translate.
+    expect(events[events.length - 1]).toStrictEqual({ kind: 'failed', name: 'broken.xml', error: "KeyError: 'CANCHANNEL01'", restored: false });
     expect(stored.state.dbc?.name).toBe('demo.dbc');
     expect(stored.state.imported).toBeUndefined();
+  });
+
+  it('names the reason when the file holds no CAN database, so the UI can translate it', async () => {
+    const { loader, importer, stored, events } = setup();
+    const done = loader.open('empty.kcd', bytesOf('<NetworkDefinition/>'));
+    await tick();
+    importer.calls[0].resolve({ clusters: [] });
+    await done;
+    expect(loader.getState().db).toBeNull();
+    expect(events).toStrictEqual([
+      { kind: 'failed', name: 'empty.kcd', error: 'canmatrix found no CAN database in this file', reason: 'no-database', restored: false },
+    ]);
+    expect(stored.state.imported).toBeUndefined();
+  });
+
+  it('passes on the reason of a runtime or a package that did not load', async () => {
+    const { loader, importer, events } = setup();
+    for (const reason of ['runtime', 'packages'] as const) {
+      const done = loader.open('test.arxml', bytesOf('<AUTOSAR/>'));
+      await tick();
+      importer.calls[importer.calls.length - 1].reject(new ImportFailure(reason, 'Failed to fetch'));
+      await done;
+    }
+    expect(events).toStrictEqual([
+      { kind: 'failed', name: 'test.arxml', error: 'Failed to fetch', reason: 'runtime', restored: false },
+      { kind: 'failed', name: 'test.arxml', error: 'Failed to fetch', reason: 'packages', restored: false },
+    ]);
   });
 
   it('lets the file opened last win over an import still running', async () => {
@@ -247,7 +276,7 @@ describe('restoring on startup', () => {
   it('restores a stored DBC first, and drops a stale imported file', async () => {
     const { loader, importer, stored, events } = setup({
       dbc: { name: 'demo.dbc', text: DEMO },
-      imported: { name: 'old.arxml', bytes: bytesOf('a'), savedAt: 1 },
+      imported: { name: 'old.arxml', bytes: bytesOf('a') },
     });
     await loader.restore();
     expect(loader.getState().fileName).toBe('demo.dbc');
@@ -258,7 +287,7 @@ describe('restoring on startup', () => {
 
   it('reads a stored import again, with its stages, and shows the cluster picked before', async () => {
     const { loader, importer, stored, events } = setup({
-      imported: { name: 'the_homer.kcd', bytes: bytesOf('<NetworkDefinition/>'), cluster: 'Comfort', savedAt: 1 },
+      imported: { name: 'the_homer.kcd', bytes: bytesOf('<NetworkDefinition/>'), cluster: 'Comfort' },
     });
     const done = loader.restore();
     await tick();
@@ -283,7 +312,7 @@ describe('restoring on startup', () => {
 
   it('reports a failed restore and keeps the file for the next start', async () => {
     const { loader, importer, stored, events } = setup({
-      imported: { name: 'test.arxml', bytes: bytesOf('<AUTOSAR/>'), savedAt: 1 },
+      imported: { name: 'test.arxml', bytes: bytesOf('<AUTOSAR/>') },
     });
     const done = loader.restore();
     await tick();
@@ -295,9 +324,23 @@ describe('restoring on startup', () => {
     expect(stored.state.imported?.name).toBe('test.arxml');
   });
 
+  it('names the reason when the runtime is not there for a restore (offline before the first import)', async () => {
+    const { loader, importer, stored, events } = setup({
+      imported: { name: 'the_homer.kcd', bytes: bytesOf('<NetworkDefinition/>'), cluster: 'Comfort' },
+    });
+    const done = loader.restore();
+    await tick();
+    importer.calls[0].reject(new ImportFailure('runtime', 'Failed to fetch dynamically imported module'));
+    await done;
+    expect(events).toStrictEqual([
+      { kind: 'failed', name: 'the_homer.kcd', error: 'Failed to fetch dynamically imported module', reason: 'runtime', restored: true },
+    ]);
+    expect(stored.state.imported?.cluster).toBe('Comfort');
+  });
+
   it('gives way to a file the user opens while storage is still being read', async () => {
     const { loader, importer, stored, events } = setup({
-      imported: { name: 'test.arxml', bytes: bytesOf('<AUTOSAR/>'), savedAt: 1 },
+      imported: { name: 'test.arxml', bytes: bytesOf('<AUTOSAR/>') },
     });
     stored.holdLoad();
     const restoring = loader.restore();

@@ -14,7 +14,7 @@ import type { PyProxy } from 'pyodide/ffi';
 import adapterSource from './canviewer_adapter.py?raw';
 import lock from 'virtual:canviewer-pyodide-lock';
 import type { CanmatrixReadResult } from './types';
-import type { WorkerReply, WorkerRequest } from './worker-protocol';
+import type { ImportStage, WorkerReply, WorkerRequest } from './worker-protocol';
 
 interface Runtime {
   pyodide: PyodideInterface;
@@ -27,7 +27,29 @@ const scope = self as unknown as {
 };
 
 let runtime: Promise<Runtime> | undefined;
+let runtimeReady = false;
 const loaded = new Set<string>();
+
+// loadPyodide starts fetching the standard library and the WebAssembly module
+// before it imports pyodide.asm.mjs, and awaits those fetches only after the
+// import. When the import fails (offline before the first import), that error
+// goes to the page, and the fetches' rejections are left unhandled: keep these
+// duplicates out of the console. Once the runtime is up, nothing is held back.
+self.addEventListener('unhandledrejection', (e) => {
+  if (!runtimeReady && e.reason instanceof TypeError) e.preventDefault();
+});
+
+/**
+ * Load packages from the lock. Pyodide reports a package it could not load
+ * (offline before it was ever cached, say) to errorCallback and resolves
+ * anyway; reject instead, so the import fails at this step and the package
+ * is tried again next time.
+ */
+async function loadPackages(pyodide: PyodideInterface, names: string[]): Promise<void> {
+  const errors: string[] = [];
+  await pyodide.loadPackage(names, { messageCallback: () => {}, errorCallback: (m) => errors.push(m), checkIntegrity: true });
+  if (errors.length) throw new Error(errors.join(' '));
+}
 
 function startRuntime(assetsUrl: string): Promise<Runtime> {
   runtime ??= (async () => {
@@ -39,10 +61,12 @@ function startRuntime(assetsUrl: string): Promise<Runtime> {
       stdout: quiet,
       stderr: quiet,
     });
-    await pyodide.loadPackage('canmatrix', { messageCallback: quiet, checkIntegrity: true });
+    await loadPackages(pyodide, ['canmatrix']);
     pyodide.FS.writeFile('/home/pyodide/canviewer_adapter.py', adapterSource);
     pyodide.runPython('import sys; sys.path.insert(0, "/home/pyodide")');
-    return { pyodide, adapter: pyodide.pyimport('canviewer_adapter') as Runtime['adapter'] };
+    const adapter = pyodide.pyimport('canviewer_adapter') as Runtime['adapter'];
+    runtimeReady = true;
+    return { pyodide, adapter };
   })();
   // A failed start (offline before the runtime was ever cached, say) must not
   // stick: the next import tries again.
@@ -53,18 +77,23 @@ function startRuntime(assetsUrl: string): Promise<Runtime> {
 scope.onmessage = async (e) => {
   const { id, assetsUrl, bytes, importType, packages } = e.data;
   const t0 = performance.now();
+  let stage: ImportStage = 'runtime';
+  const enter = (next: ImportStage) => {
+    stage = next;
+    scope.postMessage({ id, kind: 'stage', stage });
+  };
   try {
-    scope.postMessage({ id, kind: 'stage', stage: 'runtime' });
+    enter('runtime');
     const { pyodide, adapter } = await startRuntime(assetsUrl);
     const t1 = performance.now();
     const missing = packages.filter((p) => !loaded.has(p));
     if (missing.length) {
-      scope.postMessage({ id, kind: 'stage', stage: 'packages' });
-      await pyodide.loadPackage(missing, { messageCallback: () => {}, checkIntegrity: true });
+      enter('packages');
+      await loadPackages(pyodide, missing);
       missing.forEach((p) => loaded.add(p));
     }
     const t2 = performance.now();
-    scope.postMessage({ id, kind: 'stage', stage: 'reading' });
+    enter('reading');
     const proxy = adapter.read(new Uint8Array(bytes), importType);
     let result: CanmatrixReadResult;
     try {
@@ -80,6 +109,6 @@ scope.onmessage = async (e) => {
       timings: { runtimeMs: t1 - t0, packagesMs: t2 - t1, readMs: t3 - t2 },
     });
   } catch (err) {
-    scope.postMessage({ id, kind: 'error', message: err instanceof Error ? err.message : String(err) });
+    scope.postMessage({ id, kind: 'error', message: err instanceof Error ? err.message : String(err), stage });
   }
 };

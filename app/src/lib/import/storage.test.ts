@@ -157,13 +157,12 @@ describe('the stored import (IndexedDB)', () => {
   it('keeps the bytes, the name and the picked cluster', async () => {
     const idb = fakeIndexedDB();
     vi.stubGlobal('indexedDB', idb.factory);
-    const before = Date.now();
     expect(await saveImportedFile({ name: 'the_homer.kcd', bytes: bytesOf('<NetworkDefinition/>') })).toBe(true);
     const stored = await loadImportedFile();
     expect(stored?.name).toBe('the_homer.kcd');
     expect(textOf(stored!.bytes)).toBe('<NetworkDefinition/>');
     expect(stored?.cluster).toBeUndefined();
-    expect(stored!.savedAt).toBeGreaterThanOrEqual(before);
+    expect(Object.keys(stored!).sort()).toEqual(['bytes', 'name']);
     expect([...idb.databases.keys()]).toEqual([IMPORT_DB_NAME]);
 
     expect(await setImportedCluster('the_homer.kcd', 'Comfort')).toBe(true);
@@ -228,6 +227,7 @@ describe('the stored import (IndexedDB)', () => {
     expect(toStoredImport({ name: 'a.arxml', bytes: 'not bytes' })).toBeUndefined();
     expect(toStoredImport({ bytes: new ArrayBuffer(1) })).toBeUndefined();
     const bytes = new ArrayBuffer(2);
-    expect(toStoredImport({ name: 'a.arxml', bytes, cluster: 7 })).toEqual({ name: 'a.arxml', bytes, savedAt: 0 });
+    // A cluster that is not a name, and fields it does not know, are dropped.
+    expect(toStoredImport({ name: 'a.arxml', bytes, cluster: 7, savedAt: 1 })).toStrictEqual({ name: 'a.arxml', bytes });
   });
 });
