@@ -2,7 +2,7 @@
 import { Fragment, forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import type { Selection } from '../App';
 import type { ImportStage } from '../lib/canmatrix/client';
-import { FILE_INPUT_ACCEPT } from '../lib/canmatrix/formats';
+import { DATABASE_INPUT_ACCEPT } from '../lib/canmatrix/formats';
 import { ImportFailure } from '../lib/canmatrix/import-failure';
 import { occurrenceOf } from '../lib/dbc/identity';
 import type { DbcAttributeDefinition, DbcDatabase, DbcMessage, DbcNode, DbcValueTable } from '../lib/dbc/types';
@@ -155,7 +155,7 @@ export const DiffView = forwardRef<
       <input
         ref={inputRef}
         type="file"
-        accept={FILE_INPUT_ACCEPT}
+        accept={DATABASE_INPUT_ACCEPT}
         className="visually-hidden"
         tabIndex={-1}
         aria-hidden="true"

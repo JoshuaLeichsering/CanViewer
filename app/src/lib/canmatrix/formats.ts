@@ -7,9 +7,10 @@
  * `.dbc` is deliberately absent: CanViewer's own parser
  * (app/src/lib/dbc/parser.ts) stays in charge of DBC.
  *
- * This table is the single list of what CanViewer opens: the file dialog's
- * accept list (FILE_INPUT_ACCEPT), the welcome text and the import UI's tests
- * (e2e/import-ui.test.mjs) are derived from it. It holds only erasable
+ * This module is the single list of what CanViewer opens: the file dialogs'
+ * accept lists (FILE_INPUT_ACCEPT, DATABASE_INPUT_ACCEPT), the welcome text
+ * and the import UI's tests (e2e/import-ui.test.mjs) are derived from it, and
+ * so is the trace module's test of a log's name. It holds only erasable
  * TypeScript, so Node can import it as it is.
  */
 export interface CanmatrixFormat {
@@ -41,10 +42,16 @@ export const CANMATRIX_FORMATS: Record<string, CanmatrixFormat> = {
 /** Extensions CanViewer's own DBC parser opens (DBC files are sometimes shipped as .txt). */
 export const DBC_EXTENSIONS = ['dbc', 'txt'];
 
-/** The file input's accept attribute: every extension CanViewer opens. */
-export const FILE_INPUT_ACCEPT = [...DBC_EXTENSIONS, ...Object.keys(CANMATRIX_FORMATS)]
-  .map((ext) => `.${ext}`)
-  .join(',');
+/** Logs, which open in the Traces view (app/src/lib/trace): Vector ASC and candump. */
+export const TRACE_EXTENSIONS = ['asc', 'log'];
+
+const accept = (extensions: string[]) => extensions.map((ext) => `.${ext}`).join(',');
+
+/** The accept attribute of a file input for a database: the DBC extensions and the canmatrix formats (the Compare page's). */
+export const DATABASE_INPUT_ACCEPT = accept([...DBC_EXTENSIONS, ...Object.keys(CANMATRIX_FORMATS)]);
+
+/** The main file input's accept attribute: every extension CanViewer opens, logs included. */
+export const FILE_INPUT_ACCEPT = accept([...DBC_EXTENSIONS, ...Object.keys(CANMATRIX_FORMATS), ...TRACE_EXTENSIONS]);
 
 /** The canmatrix formats' labels, each once, in the order of the table. */
 export function canmatrixFormatLabels(): string[] {

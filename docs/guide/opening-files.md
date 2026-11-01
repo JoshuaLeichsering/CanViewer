@@ -24,8 +24,10 @@ Which files go where:
   database as it is.
 - Every other file is read as DBC text, whatever its extension (`.dbc`, `.txt`, or
   none).
-- The file dialog offers every format, and so does drag and drop. A file with several
-  clusters lets you [pick one](./import.md#what-you-get).
+- The file dialog offers every format and the logs, and so does drag and drop. A file
+  without an extension opens by drag and drop, or in the file dialog once you choose to
+  see all files (where your system offers that). A file with several clusters lets you
+  [pick one](./import.md#what-you-get).
 - Dropped on the [Compare](./diff.md) page, a file opens as the other version to compare
   with, and the open file stays open.
 

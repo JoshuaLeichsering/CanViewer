@@ -44,8 +44,8 @@ canmatrix wrote it.
   ![The source card of the_homer.kcd: imported from KCD, with its clusters Motor, Instrumentation and Comfort](./images/clusters-en-dark.webp#gh-dark-mode-only)
 
 - Every warning or error canmatrix reported, and every line it dropped, as a parse
-  problem on the overview. The screenshot above shows one: the file was read a second
-  time with the cluster information ignored.
+  problem on the overview. The screenshot at the top of this page (`test.arxml`) shows
+  one: the file was read a second time with the cluster information ignored.
 - No invented values: what the file does not say stays empty.
 
 ## The file comes back

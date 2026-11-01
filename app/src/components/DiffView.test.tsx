@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { useState } from 'react';
 import { importWithCanmatrix } from '../lib/canmatrix/client';
-import { FILE_INPUT_ACCEPT } from '../lib/canmatrix/formats';
+import { DATABASE_INPUT_ACCEPT } from '../lib/canmatrix/formats';
 import { ImportFailure } from '../lib/canmatrix/import-failure';
 import { parseDbc } from '../lib/dbc/parser';
 import type { DbcDatabase } from '../lib/dbc/types';
@@ -53,7 +53,9 @@ describe('DiffView', () => {
     renderWithProviders(<Harness />);
     expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Compare versions');
     expect(screen.getByText('Compare demo.dbc with another version')).toBeTruthy();
-    expect(input().accept).toBe(FILE_INPUT_ACCEPT);
+    // Databases only: a log is never a version of a database.
+    expect(input().accept).toBe(DATABASE_INPUT_ACCEPT);
+    expect(input().accept).not.toMatch(/\.asc|\.log/);
   });
 
   it('compares the open file with the version chosen on the page, and swaps and closes the comparison', async () => {

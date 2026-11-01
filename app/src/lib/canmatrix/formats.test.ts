@@ -2,12 +2,15 @@
 import { describe, expect, it } from 'vitest';
 import {
   CANMATRIX_FORMATS,
+  DATABASE_INPUT_ACCEPT,
   DBC_EXTENSIONS,
   FILE_INPUT_ACCEPT,
+  TRACE_EXTENSIONS,
   canmatrixFormatFor,
   canmatrixFormatLabels,
   fileExtension,
 } from './formats';
+import { isTraceFileName } from '../trace';
 
 describe('the file dialog accept list', () => {
   const accepted = FILE_INPUT_ACCEPT.split(',');
@@ -25,8 +28,22 @@ describe('the file dialog accept list', () => {
     }
   });
 
-  it('holds exactly the DBC extensions and the canmatrix formats', () => {
-    expect(accepted).toEqual([...DBC_EXTENSIONS, ...Object.keys(CANMATRIX_FORMATS)].map((e) => `.${e}`));
+  it('offers the logs, which open in the Traces view', () => {
+    expect(TRACE_EXTENSIONS).toEqual(['asc', 'log']);
+    for (const ext of TRACE_EXTENSIONS) {
+      expect(accepted).toContain(`.${ext}`);
+      expect(isTraceFileName(`trace.${ext.toUpperCase()}`)).toBe(true);
+    }
+    expect(isTraceFileName('demo.dbc')).toBe(false);
+    expect(isTraceFileName('catalog.asc.dbc')).toBe(false);
+  });
+
+  it('holds exactly the DBC extensions, the canmatrix formats and the logs', () => {
+    expect(accepted).toEqual([...DBC_EXTENSIONS, ...Object.keys(CANMATRIX_FORMATS), ...TRACE_EXTENSIONS].map((e) => `.${e}`));
+  });
+
+  it('offers databases only where a database is asked for (the Compare page)', () => {
+    expect(DATABASE_INPUT_ACCEPT.split(',')).toEqual([...DBC_EXTENSIONS, ...Object.keys(CANMATRIX_FORMATS)].map((e) => `.${e}`));
   });
 });
 

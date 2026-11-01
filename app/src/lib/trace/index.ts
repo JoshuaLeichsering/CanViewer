@@ -1,13 +1,16 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
+import { TRACE_EXTENSIONS } from '../canmatrix/formats';
 import { parseAsc } from './asc';
 import { parseCandump } from './candump';
 import type { TraceFormat, TraceLog } from './types';
 
 export type { TraceFormat, TraceFrame, TraceLog, TraceProblem, TraceProblemReason, TraceSkipReason } from './types';
 
+const TRACE_NAME = new RegExp(`\\.(?:${TRACE_EXTENSIONS.join('|')})$`, 'i');
+
 /** Log files CanViewer opens as traces rather than as databases. */
 export function isTraceFileName(name: string): boolean {
-  return /\.(?:asc|log)$/i.test(name);
+  return TRACE_NAME.test(name);
 }
 
 const ASC_HEADER = /^\s*(?:date\s|base\s+(?:hex|dec)\b|begin\s+triggerblock\b)/i;

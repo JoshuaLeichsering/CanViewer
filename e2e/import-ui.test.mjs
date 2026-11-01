@@ -283,7 +283,7 @@ describe('import UI', () => {
     const { context, page, errors } = await freshPage();
     const accept = await page.getAttribute('input[type=file]', 'accept');
     assert.equal(accept, FILE_INPUT_ACCEPT);
-    for (const ext of ['dbc', 'txt', ...Object.keys(CANMATRIX_FORMATS)]) {
+    for (const ext of ['dbc', 'txt', ...Object.keys(CANMATRIX_FORMATS), 'asc', 'log']) {
       assert.ok(accept.split(',').includes(`.${ext}`), `.${ext} missing from ${accept}`);
     }
     await shot(page, 'welcome-en');

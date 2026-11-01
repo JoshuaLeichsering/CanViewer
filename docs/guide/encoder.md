@@ -37,8 +37,11 @@ every change, and each field says when the frame does not hold what you typed:
 - a warning, *Outside the database range*, when the value fits the bits but lies
   outside the minimum and maximum the database gives.
 
-When any of this happens, the card also says that the frame does not hold every value
-as entered.
+When a signal is overwritten, the card also says, above the frame, that the frame does
+not hold every value as entered: there a value was encoded and then changed by another
+signal, so the frame contradicts a field that looks accepted. In the other cases the
+field's own note is the whole story: the value was not encoded at all, or the note gives
+the value the frame holds.
 
 ## How it is checked
 
