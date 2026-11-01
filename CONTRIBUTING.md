@@ -61,10 +61,12 @@ node e2e/network-check.mjs http://localhost:4173/ network-check \
 It must end with `requests outside http://localhost:4173: 0`. Stop the preview server
 afterwards.
 
-If you change a dependency, also run `npm run notices` (it needs `cargo` for the desktop
-crates) and commit the regenerated `THIRD_PARTY_NOTICES.md`. CI checks that it is up to
-date, and checks the crates' licenses with
-`cargo deny --manifest-path desktop/Cargo.toml check licenses`.
+If you change a dependency, also run `npm run notices` (it needs Rust's `cargo` and
+`rustc`, for the desktop crates and the Rust standard library) and commit the regenerated
+`THIRD_PARTY_NOTICES.md`. CI checks that it is up to date, and checks the crates' licenses
+with `cargo deny --manifest-path desktop/Cargo.toml check licenses`. The outputs of the
+check above (`test-report.json`, `network-check/`) are ignored by git, so the sweep for
+identifying information does not read them.
 
 ## Conventions
 
