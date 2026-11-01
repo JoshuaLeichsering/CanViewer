@@ -383,3 +383,79 @@ describe('App: importing other formats through canmatrix', () => {
     await waitFor(() => expect(h1()).toBe('a.json'));
   });
 });
+
+describe('App: unsaved edits and what would replace them', () => {
+  const twoClusters = () =>
+    importMock.mockResolvedValue({
+      clusters: [
+        { name: 'Motor', db: dbcOf('BU_: ECU\nBO_ 1 MotorStatus: 8 ECU\n SG_ S : 0|8@1+ (1,0) [0|255] "" ECU') },
+        { name: 'Comfort', db: dbcOf('BU_: ECU\nBO_ 2 SeatHeating: 8 ECU\n SG_ T : 0|8@1+ (1,0) [0|255] "" ECU') },
+      ],
+      timings: { runtimeMs: 0, packagesMs: 0, readMs: 0 },
+    });
+  /** Renames the first message in the message editor (W11). */
+  const renameFirstMessage = async (name: string) => {
+    fireEvent.click(rail('Messages'));
+    fireEvent.click(screen.getByTestId('edt-edit-message'));
+    fireEvent.change(screen.getByTestId('edt-message-name'), { target: { value: name } });
+    fireEvent.click(screen.getByTestId('edt-submit'));
+    await screen.findByRole('heading', { level: 1, name });
+  };
+  const unsaved = () => screen.queryByTestId('edt-unsaved') !== null;
+  const cluster = (name: string) =>
+    screen.getAllByTestId('imp-cluster').find((c) => c.getAttribute('data-name') === name) as HTMLButtonElement;
+
+  it('asks before another cluster of an imported file replaces them', async () => {
+    twoClusters();
+    renderWithProviders(<App />);
+    openFile(fileOf('homer.kcd', '<NetworkDefinition/>'));
+    await waitFor(() => expect(h1()).toBe('homer.kcd'));
+    await renameFirstMessage('MotorState');
+    expect(unsaved()).toBe(true);
+
+    fireEvent.click(rail('Overview'));
+    fireEvent.click(cluster('Comfort'));
+    const dialog = screen.getByTestId('edt-discard-dialog');
+    expect(dialog.querySelector('.edt-hint')?.textContent).toBe(
+      'The edits to homer.kcd are not saved. Opening Comfort discards them.',
+    );
+    fireEvent.click(screen.getByTestId('edt-cancel'));
+    expect(screen.queryByTestId('edt-discard-dialog')).toBeNull();
+    expect(cluster('Motor').getAttribute('aria-checked')).toBe('true');
+    expect(unsaved()).toBe(true);
+
+    fireEvent.click(cluster('Comfort'));
+    fireEvent.click(screen.getByTestId('edt-submit'));
+    expect(cluster('Comfort').getAttribute('aria-checked')).toBe('true');
+    expect(screen.getByText('SeatHeating')).toBeTruthy();
+    expect(unsaved()).toBe(false);
+  });
+
+  it('keeps them when a log opens, which leaves the database as it is', async () => {
+    renderWithProviders(<App />);
+    await openDemo();
+    await renameFirstMessage('EngineState');
+    openFile(fileOf('demo-candump.log', '(1793520000.000000) can0 100#401F82322CC1FE01\n'));
+    await screen.findByRole('heading', { level: 1, name: 'demo-candump.log' });
+    expect(screen.queryByTestId('edt-discard-dialog')).toBeNull();
+    expect(unsaved()).toBe(true);
+    expect(screen.getByText('EngineState')).toBeTruthy();
+  });
+
+  it('asks before a dropped database replaces them, but not before the Compare page reads another version', async () => {
+    renderWithProviders(<App />);
+    await openDemo();
+    await renameFirstMessage('EngineState');
+    const drop = (name: string) =>
+      fireEvent.drop(document.querySelector('.app')!, { dataTransfer: { files: [fileOf(name, DEMO_DBC_TEXT)], types: ['Files'] } });
+    drop('other.dbc');
+    expect(screen.getByTestId('edt-discard-dialog')).toBeTruthy();
+    fireEvent.click(screen.getByTestId('edt-cancel'));
+
+    fireEvent.click(rail('Compare'));
+    drop('demo-v1.dbc');
+    await screen.findByTestId('dif-versions');
+    expect(screen.queryByTestId('edt-discard-dialog')).toBeNull();
+    expect(unsaved()).toBe(true);
+  });
+});

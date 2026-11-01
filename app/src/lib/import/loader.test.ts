@@ -279,6 +279,45 @@ describe('picking a cluster', () => {
   });
 });
 
+describe('edits made in the app', () => {
+  it('replace the database shown, and keep the file name and the source', async () => {
+    const { loader, importer, events } = setup();
+    const done = loader.open('the_homer.kcd', bytesOf('<NetworkDefinition/>'));
+    await tick();
+    importer.calls[0].resolve({ clusters: HOMER });
+    await done;
+    events.length = 0;
+    const edited = parseDbc('BU_: ECU\nBO_ 1 Edited: 8 ECU\n');
+    loader.edit(edited);
+    expect(loader.getState().db).toBe(edited);
+    expect(loader.getState().fileName).toBe('the_homer.kcd');
+    expect(loader.getState().source?.clusters).toBe(HOMER);
+    // Not a database of its own: the view is not reset.
+    expect(events).toEqual([]);
+  });
+
+  it('do nothing before a database is shown', () => {
+    const { loader } = setup();
+    loader.edit(parseDbc('BU_: ECU\n'));
+    expect(loader.getState().db).toBeNull();
+  });
+
+  it('once saved as DBC, are what the next start restores, instead of an imported file', async () => {
+    const { loader, stored } = setup();
+    loader.savedAsDbc('the_homer.dbc', 'BU_: ECU\n');
+    expect(stored.state.dbc).toEqual({ name: 'the_homer.dbc', text: 'BU_: ECU\n' });
+    expect(stored.log).toEqual(['saveDbc the_homer.dbc', 'clearImported']);
+  });
+
+  it('leave nothing to restore when the saved text is too large to store', () => {
+    const { loader, stored } = setup({ dbc: { name: 'before.dbc', text: 'BU_: OLD\n' } });
+    stored.storage.saveDbcText = () => false;
+    loader.savedAsDbc('after.dbc', 'BU_: NEW\n');
+    expect(stored.state.dbc).toBeUndefined();
+    expect(stored.log).toEqual(['clearDbc', 'clearImported']);
+  });
+});
+
 describe('restoring on startup', () => {
   it('restores a stored DBC first, and drops a stale imported file', async () => {
     const { loader, importer, stored, events } = setup({
