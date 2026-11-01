@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
 """Reads ARXML files with cantools and writes what it finds as JSON, shaped like
 CanViewer's DbcDatabase (app/src/lib/dbc/types.ts), so that compare.ts can hold
 it against canmatrix's reading and the DBC twins.

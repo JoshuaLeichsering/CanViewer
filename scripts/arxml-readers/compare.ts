@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /**
  * Holds cantools' reading of the corpus ARXML files against canmatrix's and
  * against the DBC twins, for docs/develop/arxml-readers.md. A report tool, not
