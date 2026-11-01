@@ -5,7 +5,7 @@ test.describe('opening files', () => {
   test('welcomes, then opens a DBC file and remembers it', async ({ page }) => {
     await page.goto('/');
     await expect(page).toHaveTitle('CanViewer — CAN Database Viewer');
-    await expect(page.getByText('A viewer for DBC CAN database files.')).toBeVisible();
+    await expect(page.getByText('A viewer for CAN database files.')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Open file…' })).toBeVisible();
     await expect(rail(page, 'Messages')).toBeDisabled();
 

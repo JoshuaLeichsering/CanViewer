@@ -58,7 +58,7 @@ test.describe('with a German browser', () => {
 
   test('starts in German for a German browser', async ({ page }) => {
     await page.goto('/');
-    await expect(page.getByText('Ein Viewer für DBC-CAN-Datenbanken.')).toBeVisible();
+    await expect(page.getByText('Ein Viewer für CAN-Datenbanken.')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Datei öffnen…' })).toBeVisible();
   });
 });
