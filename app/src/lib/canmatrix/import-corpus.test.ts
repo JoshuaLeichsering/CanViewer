@@ -19,7 +19,7 @@ import type { CanmatrixReadResult, ImportedCluster } from './types';
  * Most of it is not right (see the twin differences); the point of pinning is
  * that any change, better or worse, shows up. Regenerate after an intended
  * change with
- *   UPDATE_IMPORT_BASELINE=1 npx vitest run src/lib/canmatrix/import-corpus.test.ts
+ *   UPDATE_IMPORT_BASELINE=1 npx vitest run app/src/lib/canmatrix/import-corpus.test.ts
  * and review the diff.
  *
  * The suite is skipped when the submodules are not checked out. With them it

@@ -33,8 +33,8 @@ Screens the design does not show, as implemented:
 
 - **Fonts and icons are bundled.** The design loads Roboto Flex, Roboto Mono and Material
   Symbols from Google Fonts. The app ships the Latin subsets of the two fonts (woff2,
-  144 KB, `src/fonts.css`) and the 28 icons it uses as inline SVG paths
-  (`src/components/icon-paths.ts`), so it still makes no request outside its own origin.
+  144 KB, `app/src/fonts.css`) and the 28 icons it uses as inline SVG paths
+  (`app/src/components/icon-paths.ts`), so it still makes no request outside its own origin.
 - **Nothing the old UI showed is dropped.** The signal card adds the value type and the
   signal's attributes. Messages keep their attributes card, warnings and frame-size notes
   (as banners). The network page keeps the note on messages without sender or receivers.

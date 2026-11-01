@@ -3,13 +3,13 @@
  * beyond canmatrix itself (attrs, click and six come with it). Packages are
  * loaded only when a file of that format is opened.
  *
- * `.dbc` is deliberately absent: CanViewer's own parser (src/lib/dbc/parser.ts)
- * stays in charge of DBC.
+ * `.dbc` is deliberately absent: CanViewer's own parser
+ * (app/src/lib/dbc/parser.ts) stays in charge of DBC.
  */
 export interface CanmatrixFormat {
   /** canmatrix's import_type, i.e. the module name under canmatrix.formats. */
   importType: string;
-  /** Lock entries (src/lib/canmatrix/wheels.lock.json) to load first. */
+  /** Lock entries (app/src/lib/canmatrix/wheels.lock.json) to load first. */
   packages: string[];
 }
 

@@ -16,13 +16,13 @@ first visit it reloaded and opened a DBC and an ARXML file with the network swit
 
 | Piece | Where |
 |---|---|
-| Worker: starts Pyodide on the first non-DBC import, loads format packages on demand, runs `canviewer_adapter.read()` | `src/lib/canmatrix/worker.ts` |
-| Client: creates the worker on first use, transfers the file bytes, reports the loading stage | `src/lib/canmatrix/client.ts` |
+| Worker: starts Pyodide on the first non-DBC import, loads format packages on demand, runs `canviewer_adapter.read()` | `app/src/lib/canmatrix/worker.ts` |
+| Client: creates the worker on first use, transfers the file bytes, reports the loading stage | `app/src/lib/canmatrix/client.ts` |
 | Assets: runtime from `node_modules/pyodide`, wheels from `vendor/pyodide` (see `scripts/fetch-wheels.mjs`), served under `<base>pyodide/` in dev and copied to `dist/pyodide/` in the build | `scripts/vite-plugins.ts` |
-| Service worker: precaches the app shell, caches `pyodide/*` when first fetched | `src/service-worker.js`, built to `dist/sw.js` |
+| Service worker: precaches the app shell, caches `pyodide/*` when first fetched | `app/src/service-worker.js`, built to `dist/sw.js` |
 
 There is **no micropip**, a deliberate change from the handover's wording. The worker
-passes the custom lock file (`src/lib/canmatrix/wheels.lock.json`, minus its download URLs)
+passes the custom lock file (`app/src/lib/canmatrix/wheels.lock.json`, minus its download URLs)
 to `loadPyodide` as `lockFileContents`, sets `packageBaseUrl` to `<base>pyodide/`, and
 calls `loadPackage`. Pyodide resolves dependencies from that lock alone and checks each
 wheel against its SHA-256. In the browser there is no CDN fallback (in
@@ -36,7 +36,7 @@ in the worker chunk, which is not used because `packageBaseUrl` is always set.
 
 ## Evidence
 
-`network-check.mjs` drives the build in Chromium 1243 (Playwright 1.63.0). (Since the
+[`e2e/network-check.mjs`](../../../e2e/network-check.mjs) drives the build in Chromium 1243 (Playwright 1.63.0). (Since the
 Material redesign the script waits on the document title and the `[role=alert]` snackbar
 instead of the old toolbar's `.file-info`; the run quoted below predates that change.) Chromium was
 started with `--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE localhost`, so any other
@@ -45,7 +45,7 @@ host would have failed to resolve. The run below is the build of commit `4af2d5c
 ```sh
 npm run build
 npx vite preview --port 4173 --strictPort &
-PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS=1 node docs/spikes/2026-11-01-pyodide-worker/network-check.mjs \
+PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS=1 node e2e/network-check.mjs \
   http://localhost:4173/ /tmp/out \
   third_party/canmatrix/tests/files/arxml/test.arxml \
   third_party/canmatrix/tests/files/arxml/ARXMLContainerTest.arxml \

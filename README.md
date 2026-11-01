@@ -37,6 +37,25 @@ No data leaves your machine — files are parsed locally.
 - **UI language switch** (English/German) in the rail's menu, persisted; defaults to
   the browser language
 
+## Repository layout
+
+| Path | What it holds |
+|---|---|
+| `app/` | The web app, and Vite's root: `index.html` and `src/` (the views, the DBC parser in `src/lib/dbc/`, the canmatrix import in `src/lib/canmatrix/`, each with its tests next to it) |
+| `desktop/` | The Tauri desktop shell, which packages the build in `dist/` |
+| `e2e/` | Checks that drive a browser or the packaged app: `network-check.mjs`, and the desktop smoke test over CDP with its build config (`desktop-cdp-smoke.mjs`, `desktop-cdp.conf.json`) |
+| `scripts/` | Build and maintenance scripts: `fetch-wheels.mjs`, the Vite plugins, the CI check of the test report |
+| `examples/` | Sample files, such as `demo.dbc` |
+| `docs/` | Handover notes, spike reports, design notes and [decision records](docs/decisions/) |
+| `third_party/` | The corpus submodules (opendbc, model3dbc, canmatrix, cantools) |
+| `.github/workflows/` | CI (`ci.yml`) and the desktop builds (`desktop.yml`) |
+| the root | Config only: `package.json`, `package-lock.json`, `tsconfig.json`, `vite.config.ts`, `.gitignore`, `.gitattributes`, `.gitmodules`; and `README.md`, `BACKLOG.md` |
+
+Every command runs from the repository root. Vite's root is `app/`, so dev server URLs
+start there (`/src/main.tsx` is `app/src/main.tsx`), while the build still goes to
+`dist/` at the root. Why the web app is not at the root, as in Vite's templates:
+[decision record 0001](docs/decisions/0001-repository-layout.md).
+
 ## Development
 
 ```sh
@@ -54,7 +73,7 @@ the production build, and the network check, which fails on any request outside 
 app's origin.
 
 `dev`, `test` and `build` run `fetch-wheels` first. It downloads the wheels listed in
-[wheels.lock.json](src/lib/canmatrix/wheels.lock.json) from jsDelivr (the
+[wheels.lock.json](app/src/lib/canmatrix/wheels.lock.json) from jsDelivr (the
 Pyodide-built ones) and PyPI, and checks each against its pinned SHA-256. Files
 already present are left alone, so it works offline once they are there. Where
 those hosts are unreachable, `node scripts/fetch-wheels.mjs --from <dir>` takes
@@ -82,13 +101,13 @@ Nissan, Rivian and more (~4,200 messages, ~33,700 signals). Fetch them with:
 git submodule update --init
 ```
 
-`npm test` then runs the corpus suite ([corpus.test.ts](src/lib/dbc/corpus.test.ts)):
+`npm test` then runs the corpus suite ([corpus.test.ts](app/src/lib/dbc/corpus.test.ts)):
 every file must parse with zero problems except for a pinned allowlist of genuine
 upstream inconsistencies (stale comments referencing renamed signals). Each file's
-parse result is also pinned in [corpus-baseline.json](src/lib/dbc/corpus-baseline.json)
+parse result is also pinned in [corpus-baseline.json](app/src/lib/dbc/corpus-baseline.json)
 (counts plus a SHA-256 of the whole parsed model), so any change to how a corpus file
 parses fails the suite; regenerate it after an intended change with
-`UPDATE_CORPUS_BASELINE=1 npx vitest run src/lib/dbc/corpus.test.ts`. Without the
+`UPDATE_CORPUS_BASELINE=1 npx vitest run app/src/lib/dbc/corpus.test.ts`. Without the
 submodules the corpus suite is skipped automatically.
 
 Two more submodules hold files in other formats, for the canmatrix import adapter
@@ -96,22 +115,22 @@ that is being built (see [the handover](docs/handover/2026-11-01-multi-format-im
 the test files of [ebroecker/canmatrix](https://github.com/ebroecker/canmatrix)
 (tag 1.3.3.1, BSD-2-Clause) and [cantools/cantools](https://github.com/cantools/cantools)
 (tag 45.1.2, MIT), 122 ARXML, KCD, SYM, DBF, FIBEX, JSON, YAML, XLS and XLSX files.
-[import-corpus.test.ts](src/lib/canmatrix/import-corpus.test.ts) reads each one
+[import-corpus.test.ts](app/src/lib/canmatrix/import-corpus.test.ts) reads each one
 through canmatrix under Pyodide in Node, the same runtime the app will use, with
 the network blocked. Where a file has a DBC twin (78 of them), it compares the two
 through CanViewer's model. What the readers produce, including every difference
 from the twin, is pinned in
-[import-corpus-baseline.json](src/lib/canmatrix/import-corpus-baseline.json);
-regenerate it with `UPDATE_IMPORT_BASELINE=1 npx vitest run src/lib/canmatrix/import-corpus.test.ts`.
+[import-corpus-baseline.json](app/src/lib/canmatrix/import-corpus-baseline.json);
+regenerate it with `UPDATE_IMPORT_BASELINE=1 npx vitest run app/src/lib/canmatrix/import-corpus.test.ts`.
 The suite is skipped without the submodules and fails without the wheels.
 
-[mapper.test.ts](src/lib/canmatrix/mapper.test.ts) checks the mapping from canmatrix's model
+[mapper.test.ts](app/src/lib/canmatrix/mapper.test.ts) checks the mapping from canmatrix's model
 to CanViewer's (`canviewer_adapter.py`) the direct way: it reads DBC files through
 canmatrix and compares the result with CanViewer's own parser. `examples/demo.dbc`
 must come out identical. For the 58 opendbc and Model 3 files, what canmatrix's DBC
 reader does differently (it drops dangling comments and lines it cannot read, applies
 long names, creates nodes for undeclared senders) and the problems reported for it are
-pinned in [mapper-dbc-baseline.json](src/lib/canmatrix/mapper-dbc-baseline.json).
+pinned in [mapper-dbc-baseline.json](app/src/lib/canmatrix/mapper-dbc-baseline.json).
 
 ## Supported DBC statements
 

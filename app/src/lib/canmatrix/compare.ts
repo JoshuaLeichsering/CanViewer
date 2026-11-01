@@ -26,7 +26,7 @@ import type {
  *   attributes) and value tables (entries);
  * - per message: extended flag, name, DLC, sender, comment, frame format as
  *   CanViewer's own rules decide it (classic, CAN FD or J1939 PG, see
- *   src/lib/dbc/canfd.ts), and attributes;
+ *   app/src/lib/dbc/canfd.ts), and attributes;
  * - per signal: the layout (start bit as written in DBC, length, byte order),
  *   value type, factor, offset, min and max (unless the DBC leaves the range at
  *   [0|0]), unit, receivers, multiplexing, value descriptions, comment and

@@ -98,7 +98,7 @@ function summarize(db: DbcDatabase): CorpusSummary {
  * The pinned baseline (corpus-baseline.json) was recorded before multi-format
  * import work started; that work must not change how DBC files parse. After an
  * intended parser change or a submodule bump, regenerate it with
- *   UPDATE_CORPUS_BASELINE=1 npx vitest run src/lib/dbc/corpus.test.ts
+ *   UPDATE_CORPUS_BASELINE=1 npx vitest run app/src/lib/dbc/corpus.test.ts
  * and review the diff.
  */
 const UPDATE = process.env.UPDATE_CORPUS_BASELINE === '1';

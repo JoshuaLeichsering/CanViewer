@@ -18,7 +18,7 @@ import { missingWheels, startCanmatrix, type NodeCanmatrix } from './node-runtim
  * (dangling comments dropped, long names applied, nodes created from
  * senders, ...), and the problems the mapper reports for lines canmatrix
  * dropped are pinned in mapper-dbc-baseline.json; regenerate with
- *   UPDATE_MAPPER_BASELINE=1 npx vitest run src/lib/canmatrix/mapper.test.ts
+ *   UPDATE_MAPPER_BASELINE=1 npx vitest run app/src/lib/canmatrix/mapper.test.ts
  *
  * Needs the wheels in vendor/pyodide (`npm run fetch-wheels`); fails without.
  */

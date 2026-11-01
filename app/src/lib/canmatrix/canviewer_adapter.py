@@ -1,5 +1,5 @@
 """Reads a CAN database with canmatrix and returns it shaped like CanViewer's
-DbcDatabase (src/lib/dbc/types.ts), as plain dicts and lists that convert to
+DbcDatabase (app/src/lib/dbc/types.ts), as plain dicts and lists that convert to
 JavaScript objects without any PyProxy left over.
 
 What is mapped (handover task 4):
@@ -16,7 +16,7 @@ What is mapped (handover task 4):
   own DBC export writes for them (VFrameFormat J1939PG is what makes CanViewer
   treat a frame, and the database, as J1939). signal.initial_value is left
   out: canmatrix fills it in when a file has none. CanViewer's FD and J1939 rules then apply unchanged
-  (src/lib/dbc/canfd.ts, j1939.ts). Attributes a file already has are kept.
+  (app/src/lib/dbc/canfd.ts, j1939.ts). Attributes a file already has are kept.
 - everything canmatrix prints, or logs at WARNING and above, becomes a
   ParseProblem (with the line number where canmatrix gives one), so nothing
   it reports is dropped silently. The raw lines are also returned in "log".
