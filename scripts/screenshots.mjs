@@ -27,6 +27,8 @@ const { chromium } = createRequire(import.meta.url)('playwright');
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 const DEMO = join(root, 'examples/demo.dbc');
+const DEMO_V2 = join(root, 'examples/demo-v2.dbc');
+const DEMO_ASC = join(root, 'examples/demo.asc');
 const ARXML = join(root, 'third_party/canmatrix/tests/files/arxml/test.arxml');
 const PROBLEMS = join(root, 'third_party/opendbc/opendbc/dbc/vw_mqb.dbc');
 
@@ -64,6 +66,58 @@ const SHOTS = [
   { name: 'tables', file: DEMO, hash: '#vt=GearPositions', variants: EN },
   { name: 'problems', file: PROBLEMS, variants: EN },
   { name: 'import', file: ARXML, variants: EN },
+  {
+    name: 'export',
+    file: DEMO,
+    run: async (page) => {
+      await page.click('[data-testid=exp-export-button]');
+      await page.waitForSelector('[data-testid=exp-export-messagesCsv]');
+    },
+    variants: EN,
+  },
+  {
+    name: 'compare',
+    file: DEMO,
+    hash: '#diff',
+    run: async (page) => {
+      await page.setInputFiles('[data-testid=dif-file-input]', DEMO_V2);
+      await page.waitForSelector('[data-testid=dif-counts]', { timeout: 60_000 });
+    },
+    variants: EN,
+  },
+  {
+    name: 'traces',
+    file: DEMO,
+    hash: '#trace',
+    run: async (page) => {
+      await page.setInputFiles('[data-testid=trc-file-input]', DEMO_ASC);
+      await page.waitForSelector('[data-testid=trc-facts]');
+    },
+    variants: EN,
+  },
+  {
+    name: 'encoder',
+    file: DEMO,
+    hash: '#msg=256/EngineSpeed',
+    run: async (page) => {
+      const field = (signal) => `[data-testid=trc-encoder] [data-signal="${signal}"] input`;
+      await page.fill(field('EngineSpeed'), '2000');
+      await page.fill(field('EngineTemp'), '90');
+      await page.fill(field('EngineRunning'), '1');
+    },
+    clip: '[data-testid=trc-encoder]',
+    variants: EN,
+  },
+  {
+    name: 'editing',
+    file: DEMO,
+    hash: '#msg=256/EngineSpeed',
+    run: async (page) => {
+      await page.click('[data-testid=edt-edit-signal]');
+      await page.waitForSelector('[role=dialog]');
+    },
+    variants: EN,
+  },
 ];
 
 const args = process.argv.slice(2);
