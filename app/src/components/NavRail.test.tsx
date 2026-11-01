@@ -12,6 +12,7 @@ const ALL: Record<Destination, boolean> = {
   nodes: true,
   tables: true,
   compare: true,
+  traces: true,
 };
 
 function show({
@@ -31,10 +32,10 @@ const railLabels = () => [...document.querySelectorAll('.rail-item .label')].map
 const railItem = (label: string) => screen.getByText(label).closest('button') as HTMLButtonElement;
 
 describe('NavRail: destinations', () => {
-  it('shows the six destinations, marks the active one and navigates', () => {
+  it('shows the seven destinations, marks the active one and navigates', () => {
     const { onNavigate } = show({ active: 'messages' });
     expect(screen.getByRole('navigation', { name: 'CanViewer' })).toBeTruthy();
-    expect(railLabels()).toEqual(['Overview', 'Messages', 'Network', 'Nodes', 'Tables', 'Compare']);
+    expect(railLabels()).toEqual(['Overview', 'Messages', 'Network', 'Nodes', 'Tables', 'Compare', 'Traces']);
     expect(railItem('Messages').getAttribute('aria-current')).toBe('page');
     expect(railItem('Overview').getAttribute('aria-current')).toBeNull();
     fireEvent.click(railItem('Nodes'));
@@ -44,7 +45,15 @@ describe('NavRail: destinations', () => {
   it('disables destinations without content, and everything before a file is open', () => {
     show({
       active: null,
-      enabled: { overview: false, messages: false, network: false, nodes: false, tables: false, compare: false },
+      enabled: {
+        overview: false,
+        messages: false,
+        network: false,
+        nodes: false,
+        tables: false,
+        compare: false,
+        traces: false,
+      },
     });
     expect(railLabels().every((label) => railItem(label!).disabled)).toBe(true);
     expect(document.querySelector('[aria-current]')).toBeNull();
@@ -83,7 +92,7 @@ describe('NavRail: settings menu and language', () => {
 
     fireEvent.click(screen.getByRole('menuitemradio', { name: 'Deutsch' }));
     expect(screen.queryByRole('menu')).toBeNull();
-    expect(railLabels()).toEqual(['Übersicht', 'Botschaften', 'Netzwerk', 'Knoten', 'Tabellen', 'Vergleich']);
+    expect(railLabels()).toEqual(['Übersicht', 'Botschaften', 'Netzwerk', 'Knoten', 'Tabellen', 'Vergleich', 'Traces']);
     expect(screen.getByRole('button', { name: 'Datei öffnen' })).toBeTruthy();
     expect(document.documentElement.lang).toBe('de');
     expect(localStorage.getItem('canviewer.lang')).toBe('de');

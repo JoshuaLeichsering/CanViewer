@@ -168,6 +168,7 @@ describe('the settings menu', () => {
     nodes: true,
     tables: true,
     compare: true,
+    traces: true,
   };
   const open = () => {
     renderWithProviders(

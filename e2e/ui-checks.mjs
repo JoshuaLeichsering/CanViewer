@@ -41,7 +41,7 @@ const HOMER_KCD = readFileSync(repoPath('third_party/cantools/tests/files/kcd/th
 
 const VIEWPORTS = { desktop: { width: 1440, height: 900 }, narrow: { width: 390, height: 844 } };
 /** The rail's destinations, in their order on screen. */
-const RAIL = { overview: 0, messages: 1, network: 2, nodes: 3, tables: 4, compare: 5 };
+const RAIL = { overview: 0, messages: 1, network: 2, nodes: 3, tables: 4, compare: 5, traces: 6 };
 
 let base = process.argv[2];
 let server;
@@ -213,6 +213,8 @@ describe('accessibility (axe-core): no serious or critical issues', () => {
       await check('value tables');
       await rail(page, 'compare');
       await check('compare, before another version is open');
+      await rail(page, 'traces');
+      await check('traces, before a log is open');
 
       assert.deepEqual(found, [], `axe found:\n${found.join('\n')}`);
       assert.deepEqual(problems, []);
@@ -348,7 +350,7 @@ describe('focus order', () => {
     const { context, page, problems } = await openApp({ viewport: 'narrow' });
     await openFile(page, 'demo.dbc', DEMO);
     // Top bar (menu, open file, theme), then the navigation bar at the bottom.
-    assert.deepEqual(await tabOrder(page, 9), [
+    assert.deepEqual(await tabOrder(page, 10), [
       'Settings',
       'Open file',
       'Switch to dark theme',
@@ -358,6 +360,7 @@ describe('focus order', () => {
       'Nodes',
       'Tables',
       'Compare',
+      'Traces',
     ]);
     const theme = await page.locator('.rail-icon-btn[aria-label="Switch to dark theme"]').boundingBox();
     assert.ok(theme.y < 56, 'the theme toggle is in the top bar');
@@ -365,7 +368,7 @@ describe('focus order', () => {
     // In the rail it is at the bottom, after the destinations, in both senses.
     await page.setViewportSize(VIEWPORTS.desktop);
     await frames(page);
-    assert.deepEqual(await tabOrder(page, 9), [
+    assert.deepEqual(await tabOrder(page, 10), [
       'Settings',
       'Open file',
       'Overview',
@@ -374,6 +377,7 @@ describe('focus order', () => {
       'Nodes',
       'Tables',
       'Compare',
+      'Traces',
       'Switch to dark theme',
     ]);
     const railTheme = await page.locator('.rail-icon-btn[aria-label="Switch to dark theme"]').boundingBox();
