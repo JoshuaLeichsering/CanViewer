@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { parseDbc } from './lib/dbc/parser';
-import { importWithCanmatrix, type ImportStage } from './lib/canmatrix/client';
-import { canmatrixFormatFor } from './lib/canmatrix/formats';
+import { FILE_INPUT_ACCEPT } from './lib/canmatrix/formats';
+import type { LoaderEvent } from './lib/import/loader';
+import { useDatabaseLoader } from './lib/import/useDatabaseLoader';
 import { findMessageByOccurrence, occurrenceOf } from './lib/dbc/identity';
 import type { DbcDatabase } from './lib/dbc/types';
 import { useI18n } from './lib/i18n';
@@ -13,6 +13,8 @@ import { ValueTableDetail } from './components/ValueTableDetail';
 import { Overview } from './components/Overview';
 import { NetworkGraph } from './components/NetworkGraph';
 import { Icon } from './components/Icon';
+import { ImportProgress } from './components/ImportProgress';
+import { ImportFormatsNote, ImportSourceContext } from './components/ImportSource';
 
 export type Selection =
   | { kind: 'overview' }
@@ -66,41 +68,18 @@ const DESTINATION_OF: Record<Selection['kind'], Destination> = {
   valueTable: 'tables',
 };
 
-const IMPORT_STAGE_KEYS = {
-  runtime: 'importRuntime',
-  packages: 'importPackages',
-  reading: 'importReading',
-} as const;
-
-type Snack =
-  | { kind: 'progress'; text: string }
-  | { kind: 'error'; text: string }
-  | { kind: 'info'; text: string };
-
-/** DBC files from Vector tools are often Latin-1; fall back when UTF-8 fails. */
-async function readFileText(file: File): Promise<string> {
-  const buf = await file.arrayBuffer();
-  try {
-    return new TextDecoder('utf-8', { fatal: true }).decode(buf);
-  } catch {
-    return new TextDecoder('windows-1252').decode(buf);
-  }
-}
+type Snack = { kind: 'error'; text: string } | { kind: 'info'; text: string };
 
 export function App() {
   const { t } = useI18n();
-  const [db, setDb] = useState<DbcDatabase | null>(null);
-  const [fileName, setFileName] = useState('');
   const [selection, setSelection] = useState<Selection>({ kind: 'overview' });
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<MessageFilter>('all');
   const [dragging, setDragging] = useState(false);
-  const [importing, setImporting] = useState<{ name: string; stage: ImportStage } | null>(null);
   const [snack, setSnack] = useState<Snack | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dragDepth = useRef(0);
   const initialHash = useRef(window.location.hash);
-  const restoredOnce = useRef(false);
   // The last item shown per destination, so the rail returns to it.
   const lastShown = useRef<Partial<Record<Destination, Selection>>>({});
 
@@ -111,70 +90,31 @@ export function App() {
     lastShown.current = {};
   }, []);
 
-  const loadText = useCallback(
-    (name: string, text: string) => {
-      setDb(parseDbc(text));
-      setFileName(name);
-      resetView();
-      try {
-        localStorage.setItem('canviewer.file', JSON.stringify({ name, text }));
-      } catch {
-        // File too large for localStorage — reopening after reload just won't restore it.
-      }
-    },
-    [resetView],
-  );
-
-  const loadFile = useCallback(
-    async (file: File) => {
-      setSnack(null);
-      if (!canmatrixFormatFor(file.name)) {
-        loadText(file.name, await readFileText(file));
-        return;
-      }
-      // Non-DBC formats go through canmatrix in a Web Worker, loaded on first use.
-      setImporting({ name: file.name, stage: 'runtime' });
-      try {
-        const imported = await importWithCanmatrix(file, (stage) => setImporting({ name: file.name, stage }));
-        setDb(imported.db);
-        setFileName(file.name);
-        resetView();
-        // Restoring an imported file on reload is not supported yet; drop the
-        // stored DBC so that a reload does not show a different file.
-        try {
-          localStorage.removeItem('canviewer.file');
-        } catch {
-          // storage unavailable
-        }
-      } catch (e) {
+  // Opening, importing and restoring files (lib/import/loader.ts). A restored
+  // file is shown at the deep link the page was loaded with.
+  const onLoaderEvent = useCallback(
+    (event: LoaderEvent) => {
+      if (event.kind === 'failed') {
         setSnack({
           kind: 'error',
-          text: t('importFailed', { name: file.name, error: e instanceof Error ? e.message : String(e) }),
+          text: t(event.restored ? 'impRestoreFailed' : 'importFailed', { name: event.name, error: event.error }),
         });
-      } finally {
-        setImporting(null);
+        return;
       }
+      resetView();
+      if (event.restored && initialHash.current) setSelection(hashToSelection(initialHash.current));
     },
-    [loadText, resetView, t],
+    [resetView, t],
   );
-
-  // Restore the last opened file on startup. Guarded by a ref so StrictMode's
-  // double effect run cannot restore twice with diverging results.
-  useEffect(() => {
-    if (restoredOnce.current) return;
-    restoredOnce.current = true;
-
-    try {
-      const saved = localStorage.getItem('canviewer.file');
-      if (saved) {
-        const { name, text } = JSON.parse(saved) as { name: string; text: string };
-        loadText(name, text);
-        if (initialHash.current) setSelection(hashToSelection(initialHash.current));
-      }
-    } catch {
-      // Corrupt storage — start empty.
-    }
-  }, [loadText]);
+  const { db, fileName, source, progress, loadFile: openFile, selectCluster } = useDatabaseLoader(onLoaderEvent);
+  const loadFile = useCallback(
+    (file: File) => {
+      setSnack(null);
+      void openFile(file);
+    },
+    [openFile],
+  );
+  const importSource = useMemo(() => ({ source, onSelectCluster: selectCluster }), [source, selectCluster]);
 
   // Keep the URL hash in sync with the current selection (deep links). Only
   // active once a file is loaded, so the initial hash is never clobbered.
@@ -242,7 +182,7 @@ export function App() {
       dragDepth.current = 0;
       setDragging(false);
       const file = e.dataTransfer.files[0];
-      if (file) void loadFile(file);
+      if (file) loadFile(file);
     },
     [loadFile],
   );
@@ -262,9 +202,8 @@ export function App() {
   );
   const openFileDialog = () => fileInputRef.current?.click();
 
-  const shownSnack: Snack | null = importing
-    ? { kind: 'progress', text: t(IMPORT_STAGE_KEYS[importing.stage], { name: importing.name }) }
-    : snack;
+  // The import's progress takes the snackbar's place while it runs.
+  const shownSnack: Snack | null = progress ? null : snack;
 
   return (
     <div
@@ -288,13 +227,13 @@ export function App() {
       <input
         ref={fileInputRef}
         type="file"
-        accept=".dbc,.txt,.arxml"
+        accept={FILE_INPUT_ACCEPT}
         className="visually-hidden"
         tabIndex={-1}
         aria-hidden="true"
         onChange={(e) => {
           const file = e.target.files?.[0];
-          if (file) void loadFile(file);
+          if (file) loadFile(file);
           e.target.value = '';
         }}
       />
@@ -322,7 +261,9 @@ export function App() {
 
       <main className="main">
         {db ? (
-          <MainView db={db} fileName={fileName} selection={selection} onSelect={setSelection} onCopyLink={copyLink} />
+          <ImportSourceContext.Provider value={importSource}>
+            <MainView db={db} fileName={fileName} selection={selection} onSelect={setSelection} onCopyLink={copyLink} />
+          </ImportSourceContext.Provider>
         ) : (
           <div className="welcome">
             <div className="welcome-card">
@@ -337,7 +278,7 @@ export function App() {
                 </button>
               </div>
               <div className="dropzone">{t('welcomeDrop')}</div>
-              <p className="formats">{t('welcomeFormats')}</p>
+              <ImportFormatsNote />
               <p className="formats">
                 {t('welcomeExampleHint')} <code>examples/demo.dbc</code>
               </p>
@@ -346,16 +287,15 @@ export function App() {
         )}
       </main>
 
+      {progress && <ImportProgress progress={progress} />}
+
       {shownSnack && (
         <div className="snackbar" role={shownSnack.kind === 'error' ? 'alert' : 'status'}>
-          {shownSnack.kind === 'progress' && <Icon name="progress_activity" size={20} className="spinner" />}
           {shownSnack.kind === 'error' && <Icon name="error" size={20} />}
           <span className="msg">{shownSnack.text}</span>
-          {shownSnack.kind !== 'progress' && (
-            <button className="close state" title={t('dismiss')} aria-label={t('dismiss')} onClick={() => setSnack(null)}>
-              <Icon name="close" size={20} />
-            </button>
-          )}
+          <button className="close state" title={t('dismiss')} aria-label={t('dismiss')} onClick={() => setSnack(null)}>
+            <Icon name="close" size={20} />
+          </button>
         </div>
       )}
     </div>

@@ -93,7 +93,7 @@ describe('canmatrixFormatFor', () => {
   });
 
   it('maps extensions to canmatrix import types and their packages', () => {
-    expect(canmatrixFormatFor('System.ARXML')).toEqual({ importType: 'arxml', packages: ['lxml'] });
+    expect(canmatrixFormatFor('System.ARXML')).toEqual({ importType: 'arxml', packages: ['lxml'], label: 'ARXML' });
     expect(canmatrixFormatFor('bus.xml')?.importType).toBe('fibex');
     expect(canmatrixFormatFor('matrix.yml')?.importType).toBe('yaml');
     expect(canmatrixFormatFor('notes.txt')).toBeUndefined();

@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { impDe, impEn } from './import/messages';
 
 export type Lang = 'en' | 'de';
 
@@ -13,7 +14,7 @@ const en = {
   // toolbar / app shell
   settings: 'Settings',
   language: 'Language',
-  welcomeTagline: 'A viewer for DBC CAN database files.',
+  welcomeTagline: 'A viewer for CAN database files.',
   welcomeOpen: 'Open file…',
   welcomeDrop: '…or drop a file anywhere in this window',
   welcomeExampleHint: 'An example database ships with the repository:',
@@ -32,7 +33,7 @@ const en = {
   openFile: 'Open file',
   themeToDark: 'Switch to dark theme',
   themeToLight: 'Switch to light theme',
-  welcomeFormats: 'DBC files open instantly. ARXML is read with canmatrix, which loads once on first use.',
+  welcomeFormats: 'DBC files open instantly. {formats} are read with canmatrix, which loads once on first use.',
   dismiss: 'Dismiss',
   copyLink: 'Copy link',
   linkCopied: 'Link copied',
@@ -197,6 +198,9 @@ const en = {
   edgeTitleMany: '{from} → {to}: {n} messages',
   nothing: 'nothing',
   graphClickHint: 'Click an ECU or a connection in the graph to list the messages behind it.',
+
+  // import UI (app/src/lib/import/messages.ts)
+  ...impEn,
 };
 
 export type MsgKey = keyof typeof en;
@@ -204,7 +208,7 @@ export type MsgKey = keyof typeof en;
 const de: Record<MsgKey, string> = {
   settings: 'Einstellungen',
   language: 'Sprache',
-  welcomeTagline: 'Ein Viewer für DBC-CAN-Datenbanken.',
+  welcomeTagline: 'Ein Viewer für CAN-Datenbanken.',
   welcomeOpen: 'Datei öffnen…',
   welcomeDrop: '…oder eine Datei einfach in dieses Fenster ziehen',
   welcomeExampleHint: 'Eine Beispiel-Datenbank liegt im Repository:',
@@ -222,7 +226,7 @@ const de: Record<MsgKey, string> = {
   openFile: 'Datei öffnen',
   themeToDark: 'Dunkles Design',
   themeToLight: 'Helles Design',
-  welcomeFormats: 'DBC-Dateien öffnen sofort. ARXML wird mit canmatrix gelesen, das beim ersten Mal einmalig geladen wird.',
+  welcomeFormats: 'DBC-Dateien öffnen sofort. {formats} werden mit canmatrix gelesen, das beim ersten Mal einmalig geladen wird.',
   dismiss: 'Schließen',
   copyLink: 'Link kopieren',
   linkCopied: 'Link kopiert',
@@ -381,6 +385,8 @@ const de: Record<MsgKey, string> = {
   edgeTitleMany: '{from} → {to}: {n} Botschaften',
   nothing: 'nichts',
   graphClickHint: 'ECU oder Verbindung im Graphen anklicken, um die zugehörigen Botschaften zu sehen.',
+
+  ...impDe,
 };
 
 const dictionaries: Record<Lang, Record<MsgKey, string>> = { en, de };

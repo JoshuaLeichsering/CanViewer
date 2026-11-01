@@ -7,6 +7,7 @@ import { useI18n } from '../lib/i18n';
 import { hexId } from '../lib/format';
 import { Icon } from './Icon';
 import { messageTag, MessageTag } from './MessageTag';
+import { ImportSource, IMP_PROBLEMS_ID } from './ImportSource';
 
 /** Rendering tens of thousands of problem rows would freeze the UI. */
 const MAX_PROBLEM_ROWS = 200;
@@ -59,6 +60,8 @@ export function Overview({
         {db.comment && <p className="lead">{db.comment}</p>}
       </header>
 
+      <ImportSource />
+
       <div className="facts wide large">
         {stats.map(([label, value]) => (
           <div className="fact" key={label}>
@@ -76,7 +79,7 @@ export function Overview({
               <b>{tn('problemsOne', 'problemsMany', db.problems.length)}.</b> {t('parseProblemsHint')}
             </span>
           </div>
-          <div className="card table-card">
+          <div className="card table-card" id={IMP_PROBLEMS_ID} tabIndex={-1}>
             <h2>{t('parseProblemsTitle', { n: db.problems.length })}</h2>
             <table className="m3">
               <thead>
