@@ -14,9 +14,10 @@
 // localhost, so the check also shows that reading and decoding logs stays in
 // the tab: it fails on any request outside the app's origin.
 //
-// Usage (Playwright must be installed; it is not a dependency of the app):
-//   npm run build && npx vite preview --port 4173 --strictPort &
-//   node e2e/trc-traces-encoder.mjs http://localhost:4173/ <out-dir> [frames]
+// Usage (Playwright is a dev dependency; `npx playwright install chromium`
+// fetches its browser):
+//   npm run build && npx vite preview --port 4179 --strictPort &
+//   node e2e/trc-traces-encoder.mjs http://localhost:4179/ <out-dir> [frames]
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';

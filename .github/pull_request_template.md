@@ -12,7 +12,7 @@
 - [ ] `npm run build`
 - [ ] the network check reports `requests outside …: 0`
 - [ ] `npm run e2e`, `node e2e/ui-checks.mjs` and `node --test e2e/import-ui.test.mjs`
-- [ ] `node e2e/signal-table.mjs`, `node e2e/large-database.mjs`, `node e2e/export-check.mjs` and `node e2e/diff-check.mjs`
+- [ ] `node e2e/signal-table.mjs`, `node e2e/large-database.mjs`, `node e2e/export-check.mjs`, `node e2e/diff-check.mjs` and `node e2e/trc-traces-encoder.mjs`
 - [ ] `npm run check:identifying-info` and `npm run check:licenses`
 
 ## Checklist
