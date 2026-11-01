@@ -35,13 +35,7 @@ html:not(.dark) img.doc-dark-only {
   border-radius: 12px;
 }
 
-.vp-doc .doc-shot-row {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 16px;
-}
-
-/* Generated tables of the format reference are wide: let them scroll. */
+/* Numbers in tables line up, the generated counts of the format reference above all. */
 .vp-doc table {
   font-variant-numeric: tabular-nums;
 }

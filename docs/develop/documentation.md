@@ -83,16 +83,31 @@ that the format table names exactly the formats in `formats.ts`, that every kind
 difference in the baselines has a label, and that the DBC reference lists every
 statement the parser skips.
 
+Numbers that the prose repeats are checked too, on every page: the counts of the
+corpora (*58 real-world DBC files*, *114 files in other formats*, *70 comparisons with
+their DBC twins*, and the like) against the baselines, and the download sizes of the
+first import against the files that make it up. Write such a number in one of the forms
+the test knows, or add a pattern for a new one; the test lists them.
+
 ## Checks
 
 | Check | What it proves |
 |---|---|
 | `npx tsc -p docs/.vitepress` | The site's configuration and Markdown rules type-check |
 | `node scripts/docs/check-links.mjs --sources` | Every relative link in every Markdown file of the repository points at a file that exists, and every `#fragment` on a link to a Markdown file at one of its headings |
-| `vitepress build docs` | VitePress's own check of links between pages, and the link rule's check of links to repository files |
+| `vitepress build docs` | VitePress's own check of links between pages, the link rule's check of links to repository files, and [`site-legal.mjs`](../../scripts/docs/site-legal.mjs)'s check that `THIRD_PARTY_NOTICES.md` covers every package the pages bundle |
 | `node scripts/docs/check-links.mjs --site <dir> --base /CanViewer/` | In the built site, every link and asset resolves to a file, every `#fragment` to an id, nothing leaves the base path, and every page is linked from another |
 | `node e2e/docs-crawl.mjs <site-url> <out-dir>` | Chromium visits every page and runs a search, with every host but `localhost` blocked: no request outside the origin, no failed request, no error in the page |
 | `node e2e/network-check.mjs` against `/app/` | The web app as published makes no request outside its origin, online and offline |
+
+## License and notices
+
+The site's pages carry VitePress's default theme, Vue and a few small libraries, besides
+the app's fonts. [`scripts/docs/site-legal.mjs`](../../scripts/docs/site-legal.mjs), a
+plugin of the site's build, fails the build when `THIRD_PARTY_NOTICES.md` has no row for
+a package the pages bundle, or when `DOCS_SITE` in `scripts/license-policy.mjs` lists one
+they do not. It publishes `LICENSE.txt` and `THIRD_PARTY_NOTICES.txt` next to the pages,
+and the footer of the home page links both.
 
 ## Publishing
 
@@ -109,8 +124,9 @@ site:
 4. on `main`, and only when the repository is public, uploads the site and deploys it to
    GitHub Pages.
 
-It runs on pull requests that touch the app, the docs, their scripts or the workflow
-(build and checks only), on pushes to `main`, and on demand. Pages has to be enabled
+It runs on pull requests that touch the app, the docs, the Markdown files at the root,
+their scripts or the workflow (build and checks only), on pushes to `main`, and on
+demand. The source link check also runs in `ci.yml`, on every push and pull request. Pages has to be enabled
 once in the repository's settings (source: GitHub Actions); a private repository needs
 a paid plan for it, so the site goes live when the repository is public.
 

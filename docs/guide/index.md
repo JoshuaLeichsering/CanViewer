@@ -65,10 +65,21 @@ loaded, everything happens in your browser, and after the first visit it also wo
 offline. [Privacy and offline use](./privacy.md) explains what the host of the app can
 and cannot see.
 
+## Free software
+
+CanViewer is free software under the GNU General Public License, version 2 or later.
+Its license and the notices of the third-party software it includes come with every
+copy: next to the web app as `LICENSE.txt` and `THIRD_PARTY_NOTICES.md`, inside every
+desktop package ([where](./install.md#where-the-app-keeps-its-files)), and with this site,
+linked at the foot of its home page. The source is on
+[GitHub](https://github.com/JoshuaLeichsering/CanViewer).
+
 ## Where to go next
 
-- [Opening files](./opening-files.md): the ways to open a file, encodings, and links
-  to a message.
+- [Opening files](./opening-files.md): the ways to open a file, encodings, links to a
+  message, and what to do if CanViewer fails.
+- [Keyboard](./keyboard.md): the keys for the search, the lists, the tables and the
+  dialogs.
 - [The desktop app](./desktop.md): the same app as a program for Windows, macOS and
   Linux.
 - [Developer guide](../develop/index.md): build and test CanViewer yourself.

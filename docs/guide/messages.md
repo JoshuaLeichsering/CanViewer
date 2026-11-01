@@ -20,7 +20,8 @@ signals and the cycle time, with the same **FD**, **J1939** and **EXT** tags as 
 - **The keyboard**: `/` anywhere outside a text field focuses the search, also while
   the settings menu is open. In the list, ↑ and ↓ move from message to message, and
   Home and End go to the first and the last. From the search field, ↓ goes to the
-  selected message (or the first match), and Enter opens it.
+  selected message (or the first match), and Enter opens it. [Keyboard](./keyboard.md)
+  lists every key.
 - **Large databases**: above 1000 messages the list renders only the rows in view, so
   scrolling, the search and the filter chips stay quick (it is checked with 5000
   messages). A row with the keyboard focus keeps it while it scrolls out of view, and a

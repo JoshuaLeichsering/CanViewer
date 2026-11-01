@@ -42,9 +42,10 @@ launch, updating and uninstalling on each system.
 
 ## What is different from the web app
 
-- **Exports** are saved in your Downloads folder: on Windows the user's Downloads
-  folder, on macOS `~/Downloads`, on Linux the XDG Downloads folder. A name that is
-  taken gets a number rather than overwriting the file.
+- **Exports** and files saved as DBC go to your Downloads folder: on Windows the
+  user's Downloads folder, on macOS `~/Downloads`, on Linux the XDG Downloads folder
+  named in `~/.config/user-dirs.dirs` (or the app's working directory, when that file
+  names none). A name that is taken gets a number rather than overwriting the file.
 - **The app keeps its data** (the last file you opened, the theme, the language) in a
   folder of its own instead of the browser's storage. The
   [install guide](./install.md#where-the-app-keeps-its-files) says where, and how to

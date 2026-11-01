@@ -31,6 +31,8 @@ const DEMO_V2 = join(root, 'examples/demo-v2.dbc');
 const DEMO_ASC = join(root, 'examples/demo.asc');
 const ARXML = join(root, 'third_party/canmatrix/tests/files/arxml/test.arxml');
 const PROBLEMS = join(root, 'third_party/opendbc/opendbc/dbc/vw_mqb.dbc');
+// Three buses in one file.
+const CLUSTERS = join(root, 'third_party/cantools/tests/files/kcd/the_homer.kcd');
 
 const EN = [['en', 'light'], ['en', 'dark']];
 const BOTH = [...EN, ['de', 'light'], ['de', 'dark']];
@@ -66,6 +68,8 @@ const SHOTS = [
   { name: 'tables', file: DEMO, hash: '#vt=GearPositions', variants: EN },
   { name: 'problems', file: PROBLEMS, variants: EN },
   { name: 'import', file: ARXML, variants: EN },
+  // The source card with the choice of cluster, on the overview.
+  { name: 'clusters', file: CLUSTERS, clip: '[data-testid=imp-source]', variants: EN },
   {
     name: 'export',
     file: DEMO,
@@ -115,6 +119,16 @@ const SHOTS = [
     run: async (page) => {
       await page.click('[data-testid=edt-edit-signal]');
       await page.waitForSelector('[role=dialog]');
+    },
+    variants: EN,
+  },
+  // Save as DBC on a file with lines CanViewer could not read: the list of what the file would lack.
+  {
+    name: 'save-dbc',
+    file: PROBLEMS,
+    run: async (page) => {
+      await page.click('[data-testid=edt-save-dbc]');
+      await page.waitForSelector('[data-testid=edt-issues-dialog]');
     },
     variants: EN,
   },

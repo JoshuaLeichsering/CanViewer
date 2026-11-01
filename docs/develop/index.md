@@ -78,7 +78,8 @@ Why the web app is not at the root, as in Vite's templates: [decision record
 ## Conventions
 
 - Everything in the repository is in English. The UI is in English and German: every
-  string lives in [`i18n.tsx`](../../app/src/lib/i18n.tsx) in both languages.
+  string lives in [`i18n.tsx`](../../app/src/lib/i18n.tsx) in both languages (those of
+  the Traces view and the frame encoder in [`i18n-trc.ts`](../../app/src/lib/i18n-trc.ts)).
 - Paths in documentation and comments are written from the repository root.
 - The app makes no request outside its own origin. Do not add one: fonts, icons and the
   Python runtime are all self-hosted ([decision record 0003](../decisions/0003-self-hosted-pyodide-worker.md)).
@@ -88,4 +89,6 @@ Why the web app is not at the root, as in Vite's templates: [decision record
   (`#` in Python, `/* */` in CSS). `node scripts/check-spdx-headers.mjs --fix` adds it.
 - A new dependency is pinned, under a license `scripts/license-policy.mjs` allows, and
   `THIRD_PARTY_NOTICES.md` is regenerated. Removing one also removes its entry in the
-  policy: the license check fails on entries that match nothing.
+  policy: the license check fails on entries that match nothing. The same holds for the
+  documentation site: when an update of VitePress changes what its pages bundle, the
+  site's build names the package, which then goes into `DOCS_SITE` in the policy.

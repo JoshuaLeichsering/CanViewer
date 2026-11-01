@@ -35,7 +35,11 @@ canmatrix's own readers are shown as canmatrix wrote them.
   link to the problems canmatrix reported.
 - **A choice of cluster.** Where a file describes several buses (clusters), as ARXML,
   KCD and FIBEX files can, the overview lists them, and you pick the one to show. The
-  first one with messages is shown to start with. cantools' `the_homer.kcd` holds three.
+  first one with messages is shown to start with. cantools' `the_homer.kcd` holds three:
+
+  ![The source card of the_homer.kcd: imported from KCD, with its clusters Motor, Instrumentation and Comfort](./images/clusters-en-light.webp#gh-light-mode-only)
+  ![The source card of the_homer.kcd: imported from KCD, with its clusters Motor, Instrumentation and Comfort](./images/clusters-en-dark.webp#gh-dark-mode-only)
+
 - Every warning or error canmatrix reported, and every line it dropped, as a parse
   problem on the overview. The screenshot above shows one: the file was read a second
   time with the cluster information ignored.

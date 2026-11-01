@@ -180,9 +180,9 @@ jobs:
 
   licenses:
     # What the repository needs to be public: no identifying information in the
-    # tree, a license header on every source file, only allowed licenses among
-    # the npm packages, the wheels and the Rust crates, and third-party notices
-    # that match what ships.
+    # tree, no broken relative link in its Markdown, a license header on every
+    # source file, only allowed licenses among the npm packages, the wheels and
+    # the Rust crates, and third-party notices that match what ships.
     name: licenses, notices, identifying information
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -207,6 +207,11 @@ jobs:
 
       - name: No identifying information in the working tree
         run: node scripts/check-identifying-info.mjs
+
+      # On every push and pull request: pages.yml runs it too, but only for
+      # changes to what the site is built from.
+      - name: Relative links in every Markdown file
+        run: node scripts/docs/check-links.mjs --sources
 
       - name: Tests of the scripts (licenses, notices, release tooling, the install runbook)
         run: npm run test:scripts

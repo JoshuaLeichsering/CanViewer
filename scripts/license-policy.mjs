@@ -349,6 +349,62 @@ export const BUILD_HELPERS = [
   },
 ];
 
+/**
+ * The documentation site (docs/, built with VitePress and published with
+ * GitHub Pages next to the web app). Its pages carry VitePress's default theme
+ * and what the theme uses: dev dependencies of the repository, so not among
+ * the production dependencies the web app's notices are read from.
+ *
+ * - `packages`: every npm package with code or styles in the site's client
+ *   bundle, besides the web app's fonts, which the site shares. Their versions,
+ *   licenses and license files come from package-lock.json and node_modules/;
+ *   `notice` names the file whose leading comment is a package's notice when it
+ *   ships no license file.
+ * - `helpers`: the code the build tools add to the site's JavaScript, as in
+ *   BUILD_HELPERS.
+ *
+ * The site's build (scripts/docs/site-legal.mjs) fails when its bundle and this
+ * list disagree, in either direction.
+ */
+export const DOCS_SITE = {
+  packages: [
+    { name: '@docsearch/css', notice: 'dist/style.css' },
+    { name: '@vue/reactivity' },
+    { name: '@vue/runtime-core' },
+    { name: '@vue/runtime-dom' },
+    { name: '@vue/shared' },
+    { name: '@vueuse/core' },
+    { name: '@vueuse/integrations' },
+    { name: '@vueuse/shared' },
+    { name: 'focus-trap' },
+    { name: 'mark.js' },
+    { name: 'minisearch' },
+    { name: 'tabbable' },
+    { name: 'vitepress' },
+    { name: 'vue' },
+  ],
+  helpers: [
+    {
+      name: 'Vite (runtime helpers, as VitePress builds the site)',
+      versionOf: 'vitepress/node_modules/vite',
+      license: 'MIT',
+      source: 'https://github.com/vitejs/vite',
+      note: 'The module preload helper that Vite adds to the site’s JavaScript, from the copy of Vite that VitePress uses.',
+      ids: [/^\0vite\/preload-helper(\.js)?$/],
+      text: { file: 'node_modules/vitepress/node_modules/vite/LICENSE.md', from: /^# Vite core license$/m, to: /^# Licenses of bundled dependencies$/m },
+    },
+    {
+      name: '@vitejs/plugin-vue (export helper)',
+      versionOf: '@vitejs/plugin-vue',
+      license: 'MIT',
+      source: 'https://github.com/vitejs/vite-plugin-vue',
+      note: 'The helper with which the plugin attaches the render functions of the theme’s Vue components.',
+      ids: [/^\0plugin-vue:export-helper$/],
+      text: { file: 'node_modules/@vitejs/plugin-vue/LICENSE', from: /^MIT License$/m, to: /$(?![\s\S])/ },
+    },
+  ],
+};
+
 /** Virtual modules of CanViewer's own Vite plugins (scripts/vite-plugins.ts), by module id. */
 export const OWN_VIRTUAL_MODULES = [/^\0virtual:canviewer-/];
 

@@ -145,3 +145,20 @@ test('the notices list build helpers, crate file notices and the Rust standard l
   assert.match(md, new RegExp(`^\\| \\[alpha\\].*\\[Text ${notice[1]}\\]`, 'm'));
   assert.match(md, /alpha 1\.0\.0, src\/keys\.rs:\n\nCopyright W3C/);
 });
+
+test('the notices list the documentation site, and the fonts it shares with the app', () => {
+  const data = sample();
+  data.npm.push({ name: '@fontsource/roboto-mono', version: '5.3.0', license: 'OFL-1.1', source: 'https://example.org/fonts', files: ['SIL Open Font License'], policyTexts: [] });
+  data.docsSite = {
+    packages: [{ name: 'vue', version: '3.5.44', license: 'MIT', source: 'https://example.org/vue', files: [mit('Evan You')], standard: [] }],
+    helpers: [{ name: 'Vite (runtime helpers, as VitePress builds the site)', version: '5.4.21', license: 'MIT', source: 'https://example.org/vite', files: [mit('Vite')] }],
+  };
+  const md = render(data);
+  assert.match(md, /^\| \[vue\]\(#vue\) \| 3\.5\.44 \| MIT \| documentation site \|$/m);
+  assert.match(md, /^\| \[Vite \(runtime helpers, as VitePress builds the site\)\]\(#vite-runtime-helpers-as-vitepress-builds-the-site\) \| 5\.4\.21 \| MIT \| documentation site \|$/m);
+  assert.match(md, /^\| \[@fontsource\/roboto-mono\]\(#fontsourceroboto-mono\) \| 5\.3\.0 \| OFL-1\.1 \| web app, desktop app, documentation site \|$/m);
+  assert.match(md, /^## Documentation site$/m);
+  assert.match(md, /Copyright \(c\) Evan You/);
+  // Without the site, the fonts ship in the apps only.
+  assert.match(render(sample()), /^(?![\s\S]*documentation site)/);
+});

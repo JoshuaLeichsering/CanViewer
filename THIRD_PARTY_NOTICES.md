@@ -24,8 +24,8 @@ script or `scripts/license-policy.mjs`, not this file.
 | [react](#react) | 18.3.1 | MIT | web app, desktop app |
 | [react-dom](#react-dom) | 18.3.1 | MIT | web app, desktop app |
 | [scheduler](#scheduler) | 0.23.2 | MIT | web app, desktop app |
-| [@fontsource-variable/roboto-flex](#fontsource-variableroboto-flex) | 5.3.0 | OFL-1.1 | web app, desktop app |
-| [@fontsource/roboto-mono](#fontsourceroboto-mono) | 5.3.0 | OFL-1.1 | web app, desktop app |
+| [@fontsource-variable/roboto-flex](#fontsource-variableroboto-flex) | 5.3.0 | OFL-1.1 | web app, desktop app, documentation site |
+| [@fontsource/roboto-mono](#fontsourceroboto-mono) | 5.3.0 | OFL-1.1 | web app, desktop app, documentation site |
 | [Material Symbols (icon paths)](#material-symbols-icon-paths) | @material-symbols/svg-400 0.48.2 | Apache-2.0 | web app, desktop app |
 | [Vite (runtime helpers)](#vite-runtime-helpers) | 6.4.3 | MIT | web app, desktop app |
 | [@rollup/plugin-commonjs (helpers, as bundled in Vite)](#rollupplugin-commonjs-helpers-as-bundled-in-vite) | in vite 6.4.3 | MIT | web app, desktop app |
@@ -60,6 +60,22 @@ script or `scripts/license-policy.mjs`, not this file.
 | [six](#six) | 1.17.0 | MIT | web app, desktop app |
 | [Rust crates](#rust-crates) | 406 crates | see the list | desktop app |
 | [Rust standard library](#rust-standard-library) | 1.97.0 | see the list | desktop app |
+| [@docsearch/css](#docsearchcss) | 3.8.2 | MIT | documentation site |
+| [@vue/reactivity](#vuereactivity) | 3.5.44 | MIT | documentation site |
+| [@vue/runtime-core](#vueruntime-core) | 3.5.44 | MIT | documentation site |
+| [@vue/runtime-dom](#vueruntime-dom) | 3.5.44 | MIT | documentation site |
+| [@vue/shared](#vueshared) | 3.5.44 | MIT | documentation site |
+| [@vueuse/core](#vueusecore) | 12.8.2 | MIT | documentation site |
+| [@vueuse/integrations](#vueuseintegrations) | 12.8.2 | MIT | documentation site |
+| [@vueuse/shared](#vueuseshared) | 12.8.2 | MIT | documentation site |
+| [focus-trap](#focus-trap) | 7.8.0 | MIT | documentation site |
+| [mark.js](#markjs) | 8.11.1 | MIT | documentation site |
+| [minisearch](#minisearch) | 7.2.0 | MIT | documentation site |
+| [tabbable](#tabbable) | 6.5.1 | MIT | documentation site |
+| [vitepress](#vitepress) | 1.6.4 | MIT | documentation site |
+| [vue](#vue) | 3.5.44 | MIT | documentation site |
+| [Vite (runtime helpers, as VitePress builds the site)](#vite-runtime-helpers-as-vitepress-builds-the-site) | 5.4.21 | MIT | documentation site |
+| [@vitejs/plugin-vue (export helper)](#vitejsplugin-vue-export-helper) | 5.2.4 | MIT | documentation site |
 
 ## Web app
 
@@ -92,7 +108,7 @@ Bundled into the app’s JavaScript.
 
 ### Fonts
 
-The Latin subsets, as font files next to the app’s JavaScript.
+The Latin subsets, as font files next to the app’s JavaScript. The documentation site uses the same files.
 
 #### @fontsource-variable/roboto-flex
 
@@ -827,6 +843,134 @@ Linked statically into the desktop binary on all three systems, from the Rust to
 | object | 0.37.3 | Apache-2.0 OR MIT | [Text 241](#text-241) |
 | rustc-demangle | 0.1.27 | MIT/Apache-2.0 | [Text 64](#text-64) |
 
+## Documentation site
+
+What the documentation site’s pages ship, besides the fonts listed under the web app: VitePress’s default theme and what it uses. The site publishes this file next to its pages as `THIRD_PARTY_NOTICES.txt`.
+
+### JavaScript and styles
+
+Bundled into the site’s JavaScript and CSS.
+
+#### @docsearch/css
+
+- Version: 3.8.2
+- License: MIT
+- Source: <https://github.com/algolia/docsearch>
+- License text: [Text 242](#text-242), [Text 12](#text-12)
+
+#### @vue/reactivity
+
+- Version: 3.5.44
+- License: MIT
+- Source: <https://github.com/vuejs/core>
+- License text: [Text 243](#text-243)
+
+#### @vue/runtime-core
+
+- Version: 3.5.44
+- License: MIT
+- Source: <https://github.com/vuejs/core>
+- License text: [Text 243](#text-243)
+
+#### @vue/runtime-dom
+
+- Version: 3.5.44
+- License: MIT
+- Source: <https://github.com/vuejs/core>
+- License text: [Text 243](#text-243)
+
+#### @vue/shared
+
+- Version: 3.5.44
+- License: MIT
+- Source: <https://github.com/vuejs/core>
+- License text: [Text 243](#text-243)
+
+#### @vueuse/core
+
+- Version: 12.8.2
+- License: MIT
+- Source: <https://github.com/vueuse/vueuse>
+- License text: [Text 244](#text-244)
+
+#### @vueuse/integrations
+
+- Version: 12.8.2
+- License: MIT
+- Source: <https://github.com/vueuse/vueuse>
+- License text: [Text 244](#text-244)
+
+#### @vueuse/shared
+
+- Version: 12.8.2
+- License: MIT
+- Source: <https://github.com/vueuse/vueuse>
+- License text: [Text 244](#text-244)
+
+#### focus-trap
+
+- Version: 7.8.0
+- License: MIT
+- Source: <https://github.com/focus-trap/focus-trap>
+- License text: [Text 245](#text-245)
+
+#### mark.js
+
+- Version: 8.11.1
+- License: MIT
+- Source: <https://github.com/julmot/mark.js>
+- License text: [Text 246](#text-246)
+
+#### minisearch
+
+- Version: 7.2.0
+- License: MIT
+- Source: <https://github.com/lucaong/minisearch>
+- License text: [Text 247](#text-247)
+
+#### tabbable
+
+- Version: 6.5.1
+- License: MIT
+- Source: <https://github.com/focus-trap/tabbable>
+- License text: [Text 248](#text-248)
+
+#### vitepress
+
+- Version: 1.6.4
+- License: MIT
+- Source: <https://github.com/vuejs/vitepress>
+- License text: [Text 249](#text-249)
+
+#### vue
+
+- Version: 3.5.44
+- License: MIT
+- Source: <https://github.com/vuejs/core>
+- License text: [Text 243](#text-243)
+
+### Build tool helpers
+
+Small pieces of code that the build tools add to the site’s JavaScript, with the version of the tool.
+
+#### Vite (runtime helpers, as VitePress builds the site)
+
+The module preload helper that Vite adds to the site’s JavaScript, from the copy of Vite that VitePress uses.
+
+- Version: 5.4.21
+- License: MIT
+- Source: <https://github.com/vitejs/vite>
+- License text: [Text 5](#text-5)
+
+#### @vitejs/plugin-vue (export helper)
+
+The helper with which the plugin attaches the render functions of the theme’s Vue components.
+
+- Version: 5.2.4
+- License: MIT
+- Source: <https://github.com/vitejs/vite-plugin-vue>
+- License text: [Text 250](#text-250)
+
 ## License texts
 
 ### Text 1
@@ -1139,7 +1283,7 @@ limitations under the License.
 
 ### Text 5
 
-Used by: Vite (runtime helpers).
+Used by: Vite (runtime helpers), Vite (runtime helpers, as VitePress builds the site).
 
 ```text
 # Vite core license
@@ -2798,7 +2942,7 @@ Licensed under the Apache 2.0 and MIT Licenses.
 
 ### Text 12
 
-Used by: KaRaMeL krmllib (in CPython’s HACL* copy), block2 0.6.2, dlopen2 0.8.2, dlopen2_derive 0.4.3, jni-sys-macros 0.4.1, ndk 0.9.0, ndk-context 0.1.1, ndk-sys 0.6.0+11769913, objc2 0.6.5, objc2-encode 4.1.0, objc2-foundation 0.3.2, r-efi 5.3.0 and 7 more.
+Used by: KaRaMeL krmllib (in CPython’s HACL* copy), block2 0.6.2, dlopen2 0.8.2, dlopen2_derive 0.4.3, jni-sys-macros 0.4.1, ndk 0.9.0, ndk-context 0.1.1, ndk-sys 0.6.0+11769913, objc2 0.6.5, objc2-encode 4.1.0, objc2-foundation 0.3.2, r-efi 5.3.0 and 8 more.
 
 ```text
 MIT License
@@ -12548,4 +12692,224 @@ CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
+```
+
+### Text 242
+
+Used by: @docsearch/css.
+
+```text
+@docsearch/css 3.8.2, dist/style.css:
+
+@docsearch/css 3.8.2 | MIT License | © Algolia, Inc. and contributors | https://docsearch.algolia.com
+```
+
+### Text 243
+
+Used by: @vue/reactivity, @vue/runtime-core, @vue/runtime-dom, @vue/shared, vue.
+
+```text
+The MIT License (MIT)
+
+Copyright (c) 2018-present, Yuxi (Evan) You
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+```
+
+### Text 244
+
+Used by: @vueuse/core, @vueuse/integrations, @vueuse/shared.
+
+```text
+MIT License
+
+Copyright (c) 2019-PRESENT Anthony Fu<https://github.com/antfu>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+### Text 245
+
+Used by: focus-trap.
+
+```text
+The MIT License (MIT)
+
+Copyright (c) 2015-2016 David Clark
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+### Text 246
+
+Used by: mark.js.
+
+```text
+The MIT License (MIT)
+
+Copyright (c) 2014–2018 Julian Kühnel
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+### Text 247
+
+Used by: minisearch.
+
+```text
+Copyright 2022 Luca Ongaro
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+```
+
+### Text 248
+
+Used by: tabbable.
+
+```text
+The MIT License (MIT)
+
+Copyright (c) 2015 David Clark
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+### Text 249
+
+Used by: vitepress.
+
+```text
+MIT License
+
+Copyright (c) 2019-present, Yuxi (Evan) You
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+### Text 250
+
+Used by: @vitejs/plugin-vue (export helper).
+
+```text
+MIT License
+
+Copyright (c) 2019-present, Yuxi (Evan) You and Vite contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 ```

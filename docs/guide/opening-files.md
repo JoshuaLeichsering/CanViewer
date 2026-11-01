@@ -60,9 +60,20 @@ again on the next visit: a DBC file in local storage, a file imported through ca
 in IndexedDB, with the cluster you picked. A file too large for the browser's storage
 quota is not kept. It opens normally, it just does not come back after a reload.
 
-If the stored file ever makes CanViewer fail, the recovery screen it shows instead
-offers **Reset stored file**, which forgets it and starts CanViewer empty, and
-**Reload**.
+## If CanViewer fails
+
+Should a view ever run into an error, CanViewer shows a recovery screen, *Something went
+wrong*, instead of a blank page. Because the last file opens again on every start, a
+file that makes a view fail would make it fail after every reload too, so the screen
+offers two ways out:
+
+- **Reset stored file** forgets the stored file, DBC or imported, and the link to the
+  view, and starts CanViewer empty. The file on your disk is not touched.
+- **Reload** tries again with the stored file.
+
+**Error details** shows the error and where it happened; include it when you
+[report the problem](https://github.com/JoshuaLeichsering/CanViewer/issues). The screen
+takes the keyboard focus, so Tab goes straight to its buttons.
 
 ## Links to a message
 

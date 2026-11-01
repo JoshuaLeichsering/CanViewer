@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 // SPDX-License-Identifier: GPL-2.0-or-later
-// Generates THIRD_PARTY_NOTICES.md: every third-party component the web app
-// and the desktop app ship, with its version, license, source and license
-// texts. The Vite build copies the file into dist/, and the desktop packages
-// carry it too.
+// Generates THIRD_PARTY_NOTICES.md: every third-party component the web app,
+// the desktop app and the documentation site ship, with its version, license,
+// source and license texts. The Vite build copies the file into dist/, the
+// desktop packages carry it too, and the site's build publishes it as
+// THIRD_PARTY_NOTICES.txt.
 //
 //   node scripts/third-party-notices.mjs          write THIRD_PARTY_NOTICES.md
 //   node scripts/third-party-notices.mjs --check  fail if the file is not up to date
@@ -18,6 +19,9 @@
 //     license files (needs cargo, and downloads the crates once);
 //   - the helpers the build tools put into the bundle: package-lock.json for
 //     their version and their license files in node_modules/;
+//   - the documentation site: DOCS_SITE in scripts/license-policy.mjs names the
+//     packages its pages bundle (dev dependencies), and package-lock.json and
+//     node_modules/ give their versions, licenses and license files;
 //   - what no metadata describes (the libraries inside the Pyodide runtime and
 //     inside two wheels, the icon paths copied into the sources, notices in
 //     crates' source files, and the Rust standard library):
@@ -33,6 +37,7 @@ import { fileURLToPath } from 'node:url';
 import {
   BUILD_HELPERS,
   CRATE_FILE_NOTICES,
+  DOCS_SITE,
   NOT_BUNDLED,
   NPM_TEXTS,
   PYODIDE_COMPONENTS,
@@ -129,6 +134,8 @@ function repoUrl(pkg) {
     .replace(/^git\+/, '')
     .replace(/^git:\/\//, 'https://')
     .replace(/^github:/, 'https://github.com/')
+    // npm's shorthand for a GitHub repository: "owner/name".
+    .replace(/^([\w.-]+\/[\w.-]+)$/, 'https://github.com/$1')
     .replace(/\.git$/, '')
     .replace(/^(https:\/\/github\.com\/[^/]+\/[^/#]+).*$/, '$1');
 }
@@ -235,15 +242,37 @@ export function excerpt(text, from, to) {
     .join('\n');
 }
 
-function collectBuildHelpers() {
+function collectBuildHelpers(helpers = BUILD_HELPERS) {
   const lock = JSON.parse(readFileSync(join(root, 'package-lock.json'), 'utf8'));
-  return BUILD_HELPERS.map((h) => {
+  return helpers.map((h) => {
     const version = lock.packages[`node_modules/${h.versionOf}`]?.version;
     if (!version) throw new Error(`${h.name}: ${h.versionOf} is not in package-lock.json`);
     const text = excerpt(readFileSync(join(root, h.text.file), 'utf8'), h.text.from, h.text.to);
     if (!text) throw new Error(`${h.name}: its license text is no longer found in ${h.text.file}; update BUILD_HELPERS`);
     return { ...h, version: h.bundledIn ? `in ${h.versionOf} ${version}` : version, files: [text] };
   });
+}
+
+/** The packages and build helpers of the documentation site, as DOCS_SITE lists them. */
+function collectDocsSite() {
+  const lock = JSON.parse(readFileSync(join(root, 'package-lock.json'), 'utf8'));
+  const packages = DOCS_SITE.packages.map(({ name, notice }) => {
+    const key = `node_modules/${name}`;
+    const entry = lock.packages[key];
+    if (!entry) throw new Error(`DOCS_SITE: ${name} is not in package-lock.json; remove the entry`);
+    const dir = join(root, key);
+    const pkg = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8'));
+    const files = readdirSync(dir).filter((f) => LICENSE_FILE.test(f)).sort().map((f) => readFileSync(join(dir, f), 'utf8'));
+    if (notice) {
+      const comment = readFileSync(join(dir, notice), 'utf8').match(/^\/\*!?([\s\S]*?)\*\//);
+      if (!comment) throw new Error(`DOCS_SITE: ${name}/${notice} no longer starts with a notice comment; update the entry`);
+      files.push(`${name} ${entry.version}, ${notice}:\n\n${comment[1].trim()}`);
+    }
+    // A package that ships no license file gets the standard text, besides its notice.
+    const standard = readdirSync(dir).some((f) => LICENSE_FILE.test(f)) ? [] : standardTextsFor(entry.license);
+    return { name, version: entry.version, license: entry.license, source: repoUrl(pkg), files, standard };
+  });
+  return { packages: packages.sort((a, b) => byText(a.name, b.name)), helpers: collectBuildHelpers(DOCS_SITE.helpers) };
 }
 
 /** A comment block without its comment markers: //, ///, //!, /*, * and *\/. */
@@ -356,7 +385,7 @@ function collectCrates() {
 
 // ---------------------------------------------------------------- render
 
-export function render({ npm, wheels, crates, buildHelpers = [], rustStd }) {
+export function render({ npm, wheels, crates, buildHelpers = [], rustStd, docsSite }) {
   const texts = new Texts();
   const slugger = new Slugger();
   const contents = [];
@@ -391,8 +420,13 @@ export function render({ npm, wheels, crates, buildHelpers = [], rustStd }) {
   section('JavaScript libraries', 'Bundled into the app’s JavaScript.');
   for (const p of libraries) component(p.name, { ...p, textFiles: p.policyTexts });
 
-  section('Fonts', 'The Latin subsets, as font files next to the app’s JavaScript.');
-  for (const p of fonts) component(p.name, { ...p, textFiles: p.policyTexts });
+  section(
+    'Fonts',
+    docsSite
+      ? 'The Latin subsets, as font files next to the app’s JavaScript. The documentation site uses the same files.'
+      : 'The Latin subsets, as font files next to the app’s JavaScript.',
+  );
+  for (const p of fonts) component(p.name, { ...p, textFiles: p.policyTexts, shipsIn: docsSite ? `${WEB}, documentation site` : WEB });
 
   section('Icons');
   for (const v of VENDORED) component(v.name, { ...v, textFiles: v.texts });
@@ -490,6 +524,22 @@ export function render({ npm, wheels, crates, buildHelpers = [], rustStd }) {
     contents.push(`| [${heading}](#${anchor}) | ${rustStd.version} | see the list | desktop app |`);
   }
 
+  if (docsSite) {
+    const SITE = 'documentation site';
+    slugger.slug('Documentation site');
+    body.push(
+      '## Documentation site',
+      '',
+      'What the documentation site’s pages ship, besides the fonts listed under the web app: VitePress’s default theme and what it uses. ' +
+        'The site publishes this file next to its pages as `THIRD_PARTY_NOTICES.txt`.',
+      '',
+    );
+    section('JavaScript and styles', 'Bundled into the site’s JavaScript and CSS.');
+    for (const p of docsSite.packages) component(p.name, { ...p, textFiles: p.standard, shipsIn: SITE });
+    section('Build tool helpers', 'Small pieces of code that the build tools add to the site’s JavaScript, with the version of the tool.');
+    for (const h of docsSite.helpers) component(h.name, { ...h, shipsIn: SITE });
+  }
+
   body.push('## License texts', '');
   for (const t of texts.list) {
     const fence = '`'.repeat(Math.max(3, ...[...t.text.matchAll(/`+/g)].map((m) => m[0].length + 1)));
@@ -535,6 +585,7 @@ function main() {
     crates: collectCrates(),
     buildHelpers: collectBuildHelpers(),
     rustStd: collectRustStd(),
+    docsSite: collectDocsSite(),
   });
   if (check) {
     const current = existsSync(OUT) ? readFileSync(OUT, 'utf8') : '';

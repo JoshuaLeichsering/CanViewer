@@ -115,7 +115,9 @@ PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS=1 node e2e/network-check.mjs \
   examples/demo.dbc dist
 ```
 
-The last line of its summary must read `requests outside http://localhost:4173: 0`.
+Its summary must include the line `requests outside http://localhost:4173: 0`, and the
+two lines after it, the origins in the HAR file and in Chromium's net-log, must name
+only `http://localhost:4173`.
 
 ## The browser checks
 
@@ -140,8 +142,8 @@ has the commands to run them:
 
 | Workflow | When | What |
 |---|---|---|
-| [`ci.yml`](../../.github/workflows/ci.yml) | pushes to `main`, pull requests | type check, every test with coverage and the report check, the build, the network check and every browser check above but the crawl; a second job for licenses, notices, the tests of the scripts and identifying information |
-| [`pages.yml`](../../.github/workflows/pages.yml) | pushes to `main` and pull requests that touch the app, the docs or their scripts | the documentation site and the app under `/app/`, link checks, the network check on the published app, a crawl of the site; deploys from `main` once the repository is public ([Documentation](./documentation.md)) |
+| [`ci.yml`](../../.github/workflows/ci.yml) | pushes to `main`, pull requests | type check, every test with coverage and the report check, the build, the network check and every browser check above but the crawl; a second job for licenses, notices, the tests of the scripts, identifying information and the relative links in every Markdown file |
+| [`pages.yml`](../../.github/workflows/pages.yml) | pushes to `main` and pull requests that touch the app, the docs, the Markdown files at the root or their scripts | the documentation site and the app under `/app/`, link checks, the network check on the published app, a crawl of the site; deploys from `main` once the repository is public ([Documentation](./documentation.md)) |
 | [`desktop.yml`](../../.github/workflows/desktop.yml) | pull requests that change the desktop shell, its checks or its runbook; called by the release workflow; on demand | build the packages on Windows, macOS and Linux, follow the [install guide](../guide/install.md) with them (checksums, install, self-test, uninstall, nothing left behind), check the export download, and run `cargo test` on Linux |
 | [`release.yml`](../../.github/workflows/release.yml) | `v*` tags; on demand as a dry run | the version check, the desktop workflow with release builds, and the GitHub Release ([Release process](./release.md)) |
 

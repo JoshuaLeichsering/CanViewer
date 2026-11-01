@@ -15,6 +15,10 @@
 //   compiled into a wheel are still there (their markers).
 // - The Pyodide runtime: the markers of the libraries compiled into it are
 //   still found, so the notices describe the runtime that ships.
+// - The documentation site: each package DOCS_SITE lists is installed as the
+//   lock records it, its license is on the allowlist, and it comes with a
+//   license text or a notice. (The site's build checks that the list matches
+//   what its pages bundle.)
 // - The policy itself: every entry names a part that ships, and every text in
 //   scripts/third-party/licenses/ is used, so that nothing stale stays behind.
 //
@@ -27,6 +31,7 @@ import {
   ALLOWED,
   BUILD_HELPERS,
   CRATE_FILE_NOTICES,
+  DOCS_SITE,
   EXCEPTIONS,
   NOT_BUNDLED,
   NPM_TEXTS,
@@ -137,6 +142,30 @@ for (const c of PYODIDE_COMPONENTS) {
   if (checkLicense('Pyodide runtime part', c.name, c.license)) ok.push(`Pyodide runtime part ${c.name}: ${c.license}`);
 }
 
+// the documentation site
+for (const { name, notice } of DOCS_SITE.packages) {
+  const key = `node_modules/${name}`;
+  const entry = lock.packages[key];
+  if (!entry) {
+    problems.push(`documentation site ${name}: not in package-lock.json; remove it from DOCS_SITE`);
+    continue;
+  }
+  const dir = join(root, key);
+  if (!existsSync(join(dir, 'package.json'))) {
+    problems.push(`documentation site ${name}: not installed (run npm ci)`);
+    continue;
+  }
+  const installed = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8'));
+  if (installed.version !== entry.version) problems.push(`documentation site ${name}: installed ${installed.version}, the lock ${entry.version}`);
+  if (installed.license !== entry.license) problems.push(`documentation site ${name}: installed package says ${installed.license}, the lock ${entry.license}`);
+  const hasText = readdirSync(dir).some((f) => LICENSE_FILE.test(f)) || (notice !== undefined && existsSync(join(dir, notice)));
+  if (!hasText) problems.push(`documentation site ${name}: ships no license file, and DOCS_SITE names no notice for it`);
+  if (checkLicense('documentation site', name, entry.license)) ok.push(`documentation site ${name}@${entry.version}: ${entry.license}`);
+}
+for (const h of DOCS_SITE.helpers) {
+  if (checkLicense('documentation site build helper', h.name, h.license)) ok.push(`documentation site build helper ${h.name}: ${h.license}`);
+}
+
 // what else the policy lists: its licenses must be allowed too
 for (const v of VENDORED) if (checkLicense('vendored', v.name, v.license)) ok.push(`vendored ${v.name}: ${v.license}`);
 for (const h of BUILD_HELPERS) if (checkLicense('build helper', h.name, h.license)) ok.push(`build helper ${h.name}: ${h.license}`);
@@ -182,7 +211,8 @@ for (const w of warnings) console.log(`WARN  ${w}`);
 for (const p of problems) console.log(`FAIL  ${p}`);
 console.log(
   `\n${npmCount} npm production dependencies, ${wheelCount} wheels, ${PYODIDE_COMPONENTS.length} parts of the Pyodide runtime, ` +
-    `${BUILD_HELPERS.length} build helpers, ${RUST_STD.components.length} parts of the Rust standard library and ${present.size} license texts checked: ` +
+    `${BUILD_HELPERS.length} build helpers, ${RUST_STD.components.length} parts of the Rust standard library, ` +
+    `${DOCS_SITE.packages.length + DOCS_SITE.helpers.length} parts of the documentation site and ${present.size} license texts checked: ` +
     `${problems.length} problem(s), ${warnings.length} excepted part(s) still shipping.`,
 );
 if (problems.length) process.exit(1);

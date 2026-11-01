@@ -80,7 +80,7 @@ node e2e/desktop-csp-check.mjs dist desktop-csp examples/demo.dbc \
   third_party/canmatrix/tests/files/arxml/test.arxml   # the import worker under the desktop CSP
 ```
 
-The network check must end with `requests outside http://localhost:4173: 0`. Stop the
+The network check's summary must include `requests outside http://localhost:4173: 0`. Stop the
 preview server afterwards. `npm run e2e` starts its own server on `E2E_PORT` (default
 4180), and every flow fails if the page requests anything outside the app's origin.
 `e2e/ui-checks.mjs` serves `dist/` itself and fails on any serious or critical axe

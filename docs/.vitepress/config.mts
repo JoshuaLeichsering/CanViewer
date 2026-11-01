@@ -9,6 +9,7 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { defineConfig, type DefaultTheme } from 'vitepress';
 import { siteLinks } from './markdown';
+import { siteLegalFiles } from '../../scripts/docs/site-legal.mjs';
 
 const REPO_URL = 'https://github.com/JoshuaLeichsering/CanViewer';
 /** Where GitHub Pages publishes the site; links to it stay within the site. */
@@ -58,6 +59,7 @@ const guide: DefaultTheme.SidebarItem[] = [
       { text: 'Nodes', link: '/guide/nodes' },
       { text: 'Value tables', link: '/guide/value-tables' },
       { text: 'Language and theme', link: '/guide/settings' },
+      { text: 'Keyboard', link: '/guide/keyboard' },
     ],
   },
   {
@@ -170,11 +172,15 @@ export default defineConfig({
     socialLinks: [{ icon: 'github', link: REPO_URL }],
     editLink: { pattern: `${REPO_URL}/edit/main/docs/:path`, text: 'Edit this page on GitHub' },
     footer: {
-      message: 'Released under the GNU General Public License, version 2 or later.',
+      // The license and the third-party notices are published next to the pages (scripts/docs/site-legal.mjs).
+      message:
+        'Released under the GNU General Public License, version 2 or later: ' +
+        `<a href="${base}LICENSE.txt">license</a>, <a href="${base}THIRD_PARTY_NOTICES.txt">third-party notices</a>.`,
     },
   },
   vite: {
     plugins: [
+      siteLegalFiles({ base }),
       {
         // The site's icon is the app's icon, taken from desktop/ rather than copied.
         name: 'canviewer-docs-icon',

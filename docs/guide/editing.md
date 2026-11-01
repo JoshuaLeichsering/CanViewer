@@ -39,6 +39,9 @@ only on **Save anyway**:
 - anything the DBC format cannot hold as it is, such as a name with characters DBC does
   not allow in a file imported from another format.
 
+![Save as DBC on vw_mqb.dbc from opendbc: the dialog lists its 17 parse problems](./images/save-dbc-en-light.webp#gh-light-mode-only)
+![Save as DBC on vw_mqb.dbc from opendbc: the dialog lists its 17 parse problems](./images/save-dbc-en-dark.webp#gh-dark-mode-only)
+
 What the writer keeps is the model: a saved file reads back as the same database, which
 the tests check for every one of 58 real-world DBC files. It does not keep the source's
 comment layout, whitespace or statement order. [Decision record

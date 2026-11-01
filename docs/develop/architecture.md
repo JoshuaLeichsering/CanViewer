@@ -87,7 +87,9 @@ from `localStorage`, an imported file from IndexedDB, with the cluster it showed
   that render from the model; the bit layout and the network graph are SVG and CSS, with
   no chart library.
 - **Language**: [`i18n.tsx`](../../app/src/lib/i18n.tsx) holds every UI string in
-  English and German, typed so that a key missing in one language fails the type check.
+  English and German, typed so that a key missing in one language fails the type check;
+  the strings of the Traces view and the frame encoder are in
+  [`i18n-trc.ts`](../../app/src/lib/i18n-trc.ts), which it imports.
 - **Theme**: [`theme.tsx`](../../app/src/lib/theme.tsx) sets `data-theme` on the root
   element before the first paint; colours are Material 3 tokens in
   [`styles.css`](../../app/src/styles.css)

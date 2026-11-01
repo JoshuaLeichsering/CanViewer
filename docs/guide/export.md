@@ -55,8 +55,9 @@ original name stays in the comment.
 
 Every export of `examples/demo.dbc` and of two other test databases (a CAN FD and a J1939
 message) is pinned byte for byte in the repository, and the tests compare against those
-files. The same tests export every one of 149 real-world DBC files as CSV and JSON and
-read the result back as the same model, decode every signal with the generated
+files. The same tests take every DBC file of the test corpus, the 58 real-world
+databases and the DBC test files of cantools and canmatrix: they export each as CSV and
+JSON and read the result back as the same model, decode every signal with the generated
 pseudo-code and compare it with CanViewer's decoder, and compile every message's C
 struct with a C compiler.
 
