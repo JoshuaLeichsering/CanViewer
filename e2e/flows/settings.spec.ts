@@ -41,7 +41,7 @@ test('switches the language to German and back, and keeps the choice', async ({ 
   await expect(page.getByText('Ohne Probleme eingelesen.', { exact: false })).toBeVisible();
   await rail(page, 'Botschaften').click();
   await expect(page.getByRole('heading', { name: 'Frame dekodieren' })).toBeVisible();
-  await expect(page.getByPlaceholder('Botschaften, Signale, IDs suchen')).toBeVisible();
+  await expect(page.getByPlaceholder('Botschaft, Signal, ID suchen')).toBeVisible();
 
   await page.reload();
   await expect(page.getByRole('heading', { name: 'Frame dekodieren' })).toBeVisible();
