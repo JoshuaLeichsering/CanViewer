@@ -234,6 +234,13 @@ describe('writeDbc', () => {
       expect(kinds(writeDbc(db).issues)).toEqual(['enumIndex BO_ 4 E attributes.Kind']);
     });
 
+    it('an enum value read before its definition, which stays a number', () => {
+      // The parser resolves BA_ values with the definitions it has seen so far.
+      const db = parseDbc('BO_ 4 E: 8 A\nBA_ "Kind" BO_ 4 1;\nBA_DEF_ BO_ "Kind" ENUM "Off","On";\n');
+      expect(db.messages[0].attributes.Kind).toBe(1);
+      expect(kinds(writeDbc(db).issues)).toEqual(['enumIndex BO_ 4 E attributes.Kind']);
+    });
+
     it('properties of a second signal with the same name, which no statement can address', () => {
       const db = parseDbc('BO_ 7 D: 8 X\n SG_ S : 0|8@1+ (1,0) [0|0] "" X\n SG_ S : 8|8@1+ (1,0) [0|0] "" X\n');
       db.messages[0].signals[1].comment = 'second';
