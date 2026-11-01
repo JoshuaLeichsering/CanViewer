@@ -1,0 +1,82 @@
+# CI for every push and pull request: typecheck, all tests with the corpus
+# suites (which must run, never skip), the production build, and the network
+# check that proves the build makes no request outside its own origin.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: typecheck, tests, build, network check
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Cache the Pyodide wheels
+        uses: actions/cache@v4
+        with:
+          path: vendor/pyodide
+          key: pyodide-wheels-${{ hashFiles('src/lib/canmatrix/wheels.lock.json') }}
+
+      - name: Fetch and verify the Pyodide wheels
+        run: npm run fetch-wheels
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Tests (verbose)
+        run: npx vitest run --reporter=verbose --reporter=json --outputFile.json=test-report.json
+
+      - name: Every corpus suite ran in full, nothing skipped
+        run: node scripts/check-test-report.mjs test-report.json
+
+      - name: Production build
+        run: npm run build
+
+      - name: Install Playwright's Chromium for the network check
+        run: |
+          npm install --no-save --no-package-lock --prefix "$RUNNER_TEMP/pw" playwright@1.63.0
+          "$RUNNER_TEMP/pw/node_modules/.bin/playwright" install --with-deps chromium
+
+      - name: Network check (no request outside the app's origin, works offline)
+        env:
+          PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS: '1'
+        run: |
+          npx vite preview --port 4173 --strictPort > vite-preview.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:4173/ > /dev/null && break; sleep 1; done
+          NODE_PATH="$RUNNER_TEMP/pw/node_modules" node docs/spikes/2026-11-01-pyodide-worker/network-check.mjs \
+            http://localhost:4173/ network-check \
+            third_party/canmatrix/tests/files/arxml/test.arxml \
+            third_party/canmatrix/tests/files/arxml/ARXMLContainerTest.arxml \
+            examples/demo.dbc dist
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ci-evidence
+          path: |
+            test-report.json
+            network-check/
+            vite-preview.log
+          if-no-files-found: ignore

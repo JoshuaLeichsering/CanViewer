@@ -47,6 +47,12 @@ npm test               # unit tests + corpus suites
 npm run build          # typecheck + production build (dist/)
 ```
 
+CI ([ci.yml](.github/workflows/ci.yml)) runs on every push to `main` and every pull
+request: typecheck, all tests, a check that every corpus suite ran over the expected
+number of files with nothing skipped ([check-test-report.mjs](scripts/check-test-report.mjs)),
+the production build, and the network check, which fails on any request outside the
+app's origin.
+
 `dev`, `test` and `build` run `fetch-wheels` first. It downloads the wheels listed in
 [wheels.lock.json](src/lib/canmatrix/wheels.lock.json) from jsDelivr (the
 Pyodide-built ones) and PyPI, and checks each against its pinned SHA-256. Files
