@@ -393,9 +393,12 @@ Open **Actions** → **Release** on GitHub, or run `gh run watch`. The workflow:
    the `setup.exe` and the `.msi`, a universal `.dmg`, and the `.deb`;
 3. runs this guide's commands on each system against the packages it has just built:
    checks the checksums, installs each package, runs the self-test, uninstalls, deletes
-   the app's data, and checks that nothing is left behind. The self-test also opens an
-   ARXML file through the import runtime, and checks that the import worker is held to the
-   app's Content Security Policy;
+   the app's data, and checks that nothing is left behind. CI's own self-test also opens
+   an ARXML file through the import runtime, checks that the import worker is held to the
+   app's Content Security Policy, and saves `demo.dbc`'s message list through the export
+   menu (`CANVIEWER_SMOKE_EXPORT=1`), which must land in the Downloads folder and equal
+   the web app's export. The self-test in this guide leaves the export out, so it saves
+   nothing in your Downloads folder;
 4. joins the packages into one release, checks each against the checksum its build job
    recorded, adds `SHA256SUMS`, `THIRD_PARTY_NOTICES.md` and `demo.dbc`, and writes the
    notes with each package's size;

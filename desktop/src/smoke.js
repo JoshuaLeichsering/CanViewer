@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Injected by smoke.rs only when CANVIEWER_SMOKE_FILES is set: opens each
-// file through the app's file input, saves the first file's message list
-// through the export menu, then reports what the app showed. smoke.rs adds
-// the check of the saved file to the report.
+// file through the app's file input, then reports what the app showed. With
+// CANVIEWER_SMOKE_EXPORT=1 as well (CI sets it), it also saves the first
+// file's message list through the export menu, and smoke.rs adds the check
+// of the saved file to the report. Without it, the self-test that the install
+// guide offers saves nothing in the user's Downloads folder.
 (() => {
   if (window.top !== window || window.__canviewerSmoke) return;
   window.__canviewerSmoke = true;
@@ -12,6 +14,7 @@
   indexedDB.deleteDatabase('canviewer-import');
 
   const files = __FILES__;
+  const exportFirst = __EXPORT__;
   const report = { origin: location.origin, userAgent: navigator.userAgent, files: [], cspViolations: [], errors: [] };
   document.addEventListener('securitypolicyviolation', (e) =>
     report.cspViolations.push(`${e.effectiveDirective} blocked ${e.blockedURI || '(inline)'} at ${e.sourceFile}:${e.lineNumber}`),
@@ -110,7 +113,7 @@
     if (ready) {
       for (const file of files) {
         report.files.push(await open(file));
-        if (report.files.length === 1 && report.files[0].opened) report.export = await exportMessages(file);
+        if (exportFirst && report.files.length === 1 && report.files[0].opened) report.export = await exportMessages(file);
       }
     } else report.errors.push('the app did not render its welcome screen within 60 s');
     report.resources = performance.getEntriesByType('resource').map((e) => e.name);
@@ -118,11 +121,11 @@
     const violations = report.cspViolations.length;
     report.blobWorkerPolicy = await workerPolicy();
     report.cspViolations = report.cspViolations.slice(0, violations);
-    // smoke.rs also requires the exported file to be saved.
+    // With the export, smoke.rs also requires the exported file to be saved.
     report.passed =
       report.files.length === files.length &&
       report.files.every((f) => f.opened) &&
-      Boolean(report.export?.clicked) &&
+      (!exportFirst || Boolean(report.export?.clicked)) &&
       report.cspViolations.length === 0 &&
       report.blobWorkerPolicy.startsWith('blocked');
     await window.__TAURI_INTERNALS__.invoke('smoke_report', { report: JSON.stringify(report, null, 2), passed: report.passed });

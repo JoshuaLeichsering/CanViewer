@@ -183,12 +183,16 @@ if (script) {
 say(`control, assets/${script} started from its own URL: fetch of a data: URL ${controlProbe}`);
 
 // The self-test script, injected as the shell injects it (smoke.rs: the
-// files' bytes replace __FILES__), with the shell's one command stubbed.
+// files' bytes replace __FILES__), with the shell's one command stubbed. It
+// runs as the install guide's self-test does, without the export
+// (CANVIEWER_SMOKE_EXPORT unset), which needs the shell's download handler.
 say('# the self-test script (desktop/src/smoke.js) under the same policy');
-const smoke = readFileSync(new URL('../desktop/src/smoke.js', import.meta.url), 'utf8').replace(
-  '__FILES__',
-  JSON.stringify([dbc, arxml].map((p) => ({ name: basename(p), data: readFileSync(p).toString('base64') }))),
-);
+const smoke = readFileSync(new URL('../desktop/src/smoke.js', import.meta.url), 'utf8')
+  .replace(
+    '__FILES__',
+    JSON.stringify([dbc, arxml].map((p) => ({ name: basename(p), data: readFileSync(p).toString('base64') }))),
+  )
+  .replace('__EXPORT__', 'false');
 const selfTest = await browser.newContext({ serviceWorkers: 'block' });
 selfTest.on('request', (r) => requests.push(r.url()));
 const smokePage = await selfTest.newPage();

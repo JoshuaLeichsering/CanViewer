@@ -4,16 +4,19 @@
 //!
 //! Inactive unless CANVIEWER_SMOKE_FILES is set: then the app clears its
 //! stored state, opens each listed file through its own file input (the
-//! bytes are handed to the page in an initialization script), saves the
-//! first file's message list through the export menu, and calls
-//! `smoke_report` with what it showed. The report, with the check of the
-//! saved file (smoke/download.rs) added, goes to the file named by
-//! CANVIEWER_SMOKE_OUT, and to stdout, and the app exits with 0 if every
-//! file opened, the export was saved and the page's Content Security Policy
-//! held (no violation, and a blob: worker under it, see smoke.js), 1 if not,
-//! or 2 if no report came within five minutes. Without the variable no
-//! script is injected, no command is registered and no download is recorded,
-//! so the app behaves exactly as it does otherwise.
+//! bytes are handed to the page in an initialization script), and calls
+//! `smoke_report` with what it showed. With CANVIEWER_SMOKE_EXPORT=1 as well,
+//! as CI sets it, it first saves the first file's message list through the
+//! export menu, and the report gets the check of the saved file
+//! (smoke/download.rs); the install guide's self-test leaves it out, so that
+//! it saves nothing in the user's Downloads folder. The report goes to the
+//! file named by CANVIEWER_SMOKE_OUT, and to stdout, and the app exits with 0
+//! if every file opened, the page's Content Security Policy held (no
+//! violation, and a blob: worker under it, see smoke.js) and, when asked
+//! for, the export was saved; 1 if not, or 2 if no report came within five
+//! minutes. Without CANVIEWER_SMOKE_FILES no script is injected, no command
+//! is registered and no download is recorded, so the app behaves exactly as
+//! it does otherwise.
 
 mod download;
 
@@ -22,11 +25,18 @@ use tauri::{webview::DownloadEvent, Manager};
 
 const FILES_VAR: &str = "CANVIEWER_SMOKE_FILES";
 const OUT_VAR: &str = "CANVIEWER_SMOKE_OUT";
+const EXPORT_VAR: &str = "CANVIEWER_SMOKE_EXPORT";
 const TIMEOUT: Duration = Duration::from_secs(300);
 
 /// The files to open, from CANVIEWER_SMOKE_FILES (separated like PATH).
 pub fn files_from_env() -> Option<Vec<PathBuf>> {
     env::var_os(FILES_VAR).map(|v: OsString| env::split_paths(&v).collect())
+}
+
+/// Whether the self-test also saves the first file's message list
+/// (CANVIEWER_SMOKE_EXPORT=1).
+fn export_from_env() -> bool {
+    env::var_os(EXPORT_VAR).is_some_and(|v| v == "1")
 }
 
 pub fn install(builder: tauri::Builder<tauri::Wry>, files: &[PathBuf]) -> tauri::Builder<tauri::Wry> {
@@ -40,7 +50,9 @@ pub fn install(builder: tauri::Builder<tauri::Wry>, files: &[PathBuf]) -> tauri:
             })
         })
         .collect();
-    let script = include_str!("smoke.js").replace("__FILES__", &serde_json::Value::Array(files).to_string());
+    let script = include_str!("smoke.js")
+        .replace("__FILES__", &serde_json::Value::Array(files).to_string())
+        .replace("__EXPORT__", if export_from_env() { "true" } else { "false" });
 
     thread::spawn(|| {
         thread::sleep(TIMEOUT);
@@ -74,7 +86,7 @@ fn smoke_download_finished() -> bool {
 
 #[tauri::command]
 fn smoke_report(app: tauri::AppHandle, report: String, passed: bool) {
-    let (report, passed) = with_download_check(&app, &report, passed);
+    let (report, passed) = if export_from_env() { with_download_check(&app, &report, passed) } else { (report, passed) };
     if let Some(out) = env::var_os(OUT_VAR) {
         if let Err(e) = fs::write(&out, &report) {
             eprintln!("smoke: cannot write {}: {e}", PathBuf::from(out).display());
@@ -115,7 +127,7 @@ fn base64(bytes: &[u8]) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::{base64, files_from_env, FILES_VAR};
+    use super::{base64, export_from_env, files_from_env, EXPORT_VAR, FILES_VAR};
     use std::{env, path::PathBuf};
 
     #[test]
@@ -135,5 +147,17 @@ mod tests {
         assert_eq!(files_from_env(), Some(files));
         env::remove_var(FILES_VAR);
         assert_eq!(files_from_env(), None);
+    }
+
+    // The only test that touches CANVIEWER_SMOKE_EXPORT.
+    #[test]
+    fn the_export_runs_only_when_asked_for() {
+        env::remove_var(EXPORT_VAR);
+        assert!(!export_from_env());
+        env::set_var(EXPORT_VAR, "0");
+        assert!(!export_from_env());
+        env::set_var(EXPORT_VAR, "1");
+        assert!(export_from_env());
+        env::remove_var(EXPORT_VAR);
     }
 }

@@ -12,9 +12,11 @@
 # started from a blob: URL is held to the page's Content Security Policy, which
 # is how the app starts its import worker (docs/decisions/0002-desktop-shell.md).
 # CI's own self-test on each system, with demo.dbc and canmatrix's test.arxml,
-# also saves demo.dbc's message list through the export menu: the file must
-# land in the Downloads folder and equal the browser's export, the pinned
-# app/src/lib/export/pinned/demo.messages.csv (e2e/desktop-download-check.mjs).
+# also saves demo.dbc's message list through the export menu
+# (CANVIEWER_SMOKE_EXPORT=1, which the runbook's self-test leaves out): the
+# file must land in the Downloads folder and equal the browser's export, the
+# pinned app/src/lib/export/pinned/demo.messages.csv
+# (e2e/desktop-download-check.mjs).
 # Linux also runs the shell's unit tests (cargo test).
 # Windows also drives a CI-only variant with WebView2's DevTools port open and
 # records every request (e2e/desktop-cdp-smoke.mjs).
@@ -187,6 +189,7 @@ jobs:
           New-Item -ItemType Directory -Force smoke | Out-Null
           $env:CANVIEWER_SMOKE_FILES = "$PWD\$env:SMOKE_DBC;$PWD\$env:SMOKE_ARXML"
           $env:CANVIEWER_SMOKE_OUT = "$PWD\smoke\self-test-windows.json"
+          $env:CANVIEWER_SMOKE_EXPORT = '1'
           # WebView2 saves downloads in the user's Downloads folder; start
           # without an earlier export there, so that the name is not numbered.
           $downloads = Join-Path $env:USERPROFILE 'Downloads'
@@ -345,6 +348,7 @@ jobs:
           mkdir -p smoke
           export CANVIEWER_SMOKE_FILES="$PWD/$SMOKE_DBC:$PWD/$SMOKE_ARXML"
           export CANVIEWER_SMOKE_OUT="$PWD/smoke/self-test-macos-arm64.json"
+          export CANVIEWER_SMOKE_EXPORT=1
           # The app saves downloads in $HOME/Downloads: here an empty one this
           # job makes, outside the folders that macOS guards with a prompt.
           export HOME="$RUNNER_TEMP/home"
@@ -485,6 +489,7 @@ jobs:
           mkdir -p smoke
           export CANVIEWER_SMOKE_FILES="$PWD/$SMOKE_DBC:$PWD/$SMOKE_ARXML"
           export CANVIEWER_SMOKE_OUT="$PWD/smoke/self-test-linux.json"
+          export CANVIEWER_SMOKE_EXPORT=1
           # The app saves downloads in the XDG Downloads folder that
           # user-dirs.dirs names: here an empty one this job makes.
           export XDG_CONFIG_HOME="$RUNNER_TEMP/xdg-config"
