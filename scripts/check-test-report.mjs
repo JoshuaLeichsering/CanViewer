@@ -35,6 +35,8 @@ const EXPECTED = [
   { file: 'import-corpus.test.ts', pattern: / reads as pinned$/, count: 114, what: 'non-DBC corpus files read through canmatrix' },
   { file: 'import-corpus.test.ts', pattern: / matches its DBC twin .* as pinned$/, count: 70, what: 'non-DBC files compared with their DBC twin' },
   { file: 'mapper.test.ts', pattern: / differs from CanViewer’s parser only as pinned$/, count: 58, what: 'OEM DBC files through the canmatrix mapper', when: 'app/src/lib/canmatrix/mapper.test.ts' },
+  { file: 'diff-corpus.test.ts', pattern: / has no differences with itself$/, count: 58, what: 'OEM DBC files diffed with themselves' },
+  { file: 'diff-corpus.test.ts', pattern: / gives the pinned diff$/, count: 2, what: 'opendbc version pairs diffed as pinned' },
 ];
 
 const problems = [];

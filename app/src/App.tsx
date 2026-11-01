@@ -13,13 +13,15 @@ import { ValueTableDetail } from './components/ValueTableDetail';
 import { Overview } from './components/Overview';
 import { NetworkGraph } from './components/NetworkGraph';
 import { Icon } from './components/Icon';
+import { DiffView, type Comparison } from './components/DiffView';
 
 export type Selection =
   | { kind: 'overview' }
   | { kind: 'graph' }
   | { kind: 'message'; rawId: number; occ: number; signal?: string }
   | { kind: 'node'; name: string }
-  | { kind: 'valueTable'; name: string };
+  | { kind: 'valueTable'; name: string }
+  | { kind: 'diff' };
 
 /** Serialize the selection into the URL hash so views are deep-linkable. */
 function selectionToHash(sel: Selection): string {
@@ -35,6 +37,8 @@ function selectionToHash(sel: Selection): string {
       return `#vt=${encodeURIComponent(sel.name)}`;
     case 'graph':
       return '#graph';
+    case 'diff':
+      return '#diff';
     default:
       return '';
   }
@@ -55,6 +59,7 @@ function hashToSelection(hash: string): Selection {
   const vt = hash.match(/^#vt=(.+)$/);
   if (vt) return { kind: 'valueTable', name: decodeURIComponent(vt[1]) };
   if (hash === '#graph') return { kind: 'graph' };
+  if (hash === '#diff') return { kind: 'diff' };
   return { kind: 'overview' };
 }
 
@@ -64,6 +69,7 @@ const DESTINATION_OF: Record<Selection['kind'], Destination> = {
   graph: 'network',
   node: 'nodes',
   valueTable: 'tables',
+  diff: 'compare',
 };
 
 const IMPORT_STAGE_KEYS = {
@@ -97,6 +103,8 @@ export function App() {
   const [dragging, setDragging] = useState(false);
   const [importing, setImporting] = useState<{ name: string; stage: ImportStage } | null>(null);
   const [snack, setSnack] = useState<Snack | null>(null);
+  // Diff mode: the other version the open file is compared with.
+  const [comparison, setComparison] = useState<Comparison | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dragDepth = useRef(0);
   const initialHash = useRef(window.location.hash);
@@ -222,6 +230,9 @@ export function App() {
         case 'tables':
           if (db.valueTables[0]) setSelection({ kind: 'valueTable', name: db.valueTables[0].name });
           break;
+        case 'compare':
+          setSelection({ kind: 'diff' });
+          break;
       }
     },
     [db],
@@ -257,6 +268,7 @@ export function App() {
       network: !!db,
       nodes: !!db && db.nodes.length > 0,
       tables: !!db && db.valueTables.length > 0,
+      compare: !!db,
     }),
     [db],
   );
@@ -321,7 +333,15 @@ export function App() {
       )}
 
       <main className="main">
-        {db ? (
+        {db && selection.kind === 'diff' ? (
+          <DiffView
+            db={db}
+            fileName={fileName}
+            comparison={comparison}
+            onComparison={setComparison}
+            onSelect={setSelection}
+          />
+        ) : db ? (
           <MainView db={db} fileName={fileName} selection={selection} onSelect={setSelection} onCopyLink={copyLink} />
         ) : (
           <div className="welcome">
