@@ -1,8 +1,9 @@
-// Large database check: with 5000 messages the message list stays responsive.
+// Large database check: with 5000 messages the message list and the overview
+// stay responsive.
 //
 // Generates a DBC of 5000 messages (2000 standard and 3000 extended frames,
-// every 25th a 64-byte CAN FD frame, 4 signals each) and drives a production
-// build in Chromium at 1280 x 800:
+// every 25th a 64-byte CAN FD frame, 4 signals each), and the first 1000 of
+// them as a second file, and drives a production build in Chromium at 1280 x 800:
 //
 //   open      open the file, then go to the message list; the list renders only
 //             the rows in view (it virtualizes above 1000 messages)
@@ -10,10 +11,18 @@
 //             frames where the top or bottom of the list shows no row (blank)
 //   jump      jump to positions across the list; time until the second frame
 //             after the jump, and that the right message is at the top
+//   focus     focus a row and scroll it out of view with the wheel: the row
+//             keeps the focus, and Tab and Shift+Tab move on to its neighbours
 //   search    type searches key by key; time from each key press to the frame
 //             after it (in the page), plus the browser's own Event Timing entries
 //   chips     switch the Extended, CAN FD and All filter chips the same way
+//   overview  back to the overview, whose message table shows 200 messages a
+//             page above 1000 messages
+//   page      go to the last page of that table
 //   reveal    open the last message from the overview table; the list scrolls to it
+//   threshold open a database of exactly 1000 messages, which the list renders in
+//             full and the overview shows on one page; opening its last message
+//             from the overview scrolls the list to it as well
 //
 // Writes everything to <out-dir>/large-database.json, takes screenshots, and
 // exits non-zero if a budget below is exceeded or the page logs an error.
@@ -51,20 +60,31 @@ const BUDGET = {
   jumpMs: 150,
   wheelFrameP95Ms: 50,
   blankFrames: 0,
-  /** Longest main-thread task while scrolling, jumping, searching or switching chips. */
+  /** Longest main-thread task while scrolling, jumping, moving the focus, searching, switching chips or pages. */
   longTaskMs: 100,
+  /**
+   * Longest main-thread task when the whole view changes (to the message list,
+   * back to the overview, opening a message from it), which lays out a new page
+   * whatever the database's size. Rendering all 5000 rows of the overview took 600 ms.
+   */
+  viewLongTaskMs: 200,
+  /** Rows of the overview's message table on one page. */
+  overviewRows: 200,
+  pageMs: 200,
 };
 
 const COUNT = 5000;
 const SIGNALS = 4;
 const pad = (i) => String(i).padStart(4, '0');
 const FILE = `large-${COUNT}.dbc`;
+/** The largest database whose list renders every row and whose overview has one page. */
+const THRESHOLD = 1000;
 
-function generateDbc() {
+function generateDbc(count) {
   const nodes = Array.from({ length: 20 }, (_, i) => `ECU${String(i).padStart(2, '0')}`);
-  const lines = [`VERSION "generated, ${COUNT} messages"`, '', 'NS_ :', '', 'BS_:', '', `BU_: ${nodes.join(' ')}`, ''];
+  const lines = [`VERSION "generated, ${count} messages"`, '', 'NS_ :', '', 'BS_:', '', `BU_: ${nodes.join(' ')}`, ''];
   const cycles = [];
-  for (let i = 0; i < COUNT; i++) {
+  for (let i = 0; i < count; i++) {
     const extended = i >= 2000;
     const id = extended ? 0x10000 + i : i;
     const rawId = extended ? (id | 0x80000000) >>> 0 : id;
@@ -81,8 +101,10 @@ function generateDbc() {
 }
 
 const dbcPath = join(outDir, FILE);
-const dbcText = generateDbc();
+const dbcText = generateDbc(COUNT);
 writeFileSync(dbcPath, dbcText);
+const thresholdPath = join(outDir, `large-${THRESHOLD}.dbc`);
+writeFileSync(thresholdPath, generateDbc(THRESHOLD));
 
 const results = { url: appUrl, file: FILE, bytes: Buffer.byteLength(dbcText), cpuSlowdown: slowdown, budget: BUDGET };
 const failures = [];
@@ -246,6 +268,61 @@ for (const fraction of [0.1, 0.5, 0.9, 1, 0.25, 0]) {
   check(jump.ms <= BUDGET.jumpMs, `jump to ${fraction * 100} % painted within ${BUDGET.jumpMs} ms`);
 }
 
+// --- focus: a focused row stays rendered when it scrolls out of view ----------
+await phase('focus');
+/** The focused element: a row's title, whether it is inside the list's viewport, and the rows rendered. */
+const focusState = () =>
+  page.evaluate(() => {
+    const s = document.querySelector('.list-scroll');
+    const a = document.activeElement;
+    const view = s.getBoundingClientRect();
+    const box = a.getBoundingClientRect();
+    return {
+      focused: a.closest('.list-item')?.querySelector('.title')?.textContent ?? a.tagName,
+      inView: box.bottom > view.top && box.top < view.bottom,
+      renderedRows: s.querySelectorAll('.list-item').length,
+    };
+  });
+const wheelAway = async (steps, dy) => {
+  for (let i = 0; i < steps; i++) {
+    await page.mouse.wheel(0, dy);
+    await page.waitForTimeout(16);
+  }
+  await page.waitForTimeout(200);
+};
+await page.locator('.list-scroll .list-item', { hasText: 'Msg_0003' }).focus();
+const focusBefore = await focusState();
+await wheelAway(20, 600);
+const focusAway = await focusState();
+await page.keyboard.press('Tab');
+await page.waitForTimeout(100);
+const focusTab = await focusState();
+await wheelAway(20, 600);
+await page.keyboard.press('Shift+Tab');
+await page.waitForTimeout(100);
+const focusBack = await focusState();
+// Once the focus is elsewhere, the row is rendered only while it is in view again.
+await page.locator('.search-field input').focus();
+await wheelAway(20, 600);
+const released = await page.evaluate(() => ({
+  kept: [...document.querySelectorAll('.list-scroll .list-item .title')].some((t) => t.textContent === 'Msg_0003'),
+  renderedRows: document.querySelectorAll('.list-scroll .list-item').length,
+}));
+await page.evaluate(() => {
+  document.querySelector('.list-scroll').scrollTop = 0;
+});
+results.focus = { before: focusBefore, scrolledAway: focusAway, tab: focusTab, shiftTabAfterScrollingAway: focusBack, released };
+say(
+  `focus: ${focusBefore.focused}; after 20 wheel steps away ${JSON.stringify(focusAway)}; Tab ${JSON.stringify(focusTab)}; ` +
+    `scrolled away again, Shift+Tab ${JSON.stringify(focusBack)}; focus in the search, scrolled away ${JSON.stringify(released)}`,
+);
+check(!released.kept, 'a row that no longer has the focus is not kept rendered out of view');
+check(focusBefore.focused === 'Msg_0003', 'a message row takes the focus');
+check(focusAway.focused === 'Msg_0003' && !focusAway.inView, 'the focused row keeps the focus when it is scrolled out of view');
+check(focusAway.renderedRows <= BUDGET.renderedRows, `at most ${BUDGET.renderedRows} rows rendered with a focused row out of view`);
+check(focusTab.focused === 'Msg_0004' && focusTab.inView, 'Tab moves from the focused row to the next one and scrolls it into view');
+check(focusBack.focused === 'Msg_0003' && focusBack.inView, 'Shift+Tab moves to the previous row and scrolls it into view');
+
 // --- search and chips: time from each key press or click to the frame after it ---
 await page.evaluate(() => {
   window.__inputs = [];
@@ -320,26 +397,88 @@ for (const [name, expect] of [
   check(clicks.length === 1 && clicks[0] <= BUDGET.chipMs, `chip ${name} painted within ${BUDGET.chipMs} ms`);
 }
 
-// --- reveal: open the last message from the overview -----------------------
+// --- overview and page: the overview's message table shows a page at a time ----
 await phase('overview');
 await page.getByRole('button', { name: 'Overview', exact: true }).click();
 await page.waitForSelector('table.m3 tbody tr.clickable');
+/** Rows of the overview's message table: count, first and last name, and the pager's range (null without a pager). */
+const overviewTable = () =>
+  page.evaluate(() => {
+    const card = [...document.querySelectorAll('.card.table-card')].find((c) => c.querySelector('h2')?.textContent === 'Messages');
+    const rows = card.querySelectorAll('tbody tr.clickable');
+    const name = (row) => row?.querySelector('.strong')?.firstChild?.textContent ?? null;
+    return {
+      rows: rows.length,
+      first: name(rows[0]),
+      last: name(rows[rows.length - 1]),
+      range: card.querySelector('[data-testid=tbl-pager] .tbl-pager-range')?.textContent ?? null,
+    };
+  });
+results.overview = await overviewTable();
+say(`overview: ${JSON.stringify(results.overview)}`);
+check(results.overview.rows === BUDGET.overviewRows, `the overview's message table renders ${BUDGET.overviewRows} rows (got ${results.overview.rows})`);
+check(results.overview.range === `1–200 of ${COUNT}` && results.overview.first === 'Msg_0000', 'the overview starts on its first page');
+
+await phase('page');
+await takeInputs();
+await page.getByRole('button', { name: 'Last page', exact: true }).click();
+await page.waitForFunction(
+  (e) => document.querySelector('[data-testid=tbl-pager] .tbl-pager-range')?.textContent === e,
+  `4801–5000 of ${COUNT}`,
+);
+await page.waitForTimeout(100);
+const pageClicks = (await takeInputs()).filter((i) => i.type === 'pointerdown').map((i) => i.ms);
+results.page = { ...(await overviewTable()), ms: pageClicks };
+await page.screenshot({ path: join(outDir, 'large-overview-last-page.png') });
+say(`last page: ${JSON.stringify(results.page)}`);
+check(results.page.last === `Msg_${pad(COUNT - 1)}` && results.page.rows === BUDGET.overviewRows, 'the last page ends with the last message');
+check(pageClicks.length === 1 && pageClicks[0] <= BUDGET.pageMs, `the last page painted within ${BUDGET.pageMs} ms`);
+
+// --- reveal: open the last message from the overview -----------------------
 await phase('reveal');
 await page.locator('table.m3 tbody tr.clickable', { hasText: `Msg_${pad(COUNT - 1)}` }).click();
 await page.waitForSelector('.list-scroll .list-item.active');
-results.reveal = await page.evaluate(() => {
-  const s = document.querySelector('.list-scroll').getBoundingClientRect();
-  const active = document.querySelector('.list-scroll .list-item.active');
-  const a = active.getBoundingClientRect();
-  return {
-    active: active.querySelector('.title').textContent,
-    heading: document.querySelector('.page-header h1')?.textContent,
-    inView: a.top >= s.top - 0.5 && a.bottom <= s.bottom + 0.5,
-  };
-});
+/** The active row of the list, the detail heading, whether the row is inside the list's viewport, and how the list renders. */
+const revealState = () =>
+  page.evaluate(() => {
+    const scroller = document.querySelector('.list-scroll');
+    const s = scroller.getBoundingClientRect();
+    const active = document.querySelector('.list-scroll .list-item.active');
+    const a = active.getBoundingClientRect();
+    return {
+      active: active.querySelector('.title').textContent,
+      heading: document.querySelector('.page-header h1')?.textContent,
+      inView: a.top >= s.top - 0.5 && a.bottom <= s.bottom + 0.5,
+      virtual: scroller.matches('[data-testid=tbl-virtual-list]'),
+      renderedRows: scroller.querySelectorAll('.list-item').length,
+    };
+  });
+results.reveal = await revealState();
 await page.screenshot({ path: join(outDir, 'large-reveal.png') });
 say(`reveal: active row ${results.reveal.active}, detail "${results.reveal.heading}", in view: ${results.reveal.inView}`);
 check(results.reveal.active === `Msg_${pad(COUNT - 1)}` && results.reveal.inView, 'the list scrolls to a message opened elsewhere');
+
+// --- threshold: the same with 1000 messages, where nothing is virtual or paged ---
+await phase('threshold');
+await page.setInputFiles('input[type=file]', thresholdPath);
+await page.waitForFunction((name) => document.title.startsWith(name + ' '), `large-${THRESHOLD}.dbc`, { timeout: 60_000 });
+await page.waitForSelector('table.m3 tbody tr.clickable');
+results.threshold = { overview: await overviewTable() };
+await page.locator('table.m3 tbody tr.clickable', { hasText: `Msg_${pad(THRESHOLD - 1)}` }).click();
+await page.waitForSelector('.list-scroll .list-item.active');
+results.threshold.reveal = await revealState();
+say(`threshold, ${THRESHOLD} messages: overview ${JSON.stringify(results.threshold.overview)}; reveal ${JSON.stringify(results.threshold.reveal)}`);
+check(
+  results.threshold.overview.rows === THRESHOLD && results.threshold.overview.range === null,
+  `the overview shows all ${THRESHOLD} messages without a pager`,
+);
+check(
+  results.threshold.reveal.active === `Msg_${pad(THRESHOLD - 1)}` &&
+    results.threshold.reveal.inView &&
+    !results.threshold.reveal.virtual &&
+    results.threshold.reveal.renderedRows === THRESHOLD,
+  `the full list of ${THRESHOLD} messages scrolls to a message opened elsewhere too`,
+);
 
 // --- the browser's view -----------------------------------------------------
 // Event Timing reports only interactions of 16 ms or more, rounded to 8 ms;
@@ -365,10 +504,22 @@ for (const t of browserTimings.longTasks) results.browserTimings[phaseAt(t.start
 for (const [name, t] of Object.entries(results.browserTimings)) {
   say(`browser timings, ${name}: interactions over 16 ms ${JSON.stringify(t.interactionsOver16Ms)}, long tasks ${JSON.stringify(t.longTasksMs)}`);
 }
-for (const p of ['wheel', 'jump', 'search', 'chips']) {
+// Opening a file parses it on the main thread, so the open and threshold phases
+// are reported but not budgeted.
+for (const [p, budget] of [
+  ['to the message list', BUDGET.viewLongTaskMs],
+  ['wheel', BUDGET.longTaskMs],
+  ['jump', BUDGET.longTaskMs],
+  ['focus', BUDGET.longTaskMs],
+  ['search', BUDGET.longTaskMs],
+  ['chips', BUDGET.longTaskMs],
+  ['overview', BUDGET.viewLongTaskMs],
+  ['page', BUDGET.longTaskMs],
+  ['reveal', BUDGET.viewLongTaskMs],
+]) {
   const longTasks = results.browserTimings[p]?.longTasksMs ?? [];
   const longest = Math.max(0, ...longTasks);
-  check(longest <= BUDGET.longTaskMs, `no task over ${BUDGET.longTaskMs} ms during ${p} (long tasks: ${JSON.stringify(longTasks)})`);
+  check(longest <= budget, `no task over ${budget} ms during ${p} (long tasks: ${JSON.stringify(longTasks)})`);
 }
 
 results.errors = errors;

@@ -5,8 +5,10 @@ import { isCanFd } from '../lib/dbc/canfd';
 import { decomposeJ1939Id, isJ1939Database, PGN_NAMES } from '../lib/dbc/j1939';
 import { useI18n } from '../lib/i18n';
 import { hexId } from '../lib/format';
+import { messagePageSize } from '../lib/pages';
 import { Icon } from './Icon';
 import { messageTag, MessageTag } from './MessageTag';
+import { TablePager, usePage } from './TablePager';
 
 /** Rendering tens of thousands of problem rows would freeze the UI. */
 const MAX_PROBLEM_ROWS = 200;
@@ -27,6 +29,8 @@ export function Overview({
   const j1939Db = isJ1939Database(db);
   const j1939Count = db.messages.filter((m) => messageTag(db, m, j1939Db) === 'J1939').length;
   const fdCount = db.messages.filter((m) => isCanFd(db, m)).length;
+  // Above 1000 messages the table shows a page at a time: thousands of rows would freeze the UI.
+  const messagePage = usePage(db.messages.length, messagePageSize(db.messages.length), db);
 
   const appliesTo = {
     '': t('appliesNetwork'),
@@ -119,6 +123,7 @@ export function Overview({
 
       <div className="card table-card">
         <h2>{t('statMessages')}</h2>
+        {messagePage.pages > 1 && <TablePager pager={messagePage} total={db.messages.length} label={t('tblPages')} />}
         <table className="m3">
           <thead>
             <tr>
@@ -135,6 +140,7 @@ export function Overview({
           <tbody>
             {[...db.messages]
               .sort((a, b) => a.id - b.id)
+              .slice(messagePage.start, messagePage.end)
               .map((m) => (
                 <tr
                   key={`${m.rawId}.${occurrenceOf(db, m)}`}
