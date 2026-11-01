@@ -78,25 +78,30 @@ const say = (line) => {
   console.log(line);
 };
 
+// Hooks that survive restyling: the document title names the open file, an
+// import error is the [role=alert] snackbar, the overview's facts strip holds
+// the counts.
+const shown = (p, n) =>
+  p.waitForFunction(
+    (name) => document.title.startsWith(name + ' ') || document.querySelector('[role=alert]'),
+    n,
+    { timeout: 120_000 },
+  );
+const summary = (p) =>
+  p.evaluate(() => {
+    const alert = document.querySelector('[role=alert]');
+    if (alert) return { failed: true, info: alert.textContent.trim() };
+    const facts = [...document.querySelectorAll('.facts .fact')].map((f) => f.innerText.replace(/\s*\n\s*/, ' '));
+    return { failed: false, info: [document.title.split(' — ')[0], ...facts].join(' · ') };
+  });
+
 /** Open a file through the app's own file input and wait until it is shown. */
 async function open(path) {
   const t0 = Date.now();
   await page.setInputFiles('input[type=file]', path);
-  const name = basename(path);
-  await page.waitForFunction(
-    (n) => {
-      const alert = document.querySelector('.file-info[role=alert]');
-      if (alert) return true;
-      return [...document.querySelectorAll('.file-info b')].some((b) => b.textContent === n);
-    },
-    name,
-    { timeout: 120_000 },
-  );
+  await shown(page, basename(path));
   const ms = Date.now() - t0;
-  const alerts = page.locator('.file-info[role=alert]');
-  const alert = (await alerts.count()) ? await alerts.first().textContent() : null;
-  const info = alert ?? (await page.locator('.file-info').first().textContent());
-  return { ms, info: info?.trim(), failed: Boolean(alert) };
+  return { ms, ...(await summary(page)) };
 }
 
 say(`# phase A: online, cold (${appUrl})`);
@@ -132,7 +137,7 @@ const probe = await page.evaluate(async () => {
 say(`offline probe of ${origin}/offline-probe: ${probe}`);
 await page.reload().catch((e) => say(`reload error: ${e.message.split('\n')[0]}`));
 try {
-  await page.waitForSelector('.welcome, .content', { timeout: 15_000 });
+  await page.waitForSelector('.welcome, .page-header', { timeout: 15_000 });
 } catch (e) {
   await page.screenshot({ path: join(outDir, 'C-offline-failed.png') });
   say(`offline reload did not render the app: ${(await page.content()).slice(0, 300)}`);
@@ -159,12 +164,12 @@ await fresh.setOffline(true);
 await page2.reload();
 await page2.waitForSelector('.welcome');
 await page2.setInputFiles('input[type=file]', arxml1);
-await page2.waitForSelector('.file-info[role=alert]', { timeout: 60_000 });
-say(`open ${basename(arxml1)}: ${(await page2.locator('.file-info[role=alert]').textContent())?.trim()}`);
+await page2.waitForSelector('[role=alert]', { timeout: 60_000 });
+say(`open ${basename(arxml1)}: ${(await page2.locator('[role=alert]').textContent())?.trim()}`);
 await page2.screenshot({ path: join(outDir, 'D-offline-import-error.png') });
 await page2.setInputFiles('input[type=file]', dbc);
-await page2.waitForSelector('.file-info b');
-say(`then open ${basename(dbc)}: ${(await page2.locator('.file-info').first().textContent())?.trim()}`);
+await shown(page2, basename(dbc));
+say(`then open ${basename(dbc)}: ${(await summary(page2)).info}`);
 await fresh.close();
 await browser.close();
 

@@ -10,13 +10,15 @@ export function AttributesCard({
   const entries = Object.entries(attributes);
   if (entries.length === 0) return null;
   return (
-    <div className="card">
-      <h3>{title}</h3>
-      <table className="grid">
+    <div className="card table-card">
+      <h2>{title}</h2>
+      <table className="m3">
         <tbody>
           {entries.map(([name, value]) => (
             <tr key={name}>
-              <td style={{ width: '50%' }}>{name}</td>
+              <td className="strong" style={{ width: '40%' }}>
+                {name}
+              </td>
               <td className="mono">{String(value)}</td>
             </tr>
           ))}

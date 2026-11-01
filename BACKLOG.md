@@ -9,10 +9,11 @@ move items up/down freely and check them off when done.
       DLC > 8 (up to 64 bytes); show FD indicator on messages
 - [x] J1939 view: decompose 29-bit IDs into priority / PGN / source address,
       show PGN in the message list for extended frames
-- [ ] Dark mode (prefers-color-scheme + manual toggle)
+- [x] Dark mode (prefers-color-scheme + manual toggle)
 - [ ] Sortable/filterable columns in the signal table
 - [ ] Keyboard navigation (↑/↓ through messages, / to focus search)
-- [ ] Show which signals use a given value table (VAL_TABLE_ back-references)
+- [x] Show which signals use a given value table (VAL_TABLE_ back-references;
+      DBC does not record the link, so signals with identical VAL_ maps are shown)
 - [ ] Virtualize the message tree for very large databases (1000+ messages)
 
 ## Compare & export

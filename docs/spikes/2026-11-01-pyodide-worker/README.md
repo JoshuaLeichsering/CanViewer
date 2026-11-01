@@ -36,7 +36,9 @@ in the worker chunk, which is not used because `packageBaseUrl` is always set.
 
 ## Evidence
 
-`network-check.mjs` drives the build in Chromium 1243 (Playwright 1.63.0). Chromium was
+`network-check.mjs` drives the build in Chromium 1243 (Playwright 1.63.0). (Since the
+Material redesign the script waits on the document title and the `[role=alert]` snackbar
+instead of the old toolbar's `.file-info`; the run quoted below predates that change.) Chromium was
 started with `--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE localhost`, so any other
 host would have failed to resolve. The run below is the build of commit `4af2d5c`.
 

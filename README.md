@@ -5,16 +5,19 @@ No data leaves your machine — files are parsed locally.
 
 ## Features
 
-- **Message tree** sorted by CAN ID with hex IDs, extended-frame (29-bit) markers and search
-  across message names, IDs and signal names
+- **Material 3 interface**: navigation rail (Overview, Messages, Network, Nodes, Tables),
+  list-detail layout, light and dark theme (follows the system until switched in the rail),
+  fonts and icons bundled with the app
+- **Message list** sorted by CAN ID with hex IDs, FD / J1939 / EXT tags, filter chips
+  (all, extended, CAN FD) and search across message names, IDs and signal names
 - **Signal table** per message: start bit, length, byte order (Intel/Motorola), type,
   factor/offset, min/max, unit, receivers, multiplexing (incl. extended multiplexing
   via `SG_MUL_VAL_`)
-- **Bit layout matrix**: one row per byte, colored per signal, start-bit
-  markers, Motorola sawtooth layout, conflict detection (mux alternatives sharing bits
-  are *not* flagged)
-- **Frame decoder**: paste hex bytes, get raw + physical values, value-table labels and
-  multiplexer-aware activity
+- **Bit layout**: one row per byte, each signal one tonal block numbered on its start bit,
+  Motorola sawtooth layout, conflict detection (mux alternatives sharing bits are *not*
+  flagged); selecting a signal highlights it everywhere
+- **Frame decoder**: paste hex bytes, get physical values, value-table labels (the decoded
+  value is marked in the signal card) and multiplexer-aware activity
 - **CAN FD aware**: FD badge (via payload size or Vector's `VFrameFormat` attribute,
   J1939 PGs exempt), frame-size validity hints (12/16/20/24/32/48/64 bytes, padding
   note for odd sizes), bit matrix collapses the unused tail of large frames
@@ -25,12 +28,13 @@ No data leaves your machine — files are parsed locally.
 - **ECU network graph**: interactive sender→receiver topology — arrows per direction,
   line width scales with message count, click nodes/connections to drill into the
   messages behind them
-- **Value tables**, comments (multi-line), attributes (`BA_DEF_` / `BA_` incl. ENUM
-  resolution), `SIG_VALTYPE_` float/double signals
+- **Value tables**, with the signals that use the same values; comments (multi-line),
+  attributes (`BA_DEF_` / `BA_` incl. ENUM resolution), `SIG_VALTYPE_` float/double signals
 - **Robust parsing**: malformed lines are collected as warnings instead of failing the
   whole file; Latin-1 fallback for files from Vector tools
-- Last opened file is restored on reload; views are deep-linkable (`#msg=…`, `#node=…`)
-- **UI language switch** (English/German) in the settings menu, persisted; defaults to
+- Last opened file is restored on reload; views are deep-linkable (`#msg=…`, `#node=…`),
+  and **Copy link** on a message copies the link to it
+- **UI language switch** (English/German) in the rail's menu, persisted; defaults to
   the browser language
 
 ## Development
