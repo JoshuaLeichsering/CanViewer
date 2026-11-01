@@ -175,4 +175,26 @@ describe('a container that may scroll sideways', () => {
     rerender(<Wide show={false} />);
     expect(observers[0].disconnect).toHaveBeenCalledOnce();
   });
+
+  it('keeps a tabindex of its own while its content fits', () => {
+    // The overview's problem list: -1, so that the import note's link can focus it.
+    function Problems() {
+      const ref = useFocusableWhenScrolling<HTMLDivElement>();
+      return (
+        <div ref={ref} tabIndex={-1} data-testid="scroller">
+          <table />
+        </div>
+      );
+    }
+    size.client = 300;
+    size.scroll = 300;
+    render(<Problems />);
+    expect(scroller().getAttribute('tabindex')).toBe('-1');
+    size.scroll = 480;
+    resize();
+    expect(scroller().getAttribute('tabindex')).toBe('0');
+    size.scroll = 300;
+    resize();
+    expect(scroller().getAttribute('tabindex')).toBe('-1');
+  });
 });
