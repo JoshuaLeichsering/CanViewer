@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { parseDbc } from './lib/dbc/parser';
+import { importWithCanmatrix, type ImportStage } from './lib/canmatrix/client';
+import { canmatrixFormatFor } from './lib/canmatrix/formats';
 import { findMessageByOccurrence } from './lib/dbc/identity';
 import type { DbcDatabase } from './lib/dbc/types';
 import { useI18n } from './lib/i18n';
@@ -55,6 +57,12 @@ function hashToSelection(hash: string): Selection {
   return { kind: 'overview' };
 }
 
+const IMPORT_STAGE_KEYS = {
+  runtime: 'importRuntime',
+  packages: 'importPackages',
+  reading: 'importReading',
+} as const;
+
 /** DBC files from Vector tools are often Latin-1; fall back when UTF-8 fails. */
 async function readFileText(file: File): Promise<string> {
   const buf = await file.arrayBuffer();
@@ -72,6 +80,8 @@ export function App() {
   const [selection, setSelection] = useState<Selection>({ kind: 'overview' });
   const [search, setSearch] = useState('');
   const [dragging, setDragging] = useState(false);
+  const [importing, setImporting] = useState<{ name: string; stage: ImportStage } | null>(null);
+  const [importError, setImportError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dragDepth = useRef(0);
   const initialHash = useRef(window.location.hash);
@@ -91,9 +101,33 @@ export function App() {
 
   const loadFile = useCallback(
     async (file: File) => {
-      loadText(file.name, await readFileText(file));
+      setImportError(null);
+      if (!canmatrixFormatFor(file.name)) {
+        loadText(file.name, await readFileText(file));
+        return;
+      }
+      // Non-DBC formats go through canmatrix in a Web Worker, loaded on first use.
+      setImporting({ name: file.name, stage: 'runtime' });
+      try {
+        const imported = await importWithCanmatrix(file, (stage) => setImporting({ name: file.name, stage }));
+        setDb(imported.db);
+        setFileName(file.name);
+        setSelection({ kind: 'overview' });
+        setSearch('');
+        // Restoring an imported file on reload is not supported yet; drop the
+        // stored DBC so that a reload does not show a different file.
+        try {
+          localStorage.removeItem('canviewer.file');
+        } catch {
+          // storage unavailable
+        }
+      } catch (e) {
+        setImportError(t('importFailed', { name: file.name, error: e instanceof Error ? e.message : String(e) }));
+      } finally {
+        setImporting(null);
+      }
     },
-    [loadText],
+    [loadText, t],
   );
 
   // Restore the last opened file on startup. Guarded by a ref so StrictMode's
@@ -163,7 +197,7 @@ export function App() {
         <input
           ref={fileInputRef}
           type="file"
-          accept=".dbc,.txt"
+          accept=".dbc,.txt,.arxml"
           style={{ display: 'none' }}
           onChange={(e) => {
             const file = e.target.files?.[0];
@@ -171,7 +205,17 @@ export function App() {
             e.target.value = '';
           }}
         />
-        {db && (
+        {importing && (
+          <div className="file-info" role="status">
+            {t(IMPORT_STAGE_KEYS[importing.stage], { name: importing.name })}
+          </div>
+        )}
+        {importError && (
+          <div className="file-info" role="alert" style={{ color: 'var(--danger)' }}>
+            {importError}
+          </div>
+        )}
+        {db && !importing && (
           <div className="file-info">
             <b>{fileName}</b>
             {db.version && <> · {t('version')} “{db.version}”</>} · {db.messages.length}{' '}

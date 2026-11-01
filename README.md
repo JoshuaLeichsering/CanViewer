@@ -39,17 +39,22 @@ No data leaves your machine — files are parsed locally.
 npm install
 npm run fetch-wheels   # Python wheels for the import adapter, into vendor/pyodide/
 npm run dev            # dev server on http://localhost:5173
-npm test               # unit tests + corpus suites (runs fetch-wheels first)
+npm test               # unit tests + corpus suites
 npm run build          # typecheck + production build (dist/)
 ```
 
-`fetch-wheels` downloads the wheels listed in
+`dev`, `test` and `build` run `fetch-wheels` first. It downloads the wheels listed in
 [wheels.lock.json](src/lib/canmatrix/wheels.lock.json) from jsDelivr (the
 Pyodide-built ones) and PyPI, and checks each against its pinned SHA-256. Files
 already present are left alone, so it works offline once they are there. Where
 those hosts are unreachable, `node scripts/fetch-wheels.mjs --from <dir>` takes
 them from a local directory, such as an unpacked
 [Pyodide release](https://github.com/pyodide/pyodide/releases/tag/314.0.7).
+
+A production build carries the Pyodide runtime and those wheels in `dist/pyodide/`
+(about 16 MB, fetched only when a non-DBC file is opened) and a service worker
+(`dist/sw.js`, production only) that keeps the app usable offline after the first
+visit. See the [worker spike notes](docs/spikes/2026-11-01-pyodide-worker/README.md).
 
 An example database ships with the repository: open
 [examples/demo.dbc](examples/demo.dbc) via **Open DBC…** or drag & drop it into

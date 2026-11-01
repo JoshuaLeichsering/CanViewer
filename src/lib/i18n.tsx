@@ -25,6 +25,10 @@ const en = {
   welcomeDrop: '…or drag & drop a .dbc file anywhere in this window',
   welcomeExampleHint: 'An example database ships with the repository:',
   dropOverlay: 'Drop DBC file to open',
+  importRuntime: 'Loading the Python runtime to read {name}…',
+  importPackages: 'Loading format support for {name}…',
+  importReading: 'Reading {name} with canmatrix…',
+  importFailed: 'Could not read {name}: {error}',
 
   // sidebar
   searchPlaceholder: 'Search messages, signals, nodes…',
@@ -176,6 +180,10 @@ const de: Record<MsgKey, string> = {
   welcomeDrop: '…oder eine .dbc-Datei einfach in dieses Fenster ziehen',
   welcomeExampleHint: 'Eine Beispiel-Datenbank liegt im Repository:',
   dropOverlay: 'DBC-Datei zum Öffnen loslassen',
+  importRuntime: 'Lade die Python-Laufzeit, um {name} zu lesen…',
+  importPackages: 'Lade die Formatunterstützung für {name}…',
+  importReading: 'Lese {name} mit canmatrix…',
+  importFailed: '{name} konnte nicht gelesen werden: {error}',
 
   searchPlaceholder: 'Botschaften, Signale, Knoten suchen…',
   network: 'Netzwerk',
