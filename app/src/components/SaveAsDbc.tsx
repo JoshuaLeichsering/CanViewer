@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { DbcDatabase } from '../lib/dbc/types';
 import { notWritten, writeDbc, type DbcNotWritten, type DbcWriteIssueKind, type DbcWriteResult } from '../lib/dbc/writer';
+import { downloadText } from '../lib/export/download';
 import { useI18n, type MsgKey } from '../lib/i18n';
 import { EditDialog } from './EditDialog';
 import { Icon } from './Icon';
@@ -24,24 +25,6 @@ const SHOWN_ISSUES = 100;
 export function dbcFileName(fileName: string): string {
   const base = fileName.replace(/\.[^./\\]*$/, '');
   return `${base === '' ? 'database' : base}.dbc`;
-}
-
-/**
- * Hands the text to the browser as a download; nothing leaves the machine.
- * In the desktop app, the webview saves a blob: download only through a
- * download handler in the shell (desktop/src/main.rs).
- */
-function download(name: string, text: string) {
-  const url = URL.createObjectURL(new Blob([text], { type: 'application/octet-stream' }));
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = name;
-  a.style.display = 'none';
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  // Revoking at once can cancel a download that has not started reading the Blob yet.
-  setTimeout(() => URL.revokeObjectURL(url), 60_000);
 }
 
 interface Pending {
@@ -72,7 +55,10 @@ export function SaveAsDbcButton({
 
   const save = (result: DbcWriteResult) => {
     const name = dbcFileName(fileName);
-    download(name, result.text);
+    // A download, as the export menu's (W8): nothing leaves the machine, and
+    // the desktop app saves it through the shell's download handler
+    // (desktop/src/main.rs).
+    downloadText(name, 'application/octet-stream', result.text);
     setPending(null);
     onSaved(name, result.text);
   };
