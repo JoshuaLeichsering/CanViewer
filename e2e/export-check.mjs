@@ -5,8 +5,10 @@
 // unit tests compare against (app/src/lib/export/pinned/), byte for byte.
 //
 // It also drives the menus by keyboard, in German, in the dark theme and at
-// phone width, and records every request: everything must stay inside the
-// app's origin (a download is a blob: URL of the page itself).
+// phone width, checks the menu's surface and text contrast in both themes,
+// makes copying and exporting fail and checks that the failure is told in
+// German, and records every request: everything must stay inside the app's
+// origin (a download is a blob: URL of the page itself).
 //
 // Usage (Playwright must be installed; it is not a dependency of the app):
 //   npm run build && npx vite preview --port 4174 --strictPort &
@@ -36,6 +38,47 @@ const say = (line) => {
 const check = (ok, what) => {
   say(`${ok ? 'ok  ' : 'FAIL'} ${what}`);
   if (!ok) failures.push(what);
+};
+
+/** WCAG 2 relative luminance and contrast ratio of CSS rgb()/rgba() colours. */
+const luminance = (css) => {
+  const [r, g, b] = css.match(/[\d.]+/g).slice(0, 3).map((v) => {
+    const c = Number(v) / 255;
+    return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+};
+const contrast = (a, b) => {
+  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+  return (hi + 0.05) / (lo + 0.05);
+};
+
+/**
+ * The open menu's theme, surface and text colour, and the colour the
+ * --sc-high token resolves to in the current theme (through an element that
+ * uses it, so that the check does not repeat the stylesheet's values).
+ */
+const menuSurface = () =>
+  page.locator('.exp-menu-popover').evaluate((menu) => {
+    const probe = document.createElement('div');
+    probe.style.background = 'var(--sc-high)';
+    document.body.append(probe);
+    const token = getComputedStyle(probe).backgroundColor;
+    probe.remove();
+    return {
+      theme: document.documentElement.dataset.theme,
+      background: getComputedStyle(menu).backgroundColor,
+      text: getComputedStyle(menu.querySelector('.menu-item')).color,
+      token,
+    };
+  });
+const checkSurface = async (theme) => {
+  const s = await menuSurface();
+  check(s.theme === theme, `${theme} theme: the page is in the ${theme} theme (data-theme=${s.theme})`);
+  check(s.background === s.token, `${theme} theme: the menu's surface is the ${theme} --sc-high (${s.background})`);
+  check(theme === 'dark' ? luminance(s.background) < 0.1 : luminance(s.background) > 0.6, `${theme} theme: the menu's surface is ${theme}`);
+  const ratio = contrast(s.text, s.background);
+  check(ratio >= 4.5, `${theme} theme: menu text ${s.text} on ${s.background}, contrast ${ratio.toFixed(1)}:1 (WCAG AA: 4.5)`);
 };
 
 const browser = await chromium.launch({ args: ['--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE localhost'] });
@@ -87,6 +130,7 @@ await page.getByTestId('exp-export-button').click();
     'the export menu opens below its button, right-aligned with it',
   );
 }
+await checkSurface('light');
 await page.screenshot({ path: join(outDir, 'overview-menu-light-en.png') });
 await page.keyboard.press('Escape');
 
@@ -146,6 +190,7 @@ await page.getByRole('button', { name: 'Übersicht' }).click();
 check((await page.getByTestId('exp-export-button').innerText()).includes('Exportieren'), 'German: the export button reads "Exportieren"');
 await page.getByTestId('exp-export-button').click();
 check((await page.getByTestId('exp-export-signalsCsv').innerText()) === 'Signale als CSV', 'German: the menu items are translated');
+await checkSurface('dark');
 check(await inView('exp-export-messagesJson'), 'phone width: the export menu fits the screen');
 check(await noOverflow(), 'phone width: no horizontal scrolling with the export menu open');
 check(
@@ -165,6 +210,52 @@ check((await page.getByTestId('exp-copy-pseudoCode').innerText()) === 'Dekodier-
 check(await inView('exp-copy-cStruct'), 'phone width: the copy menu fits the screen');
 check((await scrollWidth()) <= closedWidth, `phone width: the open copy menu adds no horizontal scrolling (${closedWidth} px wide either way)`);
 await page.screenshot({ path: join(outDir, 'message-menu-dark-de-390.png') });
+await page.keyboard.press('Escape');
+
+say('# failures, told in German');
+/** The menu's alert, once there is one, and its button's text and title. */
+const failure = async (testId) => {
+  await page.waitForFunction(() => document.querySelector('.exp-menu [role=alert]'));
+  const button = page.getByTestId(testId);
+  return {
+    alert: await page.locator('.exp-menu [role=alert]').textContent(),
+    label: await button.innerText(),
+    title: await button.getAttribute('title'),
+  };
+};
+// No clipboard at all: the Clipboard API refuses, and so does the old way.
+await page.evaluate(() => {
+  Object.defineProperty(navigator, 'clipboard', {
+    configurable: true,
+    value: { writeText: () => Promise.reject(new DOMException('Write permission denied.', 'NotAllowedError')) },
+  });
+  document.execCommand = () => false;
+});
+await page.getByTestId('exp-copy-button').click();
+await page.getByTestId('exp-copy-cStruct').click();
+{
+  const f = await failure('exp-copy-button');
+  check(f.alert === 'Kopieren fehlgeschlagen: Die Zwischenablage ist nicht verfügbar', `German: a failed copy is told in German ("${f.alert}")`);
+  check(f.label.includes('Kopieren fehlgeschlagen'), `German: the copy button reads "Kopieren fehlgeschlagen" ("${f.label.trim()}")`);
+  check(f.title === f.alert, 'German: the copy button\'s title carries the same message');
+}
+await page.screenshot({ path: join(outDir, 'message-copy-failed-dark-de-390.png') });
+// The browser refuses the Blob URL: its exception text is English and must not show.
+await page.getByRole('button', { name: 'Übersicht' }).click();
+await page.evaluate(() => {
+  URL.createObjectURL = () => {
+    throw new Error('Blob URLs are blocked');
+  };
+});
+await page.getByTestId('exp-export-button').click();
+await page.getByTestId('exp-export-messagesCsv').click();
+{
+  const f = await failure('exp-export-button');
+  check(f.alert === 'Die Datei konnte nicht exportiert werden', `German: a failed export is told in German ("${f.alert}")`);
+  check(f.label.includes('Export fehlgeschlagen'), `German: the export button reads "Export fehlgeschlagen" ("${f.label.trim()}")`);
+  check(f.title === f.alert, 'German: the export button\'s title carries the same message');
+}
+await page.screenshot({ path: join(outDir, 'overview-export-failed-dark-de-390.png') });
 
 await browser.close();
 

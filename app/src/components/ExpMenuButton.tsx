@@ -7,9 +7,16 @@ export interface ExpMenuItem {
   /** Stable key, also the item's test id suffix. */
   key: string;
   label: string;
-  /** Does the work; resolves with the confirmation to announce, rejects with the error to show. */
+  /**
+   * Does the work; resolves with the confirmation to announce. To report a
+   * failure in words of its own it rejects with an ExpMenuError; any other
+   * rejection shows the menu's `errorText`.
+   */
   run: () => Promise<string>;
 }
+
+/** A failure whose message is written for the user, in the interface language. */
+export class ExpMenuError extends Error {}
 
 type Status = { kind: 'ok' | 'error'; text: string };
 
@@ -31,6 +38,7 @@ export function ExpMenuButton({
   items,
   okLabel,
   errorLabel,
+  errorText,
   testId,
   className,
 }: {
@@ -39,7 +47,10 @@ export function ExpMenuButton({
   icon: IconName;
   items: ExpMenuItem[];
   okLabel: string;
+  /** The button's short word after a failure. */
   errorLabel: string;
+  /** The message for a failure that brings no ExpMenuError of its own. */
+  errorText: string;
   testId: string;
   className?: string;
 }) {
@@ -114,7 +125,9 @@ export function ExpMenuButton({
     try {
       setStatus({ kind: 'ok', text: await item.run() });
     } catch (e) {
-      setStatus({ kind: 'error', text: e instanceof Error ? e.message : String(e) });
+      // Only text written for the user reaches the screen: an exception from
+      // the browser would show its own words, in English.
+      setStatus({ kind: 'error', text: e instanceof ExpMenuError ? e.message : errorText });
     }
   };
 

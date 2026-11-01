@@ -3,7 +3,7 @@ import { copyText, downloadText, exportFile, type ExportKind } from '../lib/expo
 import { cStruct } from '../lib/export/c-struct';
 import { decodePseudoCode } from '../lib/export/pseudo-code';
 import { useI18n, type MsgKey } from '../lib/i18n';
-import { ExpMenuButton } from './ExpMenuButton';
+import { ExpMenuButton, ExpMenuError } from './ExpMenuButton';
 
 const EXPORTS: Array<[ExportKind, MsgKey]> = [
   ['messagesCsv', 'expMessagesCsv'],
@@ -20,7 +20,8 @@ export function ExportMenu({ db, fileName }: { db: DbcDatabase; fileName: string
       title={t('expExportTitle')}
       icon="download"
       okLabel={t('expExported')}
-      errorLabel={t('expExport')}
+      errorLabel={t('expExportFailedShort')}
+      errorText={t('expExportFailed')}
       testId="exp-export-button"
       items={EXPORTS.map(([kind, label]) => ({
         key: kind,
@@ -39,11 +40,7 @@ export function ExportMenu({ db, fileName }: { db: DbcDatabase; fileName: string
 export function CopyCodeMenu({ db, message, fileName }: { db: DbcDatabase; message: DbcMessage; fileName: string }) {
   const { t } = useI18n();
   const copy = async (text: string, done: string) => {
-    try {
-      await copyText(text);
-    } catch (e) {
-      throw new Error(t('expCopyFailed', { error: e instanceof Error ? e.message : String(e) }));
-    }
+    if (!(await copyText(text))) throw new ExpMenuError(t('expClipboardUnavailable'));
     return done;
   };
   return (
@@ -54,6 +51,7 @@ export function CopyCodeMenu({ db, message, fileName }: { db: DbcDatabase; messa
       icon="content_copy"
       okLabel={t('expCopied')}
       errorLabel={t('expCopyFailedShort')}
+      errorText={t('expCopyFailed')}
       testId="exp-copy-button"
       items={[
         {

@@ -100,14 +100,14 @@ describe('copyText', () => {
   it('uses the Clipboard API where it works', async () => {
     const writeText = vi.fn(async () => {});
     vi.stubGlobal('navigator', { clipboard: { writeText } });
-    await copyText('typedef struct {} x_t;');
+    expect(await copyText('typedef struct {} x_t;')).toBe(true);
     expect(writeText).toHaveBeenCalledWith('typedef struct {} x_t;');
     expect(created).toEqual([]);
   });
 
   it('falls back to a selected text area where the Clipboard API is refused', async () => {
     vi.stubGlobal('navigator', { clipboard: { writeText: vi.fn(async () => Promise.reject(new Error('denied'))) } });
-    await copyText('x_raw = data[0]');
+    expect(await copyText('x_raw = data[0]')).toBe(true);
     const [area] = created;
     expect(area.tag).toBe('textarea');
     expect(area.value).toBe('x_raw = data[0]');
@@ -119,14 +119,23 @@ describe('copyText', () => {
 
   it('falls back as well where there is no Clipboard API at all', async () => {
     vi.stubGlobal('navigator', {});
-    await copyText('text');
+    expect(await copyText('text')).toBe(true);
     expect(execCommand).toHaveBeenCalledWith('copy');
   });
 
-  it('fails when neither way can copy', async () => {
+  it('resolves with false, without an error text of its own, when neither way can copy', async () => {
     vi.stubGlobal('navigator', {});
     execCommand.mockReturnValue(false);
-    await expect(copyText('text')).rejects.toThrow('the clipboard is not available');
+    expect(await copyText('text')).toBe(false);
+    expect(created[0].removed).toBe(true);
+  });
+
+  it('resolves with false as well when the old way throws', async () => {
+    vi.stubGlobal('navigator', {});
+    execCommand.mockImplementation(() => {
+      throw new Error('execCommand is not supported');
+    });
+    expect(await copyText('text')).toBe(false);
     expect(created[0].removed).toBe(true);
   });
 });

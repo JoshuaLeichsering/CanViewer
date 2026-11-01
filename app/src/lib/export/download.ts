@@ -39,11 +39,15 @@ export function downloadText(name: string, type: string, text: string): void {
   setTimeout(() => URL.revokeObjectURL(url), 60_000);
 }
 
-/** Put text on the clipboard; falls back to a selected text area where the Clipboard API is missing or refused. */
-export async function copyText(text: string): Promise<void> {
+/**
+ * Put text on the clipboard; falls back to a selected text area where the
+ * Clipboard API is missing or refused. Resolves with false, and never
+ * rejects, when neither way can copy: the caller says so in the user's language.
+ */
+export async function copyText(text: string): Promise<boolean> {
   try {
     await navigator.clipboard.writeText(text);
-    return;
+    return true;
   } catch {
     // Not available here (no secure context, or permission denied): try the old way.
   }
@@ -53,8 +57,12 @@ export async function copyText(text: string): Promise<void> {
   area.style.position = 'fixed';
   area.style.opacity = '0';
   document.body.append(area);
-  area.select();
-  const copied = document.execCommand('copy');
-  area.remove();
-  if (!copied) throw new Error('the clipboard is not available');
+  try {
+    area.select();
+    return document.execCommand('copy');
+  } catch {
+    return false;
+  } finally {
+    area.remove();
+  }
 }
