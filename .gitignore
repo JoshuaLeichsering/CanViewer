@@ -16,3 +16,5 @@ tbl-checks/
 vite-preview-tbl.log
 export-check/
 vite-preview-export.log
+diff-check/
+vite-preview-diff.log

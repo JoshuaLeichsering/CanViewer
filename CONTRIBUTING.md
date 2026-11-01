@@ -69,6 +69,8 @@ node e2e/signal-table.mjs http://localhost:4176/ tbl-checks examples/demo.dbc   
 node e2e/large-database.mjs http://localhost:4176/ tbl-checks   # 5000 messages stay responsive
 npx vite preview --port 4177 --strictPort &
 node e2e/export-check.mjs http://localhost:4177/ export-check examples/demo.dbc   # export and copy
+npx vite preview --port 4178 --strictPort &
+node e2e/diff-check.mjs http://localhost:4178/ diff-check   # the Compare page, DBC and ARXML
 ```
 
 The network check must end with `requests outside http://localhost:4173: 0`. Stop the
@@ -83,14 +85,17 @@ signal table by mouse and keyboard, and `e2e/large-database.mjs` generates a dat
 5000 messages and fails if scrolling, search, the keyboard or the overview's pages exceed
 their time budgets. `e2e/export-check.mjs` exports and copies through the menus and
 requires every file and every copy to equal the pinned output in
-`app/src/lib/export/pinned/`. Stop the preview servers afterwards.
+`app/src/lib/export/pinned/`. `e2e/diff-check.mjs` compares two versions on the Compare
+page, opened and dropped, a DBC file with an ARXML file read through canmatrix
+(pinned in `e2e/diff-check-arxml.txt`), and fails on any request outside the origin. Stop
+the preview servers afterwards.
 
 If you change a dependency, also run `npm run notices` (it needs Rust's `cargo` and
 `rustc`, for the desktop crates and the Rust standard library) and commit the regenerated
 `THIRD_PARTY_NOTICES.md`. CI checks that it is up to date, and checks the crates' licenses
 with `cargo deny --manifest-path desktop/Cargo.toml check licenses`. The outputs of the
 check above (`test-report.json`, `network-check/`, `coverage/`, `test-results/`,
-`import-ui/`, `tbl-checks/`, `export-check/`) are ignored by git, so the sweep for identifying information does not read them.
+`import-ui/`, `tbl-checks/`, `export-check/`, `diff-check/`) are ignored by git, so the sweep for identifying information does not read them.
 
 ## Conventions
 

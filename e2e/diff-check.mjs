@@ -19,9 +19,10 @@
 // Every request is recorded; any request outside the app's origin, a console
 // error or a failed expectation fails the check.
 //
-// Usage (Playwright must be installed; it is not a dependency of the app):
-//   npm run build && npx vite preview --port 4173 --strictPort &
-//   node e2e/diff-check.mjs http://localhost:4173/ <out-dir>
+// Usage (Playwright is a dev dependency; `npx playwright install chromium`
+// fetches its browser):
+//   npm run build && npx vite preview --port 4178 --strictPort &
+//   node e2e/diff-check.mjs http://localhost:4178/ <out-dir>
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { join } from 'node:path';
