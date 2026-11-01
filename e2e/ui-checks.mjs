@@ -195,6 +195,13 @@ describe('accessibility (axe-core): no serious or critical issues', () => {
       await page.locator('tr.clickable', { hasText: 'EngineSpeed' }).click();
       await page.locator('.text-field input').fill('10 27 40 1F 00 64 00 00');
       await check('message with a signal and a payload');
+      // W11's editors are dialogs over the page.
+      await page.locator('[data-testid="edt-edit-message"]').click();
+      await check('message editor');
+      await page.keyboard.press('Escape');
+      await page.locator('[data-testid="edt-edit-signal"]').click();
+      await check('signal editor');
+      await page.keyboard.press('Escape');
       // The header also holds W8's copy-as-code menu button.
       await page.locator('.page-header').getByRole('button', { name: combo.lang === 'de' ? 'Link kopieren' : 'Copy link' }).click();
       await page.waitForSelector('.snackbar');
@@ -349,10 +356,11 @@ describe('focus order', () => {
   test('Tab follows the layout: below 600 px the theme toggle is in the top bar', async () => {
     const { context, page, problems } = await openApp({ viewport: 'narrow' });
     await openFile(page, 'demo.dbc', DEMO);
-    // Top bar (menu, open file, theme), then the navigation bar at the bottom.
-    assert.deepEqual(await tabOrder(page, 10), [
+    // Top bar (menu, open file, W11's Save as DBC, theme), then the navigation bar at the bottom.
+    assert.deepEqual(await tabOrder(page, 11), [
       'Settings',
       'Open file',
+      'Save as DBC',
       'Switch to dark theme',
       'Overview',
       'Messages',
@@ -368,9 +376,10 @@ describe('focus order', () => {
     // In the rail it is at the bottom, after the destinations, in both senses.
     await page.setViewportSize(VIEWPORTS.desktop);
     await frames(page);
-    assert.deepEqual(await tabOrder(page, 10), [
+    assert.deepEqual(await tabOrder(page, 11), [
       'Settings',
       'Open file',
+      'Save as DBC',
       'Overview',
       'Messages',
       'Network',
