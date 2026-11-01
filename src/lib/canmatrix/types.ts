@@ -11,6 +11,6 @@ export interface CanmatrixReadResult {
   clusters: ImportedCluster[];
   /** Everything canmatrix printed or logged at WARNING and above while loading. */
   log: string[];
-  /** The loader's exception, if it raised one. */
-  error: string | null;
+  /** The loader's exception, if it raised one (Python None arrives as undefined). */
+  error?: string | null;
 }

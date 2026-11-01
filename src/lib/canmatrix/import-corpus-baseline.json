@@ -2,6 +2,7 @@
   "reads": {
     "canmatrix/tests/files/arxml/ARXMLCompuMethod1.arxml": {
       "importType": "arxml",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -15,6 +16,7 @@
     },
     "canmatrix/tests/files/arxml/ARXMLContainerTest.arxml": {
       "importType": "arxml",
+      "error": null,
       "clusters": [
         {
           "name": "New_CanCluster",
@@ -28,6 +30,7 @@
     },
     "canmatrix/tests/files/arxml/ARXMLSecuredPDUTest.arxml": {
       "importType": "arxml",
+      "error": null,
       "clusters": [
         {
           "name": "CAN",
@@ -39,6 +42,7 @@
     },
     "canmatrix/tests/files/arxml/ARXML_min_max.arxml": {
       "importType": "arxml",
+      "error": null,
       "clusters": [
         {
           "name": "New_CanCluster",
@@ -57,6 +61,7 @@
     },
     "canmatrix/tests/files/arxml/MyECU.ecuc.arxml": {
       "importType": "arxml",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -68,6 +73,7 @@
     },
     "canmatrix/tests/files/arxml/test.arxml": {
       "importType": "arxml",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -81,6 +87,7 @@
     },
     "canmatrix/tests/files/dbf/test.dbf": {
       "importType": "dbf",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -92,6 +99,7 @@
     },
     "canmatrix/tests/files/json/test.json": {
       "importType": "json",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -103,6 +111,7 @@
     },
     "canmatrix/tests/files/kcd/test.kcd": {
       "importType": "kcd",
+      "error": null,
       "clusters": [
         {
           "name": "test.kcd",
@@ -114,6 +123,7 @@
     },
     "canmatrix/tests/files/sym/test.sym": {
       "importType": "sym",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -130,6 +140,7 @@
     },
     "canmatrix/tests/files/xlsx/test.xls": {
       "importType": "xls",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -141,6 +152,7 @@
     },
     "canmatrix/tests/files/xlsx/test.xlsx": {
       "importType": "xlsx",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -152,6 +164,7 @@
     },
     "canmatrix/tests/reference/from_arxml/test.kcd": {
       "importType": "kcd",
+      "error": null,
       "clusters": [
         {
           "name": "CAN",
@@ -169,6 +182,7 @@
     },
     "canmatrix/tests/reference/from_arxml/test_CAN.json": {
       "importType": "json",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -180,6 +194,7 @@
     },
     "canmatrix/tests/reference/from_arxml/test_CAN.sym": {
       "importType": "sym",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -194,6 +209,7 @@
     },
     "canmatrix/tests/reference/from_arxml/test_CAN.xls": {
       "importType": "xls",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -205,6 +221,7 @@
     },
     "canmatrix/tests/reference/from_arxml/test_CAN.xlsx": {
       "importType": "xlsx",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -228,6 +245,7 @@
     },
     "canmatrix/tests/reference/from_dbc/test.arxml": {
       "importType": "arxml",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -241,6 +259,7 @@
     },
     "canmatrix/tests/reference/from_dbc/test.dbf": {
       "importType": "dbf",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -252,6 +271,7 @@
     },
     "canmatrix/tests/reference/from_dbc/test.json": {
       "importType": "json",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -263,6 +283,7 @@
     },
     "canmatrix/tests/reference/from_dbc/test.kcd": {
       "importType": "kcd",
+      "error": null,
       "clusters": [
         {
           "name": "converted/from_dbc/test",
@@ -274,6 +295,7 @@
     },
     "canmatrix/tests/reference/from_dbc/test.sym": {
       "importType": "sym",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -291,6 +313,7 @@
     },
     "canmatrix/tests/reference/from_dbc/test.xlsx": {
       "importType": "xlsx",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -314,6 +337,7 @@
     },
     "canmatrix/tests/reference/from_dbf/test.arxml": {
       "importType": "arxml",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -327,6 +351,7 @@
     },
     "canmatrix/tests/reference/from_dbf/test.json": {
       "importType": "json",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -338,6 +363,7 @@
     },
     "canmatrix/tests/reference/from_dbf/test.kcd": {
       "importType": "kcd",
+      "error": null,
       "clusters": [
         {
           "name": "converted/from_dbf/test",
@@ -349,6 +375,7 @@
     },
     "canmatrix/tests/reference/from_dbf/test.sym": {
       "importType": "sym",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -366,6 +393,7 @@
     },
     "canmatrix/tests/reference/from_dbf/test.xlsx": {
       "importType": "xlsx",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -389,6 +417,7 @@
     },
     "canmatrix/tests/reference/from_json/test.arxml": {
       "importType": "arxml",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -402,6 +431,7 @@
     },
     "canmatrix/tests/reference/from_json/test.dbf": {
       "importType": "dbf",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -413,6 +443,7 @@
     },
     "canmatrix/tests/reference/from_json/test.kcd": {
       "importType": "kcd",
+      "error": null,
       "clusters": [
         {
           "name": "converted/from_json/test",
@@ -424,6 +455,7 @@
     },
     "canmatrix/tests/reference/from_json/test.sym": {
       "importType": "sym",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -441,6 +473,7 @@
     },
     "canmatrix/tests/reference/from_json/test.xlsx": {
       "importType": "xlsx",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -464,6 +497,7 @@
     },
     "canmatrix/tests/reference/from_kcd/test.arxml": {
       "importType": "arxml",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -483,6 +517,7 @@
     },
     "canmatrix/tests/reference/from_kcd/test_test.kcd.json": {
       "importType": "json",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -494,6 +529,7 @@
     },
     "canmatrix/tests/reference/from_kcd/test_test.kcd.sym": {
       "importType": "sym",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -508,6 +544,7 @@
     },
     "canmatrix/tests/reference/from_kcd/test_test.kcd.xls": {
       "importType": "xls",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -519,6 +556,7 @@
     },
     "canmatrix/tests/reference/from_kcd/test_test.kcd.xlsx": {
       "importType": "xlsx",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -542,6 +580,7 @@
     },
     "canmatrix/tests/reference/from_sym/test.arxml": {
       "importType": "arxml",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -561,6 +600,7 @@
     },
     "canmatrix/tests/reference/from_sym/test.json": {
       "importType": "json",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -572,6 +612,7 @@
     },
     "canmatrix/tests/reference/from_sym/test.kcd": {
       "importType": "kcd",
+      "error": null,
       "clusters": [
         {
           "name": "converted/from_sym/test",
@@ -583,6 +624,7 @@
     },
     "canmatrix/tests/reference/from_sym/test.xls": {
       "importType": "xls",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -594,6 +636,7 @@
     },
     "canmatrix/tests/reference/from_sym/test.xlsx": {
       "importType": "xlsx",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -643,6 +686,7 @@
     },
     "canmatrix/tests/reference/from_xls/test.sym": {
       "importType": "sym",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -698,6 +742,7 @@
     },
     "canmatrix/tests/reference/from_xlsx/test.sym": {
       "importType": "sym",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -727,6 +772,7 @@
     },
     "cantools/tests/files/arxml/compu_method_no_category.arxml": {
       "importType": "arxml",
+      "error": null,
       "clusters": [
         {
           "name": "MY_CLUSTER",
@@ -738,6 +784,7 @@
     },
     "cantools/tests/files/arxml/ecu-extract-4.2.arxml": {
       "importType": "arxml",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -751,6 +798,7 @@
     },
     "cantools/tests/files/arxml/system-3.2.3.arxml": {
       "importType": "arxml",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -770,6 +818,7 @@
     },
     "cantools/tests/files/arxml/system-DAI-3.1.2.arxml": {
       "importType": "arxml",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -795,6 +844,7 @@
     },
     "cantools/tests/files/arxml/system-float-limits-missing-compu-scale-4.2.arxml": {
       "importType": "arxml",
+      "error": null,
       "clusters": [
         {
           "name": "MY_CLUSTER",
@@ -806,6 +856,7 @@
     },
     "cantools/tests/files/arxml/system-float-values.arxml": {
       "importType": "arxml",
+      "error": null,
       "clusters": [
         {
           "name": "CCB",
@@ -817,6 +868,7 @@
     },
     "cantools/tests/files/arxml/system-illegal-namespace-4.2.arxml": {
       "importType": "arxml",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -830,6 +882,7 @@
     },
     "cantools/tests/files/arxml/system-illegal-root-4.2.arxml": {
       "importType": "arxml",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -843,6 +896,7 @@
     },
     "cantools/tests/files/arxml/system-illegal-version-4.2.2.1.0.arxml": {
       "importType": "arxml",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -856,6 +910,7 @@
     },
     "cantools/tests/files/arxml/system-missing-denominator-4.2.arxml": {
       "importType": "arxml",
+      "error": null,
       "clusters": [
         {
           "name": "Cluster0",
@@ -867,6 +922,7 @@
     },
     "cantools/tests/files/arxml/system-missing-factor-4.2.arxml": {
       "importType": "arxml",
+      "error": null,
       "clusters": [
         {
           "name": "Cluster0",
@@ -878,6 +934,7 @@
     },
     "cantools/tests/files/arxml/system-missing-rational-4.2.arxml": {
       "importType": "arxml",
+      "error": null,
       "clusters": [
         {
           "name": "Cluster0",
@@ -891,6 +948,7 @@
     },
     "cantools/tests/files/kcd/auto_message_length.kcd": {
       "importType": "kcd",
+      "error": null,
       "clusters": [
         {
           "name": "Bus1",
@@ -902,6 +960,7 @@
     },
     "cantools/tests/files/kcd/bad_message_length.kcd": {
       "importType": "kcd",
+      "error": null,
       "clusters": [
         {
           "name": "Bus1",
@@ -913,6 +972,7 @@
     },
     "cantools/tests/files/kcd/dump.kcd": {
       "importType": "kcd",
+      "error": null,
       "clusters": [
         {
           "name": "Bus",
@@ -924,11 +984,13 @@
     },
     "cantools/tests/files/kcd/empty.kcd": {
       "importType": "kcd",
+      "error": null,
       "clusters": [],
       "log": []
     },
     "cantools/tests/files/kcd/message_layout.kcd": {
       "importType": "kcd",
+      "error": null,
       "clusters": [
         {
           "name": "Bus1",
@@ -940,6 +1002,7 @@
     },
     "cantools/tests/files/kcd/signal_range.kcd": {
       "importType": "kcd",
+      "error": null,
       "clusters": [
         {
           "name": "Bus1",
@@ -951,6 +1014,7 @@
     },
     "cantools/tests/files/kcd/tester.kcd": {
       "importType": "kcd",
+      "error": null,
       "clusters": [
         {
           "name": "Bus1",
@@ -962,6 +1026,7 @@
     },
     "cantools/tests/files/kcd/the_homer.kcd": {
       "importType": "kcd",
+      "error": null,
       "clusters": [
         {
           "name": "Motor",
@@ -983,6 +1048,7 @@
     },
     "cantools/tests/files/kcd/vehicle.kcd": {
       "importType": "kcd",
+      "error": null,
       "clusters": [
         {
           "name": "Bus",
@@ -994,6 +1060,7 @@
     },
     "cantools/tests/files/sym/bad_message_length.sym": {
       "importType": "sym",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -1005,6 +1072,7 @@
     },
     "cantools/tests/files/sym/big-endian.sym": {
       "importType": "sym",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -1016,6 +1084,7 @@
     },
     "cantools/tests/files/sym/comments_hex_and_motorola.sym": {
       "importType": "sym",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -1030,6 +1099,7 @@
     },
     "cantools/tests/files/sym/empty-6.0.sym": {
       "importType": "sym",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -1041,6 +1111,7 @@
     },
     "cantools/tests/files/sym/empty-enum-6.0.sym": {
       "importType": "sym",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -1052,6 +1123,7 @@
     },
     "cantools/tests/files/sym/issue_138.sym": {
       "importType": "sym",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -1063,6 +1135,7 @@
     },
     "cantools/tests/files/sym/jopp-5.0.sym": {
       "importType": "sym",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -1077,6 +1150,7 @@
     },
     "cantools/tests/files/sym/jopp-6.0.sym": {
       "importType": "sym",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -1091,6 +1165,7 @@
     },
     "cantools/tests/files/sym/letter-terminated-can-id-6.0.sym": {
       "importType": "sym",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -1102,6 +1177,7 @@
     },
     "cantools/tests/files/sym/min-max-only-6.0.sym": {
       "importType": "sym",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -1113,6 +1189,7 @@
     },
     "cantools/tests/files/sym/multiplexed_variables.sym": {
       "importType": "sym",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -1124,6 +1201,7 @@
     },
     "cantools/tests/files/sym/receive-6.0.sym": {
       "importType": "sym",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -1135,6 +1213,7 @@
     },
     "cantools/tests/files/sym/send-6.0.sym": {
       "importType": "sym",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -1146,6 +1225,7 @@
     },
     "cantools/tests/files/sym/sendreceive-6.0.sym": {
       "importType": "sym",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -1157,6 +1237,7 @@
     },
     "cantools/tests/files/sym/signal-types-6.0.sym": {
       "importType": "sym",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -1168,6 +1249,7 @@
     },
     "cantools/tests/files/sym/special-chars-6.0.sym": {
       "importType": "sym",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -1179,6 +1261,7 @@
     },
     "cantools/tests/files/sym/test_extended_id_dump.sym": {
       "importType": "sym",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -1190,6 +1273,7 @@
     },
     "cantools/tests/files/sym/test_multiline_enum.sym": {
       "importType": "sym",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -1204,6 +1288,7 @@
     },
     "cantools/tests/files/sym/test_multiplex_dump.sym": {
       "importType": "sym",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -1215,6 +1300,7 @@
     },
     "cantools/tests/files/sym/type-extended-cycle-dash-p.sym": {
       "importType": "sym",
+      "error": null,
       "clusters": [
         {
           "name": "",
@@ -1229,6 +1315,7 @@
     },
     "cantools/tests/files/sym/variables-color-enum-6.0.sym": {
       "importType": "sym",
+      "error": null,
       "clusters": [
         {
           "name": "",

@@ -192,7 +192,7 @@ describe.skipIf(corpus.length === 0)('non-DBC corpus (canmatrix and cantools sub
     results.set(file, result);
     const summary: ReadSummary = {
       importType: format.importType,
-      error: result.error,
+      error: result.error ?? null,
       clusters: result.clusters.map((c) => ({
         name: c.name,
         messages: c.db.messages.length,
