@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 import { isCanFd } from '../dbc/canfd';
 import type { AttrValue, DbcDatabase, DbcMessage, DbcSignal, MultiplexInfo } from '../dbc/types';
 import { hexId } from '../format';

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 import { signalBitPositions } from '../dbc/bits';
 import { isCanFd, isJ1939Pg } from '../dbc/canfd';
 import { decomposeJ1939Id, isJ1939Database, PGN_NAMES, type J1939Id } from '../dbc/j1939';

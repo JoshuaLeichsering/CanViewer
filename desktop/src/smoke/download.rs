@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 //! The self-test's check of the export download. smoke.js saves the first
 //! file's message list the way a user does (Export, then Messages as CSV);
 //! the download handler in main.rs records what it saw here, and the report

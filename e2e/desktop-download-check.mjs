@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 // Checks the file that the desktop app's self-test saved through Export, then
 // Messages as CSV (desktop/src/smoke.js), after the app has quit: it must be
 // in the Downloads folder the job looks in, and equal the browser's export of

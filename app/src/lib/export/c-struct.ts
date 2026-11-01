@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 import type { DbcDatabase, DbcMessage, DbcSignal } from '../dbc/types';
 import { hexId } from '../format';
 import { describeFrame, describeSignal, fitsPayload, j1939Of, oneLine, rawKind } from './layout';

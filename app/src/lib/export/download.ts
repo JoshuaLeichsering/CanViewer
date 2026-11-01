@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 import type { DbcDatabase } from '../dbc/types';
 import { exportStem, messagesCsv, messagesJson, signalsCsv } from './table';
 

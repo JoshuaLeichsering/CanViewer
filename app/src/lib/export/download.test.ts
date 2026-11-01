@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { copyText, downloadText } from './download';
 

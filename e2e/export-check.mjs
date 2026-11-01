@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 // End-to-end check of the export features in a production build: the
 // overview's export menu downloads the message and signal list as CSV and
 // JSON, and the message page's copy menu puts the C struct and the decode
