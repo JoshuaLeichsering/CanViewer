@@ -23,3 +23,8 @@ vite-preview-trc.log
 editing-check/
 vite-preview-editing.log
 desktop-csp/
+docs/.vitepress/dist
+docs/.vitepress/cache
+_pages/
+docs-crawl/
+static-server.log
