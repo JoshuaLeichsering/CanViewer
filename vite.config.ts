@@ -48,5 +48,28 @@ export default defineConfig({
     // line (--outputFile, coverage) stay relative to it, and looks for tests in app/.
     root: repoRoot,
     dir: fromRoot('app'),
+    // Tests run in Node; the component tests opt into a DOM per file with
+    // `// @vitest-environment jsdom`, so the corpus suites never pay for one.
+    coverage: {
+      // `npm run test:coverage` (CI runs the same). Off by default, so that
+      // other runs stay fast.
+      provider: 'v8',
+      include: ['app/src/**/*.{ts,tsx,js}'],
+      exclude: ['app/src/**/*.test.{ts,tsx}', 'app/src/test/**', 'app/src/**/*.d.ts'],
+      reporter: ['text', 'text-summary', 'html', 'json-summary'],
+      reportsDirectory: 'coverage',
+      // Minimums, enforced whenever coverage runs. The goal asks for at least
+      // 90 % of the lines in app/src/lib and 80 % overall; these sit higher,
+      // but below what the tests reached when they were set, so that losing
+      // tests fails the run while new code has some room. They may only rise:
+      // never lower them to make a run pass.
+      thresholds: {
+        lines: 90,
+        statements: 90,
+        functions: 90,
+        branches: 85,
+        'app/src/lib/**': { lines: 95, statements: 95, functions: 90, branches: 90 },
+      },
+    },
   },
 });
