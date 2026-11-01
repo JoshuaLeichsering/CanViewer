@@ -7,7 +7,7 @@ import type { DbcDatabase, DbcMessage } from '../lib/dbc/types';
 
 // A path built from strings: under jsdom, URL is jsdom's, which Node's
 // fileURLToPath does not accept.
-export const DEMO_DBC_PATH = join(dirname(fileURLToPath(import.meta.url)), '../../../examples/demo.dbc');
+const DEMO_DBC_PATH = join(dirname(fileURLToPath(import.meta.url)), '../../../examples/demo.dbc');
 export const DEMO_DBC_TEXT = readFileSync(DEMO_DBC_PATH, 'utf8');
 
 /** A fresh parse of examples/demo.dbc (9 messages, 5 nodes, 2 value tables). */

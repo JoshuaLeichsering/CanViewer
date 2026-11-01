@@ -50,13 +50,16 @@ test('switches the language to German and back, and keeps the choice', async ({ 
   await expect(page.getByRole('heading', { name: 'Decode frame' })).toBeVisible();
 });
 
-test('starts in German for a German browser', async ({ browser, baseURL }) => {
-  const context = await browser.newContext({ locale: 'de-DE', baseURL });
-  const page = await context.newPage();
-  await page.goto('/');
-  await expect(page.getByText('Ein Viewer für DBC-CAN-Datenbanken.')).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Datei öffnen…' })).toBeVisible();
-  await context.close();
+test.describe('with a German browser', () => {
+  // The fixture's own context and page, so that the foreign-request guard
+  // watches this flow too (it does not see a context made by the test).
+  test.use({ locale: 'de-DE' });
+
+  test('starts in German for a German browser', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.getByText('Ein Viewer für DBC-CAN-Datenbanken.')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Datei öffnen…' })).toBeVisible();
+  });
 });
 
 test('closes the settings menu with Escape', async ({ page }) => {
