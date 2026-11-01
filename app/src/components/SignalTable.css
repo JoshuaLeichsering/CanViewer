@@ -1,0 +1,161 @@
+/*
+ * The signal table's sortable headers and filter row. Colors and shapes come
+ * from the tokens in styles.css; every class here starts with tbl-.
+ */
+.tbl-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  min-height: 44px;
+  padding: 4px 12px 0 20px;
+}
+.tbl-head h2 {
+  margin: 0;
+}
+.tbl-count {
+  font-size: 13px;
+  color: var(--on-surface-var);
+}
+.tbl-actions {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+/* .btn here outweighs .btn.text in styles.css, which the bundle puts after this file. */
+.btn.tbl-filter-toggle.on {
+  background: var(--sec-c);
+  color: var(--on-sec-c);
+}
+.tbl-help {
+  max-width: 760px;
+  margin: 0 20px 8px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--on-surface-var);
+}
+.tbl-help.error {
+  color: var(--error);
+}
+.tbl-help[hidden] {
+  display: none;
+}
+.tbl-scroll {
+  overflow-x: auto;
+}
+
+/* Header buttons: the label plus a sort arrow, which shows on hover or focus
+   and stays while the column sorts. Number columns put the arrow first, as
+   Material's data tables do, so the labels stay aligned with the numbers.
+   The arrow sits in the gutter between columns: the padding that holds it is
+   taken back by an equal negative margin, so the columns are exactly as wide
+   as without sorting, while the arrow stays inside the button's focus ring. */
+.tbl-sort {
+  display: inline-flex;
+  align-items: center;
+  margin: -4px -20px -4px -6px;
+  padding: 4px 20px 4px 6px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  white-space: nowrap;
+}
+table.m3 th.num .tbl-sort {
+  margin: -4px -6px -4px -20px;
+  padding: 4px 6px 4px 20px;
+}
+.tbl-sort.on {
+  color: var(--on-surface);
+}
+.tbl-sort .tbl-sort-icon {
+  position: absolute;
+  top: 50%;
+  right: 3px;
+  margin-top: -8px;
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+table.m3 th.num .tbl-sort .tbl-sort-icon {
+  right: auto;
+  left: 3px;
+}
+.tbl-sort:hover .tbl-sort-icon,
+.tbl-sort:focus-visible .tbl-sort-icon {
+  opacity: 0.6;
+}
+.tbl-sort.on .tbl-sort-icon {
+  opacity: 1;
+  color: var(--primary);
+}
+
+table.m3 tr.tbl-filter-row td {
+  height: auto;
+  padding-top: 0;
+  padding-bottom: 8px;
+  border-top: 0;
+}
+table.m3 tr.tbl-filter-row[hidden] {
+  display: none;
+}
+/* The box takes the column's width and reaches 8 px into the gutter on each
+   side, so a field is 16 px wider than its column's content. A number field is
+   at least 64 px wide, room for six characters such as 16..32 or 0..255. */
+.tbl-filter-box {
+  position: relative;
+  min-width: 48px;
+  height: 32px;
+  margin: 0 -8px;
+}
+table.m3 td.num .tbl-filter-box {
+  min-width: 64px;
+}
+.tbl-filter {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0 6px;
+  border: 1px solid var(--outline-var);
+  border-radius: 8px;
+  outline: none;
+  background: var(--surface);
+  color: var(--on-surface);
+  font-size: 13px;
+}
+/* Number fields and the last column's field grow to the left, the others to the right. */
+table.m3 td.num .tbl-filter,
+table.m3 td:last-child .tbl-filter {
+  right: 0;
+  left: auto;
+}
+/* The thicker border is the focus indicator, as in the app's other text
+   fields; :focus-visible keeps the global outline from doubling it. While
+   focused, a field grows over its neighbours to show the whole filter
+   (--tbl-chars is its length plus two), without changing the table's layout. */
+.tbl-filter:focus,
+.tbl-filter:focus-visible {
+  z-index: 1;
+  width: max(100%, calc(var(--tbl-chars, 0) * 1ch + 14px));
+  outline: none;
+  border: 2px solid var(--primary);
+  padding: 0 5px;
+}
+.tbl-filter[aria-invalid='true'] {
+  border: 2px solid var(--error);
+  padding: 0 5px;
+}
+/* An invalid field already has the thick border, so focus adds a ring. */
+.tbl-filter[aria-invalid='true']:focus {
+  outline: 2px solid var(--error);
+  outline-offset: 1px;
+}
+table.m3 td.num .tbl-filter {
+  text-align: right;
+  font-family: var(--mono);
+}
+table.m3 tr.tbl-empty td {
+  color: var(--on-surface-var);
+}

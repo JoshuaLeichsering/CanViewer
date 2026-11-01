@@ -1,0 +1,39 @@
+/*
+ * The pager of a table shown one page at a time (the Overview's message table
+ * of a large database). Colors come from the tokens in styles.css; every class
+ * here starts with tbl-.
+ */
+.tbl-pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  padding: 0 12px 4px 20px;
+  font-size: 13px;
+  color: var(--on-surface-var);
+}
+.tbl-pager-range {
+  margin-right: 8px;
+  font-variant-numeric: tabular-nums;
+}
+.tbl-pager-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: 20px;
+  background: none;
+  color: var(--on-surface-var);
+}
+/* Material's disabled look: 38 % opacity and no state layer. */
+.tbl-pager-btn[aria-disabled='true'] {
+  opacity: 0.38;
+  cursor: default;
+}
+.tbl-pager-btn[aria-disabled='true']::after {
+  display: none;
+}

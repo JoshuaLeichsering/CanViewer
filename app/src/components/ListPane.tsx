@@ -8,9 +8,11 @@ import { isJ1939Database } from '../lib/dbc/j1939';
 import { useI18n } from '../lib/i18n';
 import { hexId } from '../lib/format';
 import { onListKeyDown } from '../lib/keyboard';
+import { shouldVirtualize } from '../lib/virtual-window';
 import { Icon } from './Icon';
 import { messageTag, MessageTag } from './MessageTag';
 import { useHintFits } from './useHintFits';
+import { VirtualList } from './VirtualList';
 
 export type MessageFilter = 'all' | 'ext' | 'fd';
 
@@ -74,15 +76,16 @@ function MessageList({
         (query === '' || messageMatches(m, query)),
     );
   }, [db, query, filter]);
+  const activeIndex =
+    selection.kind === 'message'
+      ? messages.findIndex((m) => m.rawId === selection.rawId && occurrenceOf(db, m) === selection.occ)
+      : -1;
 
   const searchRef = useRef<HTMLInputElement>(null);
   const hintRef = useRef<HTMLElement>(null);
   const hintFits = useHintFits(searchRef, hintRef, t('searchPlaceholder'), search === '');
   const scrollRef = useRef<HTMLDivElement>(null);
   const selectionOf = (m: DbcMessage): Selection => ({ kind: 'message', rawId: m.rawId, occ: occurrenceOf(db, m) });
-  const activeIndex = messages.findIndex(
-    (m) => selection.kind === 'message' && selection.rawId === m.rawId && selection.occ === occurrenceOf(db, m),
-  );
   // From the search field, ↓ goes to the selected message (or the first match)
   // and Enter opens it.
   const onSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -146,14 +149,18 @@ function MessageList({
           n: query !== '' || filter !== 'all' ? `${messages.length} / ${db.messages.length}` : messages.length,
         })}
       </div>
-      <div
-        ref={scrollRef}
+      <VirtualList
+        containerRef={scrollRef}
         className="list-scroll"
+        items={messages}
+        virtual={shouldVirtualize(db.messages.length)}
+        estimatedRowHeight={60}
+        activeKey={selection.kind === 'message' ? `${selection.rawId}.${selection.occ}` : undefined}
+        activeIndex={activeIndex}
         onKeyDown={(e) =>
           onListKeyDown(e, messages.length, (i) => onBrowse(selectionOf(messages[i])), () => searchRef.current?.focus())
         }
-      >
-        {messages.map((m, i) => {
+        renderItem={(m, i) => {
           const occ = occurrenceOf(db, m);
           const active = selection.kind === 'message' && selection.rawId === m.rawId && selection.occ === occ;
           const cycle = m.attributes.GenMsgCycleTime;
@@ -167,9 +174,9 @@ function MessageList({
           return (
             <button
               key={`${m.rawId}.${occ}`}
-              data-rgh-index={i}
               className={`list-item state ${active ? 'active' : ''}`}
               aria-current={active ? 'true' : undefined}
+              data-rgh-index={i}
               onClick={() => onSelect({ kind: 'message', rawId: m.rawId, occ })}
             >
               <span className="id">{hexId(m.id, m.isExtended)}</span>
@@ -180,13 +187,14 @@ function MessageList({
               <MessageTag tag={messageTag(db, m, j1939Db)} />
             </button>
           );
-        })}
+        }}
+      >
         {messages.length === 0 && (
           <div className="list-empty">
             {query !== '' ? t('noMessagesMatch', { q: query }) : t('noMessagesFilter')}
           </div>
         )}
-      </div>
+      </VirtualList>
     </>
   );
 }

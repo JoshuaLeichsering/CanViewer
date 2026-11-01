@@ -2,8 +2,9 @@
 # suites (which must run, never skip) and the coverage thresholds of
 # vite.config.ts, the production build, the network check that proves the
 # build makes no request outside its own origin, the end-to-end flows, the UI
-# checks in a browser (e2e/ui-checks.mjs), and the import UI's end-to-end
-# checks (e2e/import-ui.test.mjs).
+# checks in a browser (e2e/ui-checks.mjs), the import UI's end-to-end checks
+# (e2e/import-ui.test.mjs), and the browser checks of the signal table and of
+# a 5000-message database.
 name: CI
 
 on:
@@ -104,6 +105,13 @@ jobs:
           CANVIEWER_URL=http://localhost:4175/ CANVIEWER_E2E_OUT=import-ui \
             node --test --test-reporter=spec e2e/import-ui.test.mjs
 
+      - name: Signal table and large database checks (sorting, filtering, 5000 messages)
+        run: |
+          npx vite preview --port 4174 --strictPort > vite-preview-tbl.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:4174/ > /dev/null && break; sleep 1; done
+          NODE_PATH="$RUNNER_TEMP/pw/node_modules" node e2e/signal-table.mjs http://localhost:4174/ tbl-checks examples/demo.dbc
+          NODE_PATH="$RUNNER_TEMP/pw/node_modules" node e2e/large-database.mjs http://localhost:4174/ tbl-checks
+
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -116,6 +124,8 @@ jobs:
             test-results/
             import-ui/
             vite-preview-import-ui.log
+            tbl-checks/
+            vite-preview-tbl.log
           if-no-files-found: ignore
 
   licenses:
