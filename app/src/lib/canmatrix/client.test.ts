@@ -1,179 +1,213 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-// @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { File as NodeFile } from 'node:buffer';
-import type { DbcDatabase } from '../dbc/types';
+import { parseDbc } from '../dbc/parser';
 import type { CanmatrixReadResult } from './types';
-import type { WorkerReply, WorkerRequest } from './worker-protocol';
+import type { ImportStage, WorkerReply, WorkerRequest } from './worker-protocol';
 
-/** Stands in for the module worker; the real one runs Pyodide (see worker.test.ts). */
+/** Stands in for the import worker: records what the page sends and answers as the test says. */
 class FakeWorker {
-  static instances: FakeWorker[] = [];
-  onmessage: ((e: MessageEvent<WorkerReply>) => void) | null = null;
-  onerror: ((e: Partial<ErrorEvent>) => void) | null = null;
-  posted: Array<{ request: WorkerRequest; transfer: Transferable[] }> = [];
+  static all: FakeWorker[] = [];
+  static last(): FakeWorker | undefined {
+    return FakeWorker.all[FakeWorker.all.length - 1];
+  }
+  onmessage: ((e: { data: WorkerReply }) => void) | null = null;
+  onerror: ((e: { message: string }) => void) | null = null;
+  requests: WorkerRequest[] = [];
+  transfers: Transferable[][] = [];
   terminated = false;
   constructor(
-    readonly url: URL | string,
-    readonly options: WorkerOptions,
+    readonly url?: URL | string,
+    readonly options?: WorkerOptions,
   ) {
-    FakeWorker.instances.push(this);
+    FakeWorker.all.push(this);
   }
-  postMessage(request: WorkerRequest, transfer: Transferable[]) {
-    this.posted.push({ request, transfer });
+  postMessage(request: WorkerRequest, transfer: Transferable[] = []) {
+    this.requests.push(request);
+    this.transfers.push(transfer);
   }
   terminate() {
     this.terminated = true;
   }
-  reply(data: WorkerReply) {
-    this.onmessage?.({ data } as MessageEvent<WorkerReply>);
+  reply(reply: WorkerReply) {
+    this.onmessage?.({ data: reply });
   }
-  /** The id of the last request, once the client has read the file and posted it. */
-  async lastId() {
-    await vi.waitFor(() => expect(this.posted.length).toBeGreaterThan(0));
-    return this.posted[this.posted.length - 1].request.id;
+  /** The id of the request sent last. */
+  get id() {
+    return this.requests[this.requests.length - 1].id;
   }
 }
 
-const file = (name: string, content = '<AUTOSAR/>') => new NodeFile([content], name) as unknown as File;
-const db = (messages: number): DbcDatabase =>
-  ({ messages: Array.from({ length: messages }, () => ({})) }) as unknown as DbcDatabase;
-const result = (clusters: CanmatrixReadResult['clusters'], error?: string | null): CanmatrixReadResult => ({
-  clusters,
-  log: [],
-  error,
+const timings = { runtimeMs: 1, packagesMs: 1, readMs: 1 };
+const bytesOf = (text: string) => new TextEncoder().encode(text).buffer as ArrayBuffer;
+const result = (r: Partial<CanmatrixReadResult>): WorkerReply => ({
+  id: 0,
+  kind: 'result',
+  result: { clusters: [], log: [], ...r },
+  timings,
 });
-const timings = { runtimeMs: 1, packagesMs: 2, readMs: 3 };
-const worker = async () => {
-  await vi.waitFor(() => expect(FakeWorker.instances.length).toBeGreaterThan(0));
-  return FakeWorker.instances[FakeWorker.instances.length - 1];
+
+/**
+ * A fresh copy of client.ts, so that no worker is left from another test,
+ * and `failure` to see how one of its imports settled: the reason, for an
+ * ImportFailure (from the same fresh copy of import-failure.ts), and the message.
+ */
+async function client() {
+  vi.resetModules();
+  const [{ importWithCanmatrix }, { ImportFailure }] = await Promise.all([import('./client'), import('./import-failure')]);
+  async function failure(promise: Promise<unknown>) {
+    try {
+      await promise;
+    } catch (e) {
+      return { failure: e instanceof ImportFailure ? e.reason : null, message: (e as Error).message };
+    }
+    throw new Error('expected the import to fail');
+  }
+  return { importWithCanmatrix, failure };
+}
+
+/** Wait until the page has sent its request. */
+const sent = async () => {
+  await vi.waitFor(() => expect(FakeWorker.last()?.requests.length).toBeGreaterThan(0));
+  return FakeWorker.last()!;
 };
 
-/** client.ts keeps its worker in module state: import a fresh copy per test. */
-async function freshClient() {
-  vi.resetModules();
-  return import('./client');
-}
-
 beforeEach(() => {
-  FakeWorker.instances = [];
+  FakeWorker.all = [];
   vi.stubGlobal('Worker', FakeWorker);
+  vi.stubGlobal('document', { baseURI: 'http://localhost:4173/' });
 });
 afterEach(() => vi.unstubAllGlobals());
 
 describe('importWithCanmatrix', () => {
-  it('refuses a file canmatrix does not read, without starting the worker', async () => {
-    const { importWithCanmatrix } = await freshClient();
-    await expect(importWithCanmatrix(file('demo.dbc'))).rejects.toThrow('not a format canmatrix reads: demo.dbc');
-    expect(FakeWorker.instances).toHaveLength(0);
-  });
-
-  it('starts a module worker on first use and posts the file with what its format needs', async () => {
-    const { importWithCanmatrix } = await freshClient();
-    const pending = importWithCanmatrix(file('System.ARXML', 'bytes'));
-    const w = await worker();
-    expect(String(w.url)).toContain('worker');
-    expect(w.options).toEqual({ type: 'module' });
-    await w.lastId();
-    const { request, transfer } = w.posted[0];
-    expect(request).toMatchObject({ id: 1, importType: 'arxml', packages: ['lxml'] });
-    // Resolved against the page, so a relative base still finds the runtime.
-    expect(request.assetsUrl).toBe(new URL('/pyodide/', document.baseURI).href);
-    expect(new TextDecoder().decode(request.bytes)).toBe('bytes');
-    // The bytes are transferred, not copied.
-    expect(transfer).toEqual([request.bytes]);
-    w.reply({ id: 1, kind: 'result', result: result([{ name: 'CAN', db: db(1) }]), timings });
-    await pending;
-  });
-
-  it('reports each stage and shows the first cluster that holds messages', async () => {
-    const { importWithCanmatrix } = await freshClient();
-    const stages: string[] = [];
-    const pending = importWithCanmatrix(file('bus.kcd'), (s) => stages.push(s));
-    const w = await worker();
-    const id = await w.lastId();
-    w.reply({ id, kind: 'stage', stage: 'runtime' });
-    w.reply({ id, kind: 'stage', stage: 'packages' });
-    w.reply({ id, kind: 'stage', stage: 'reading' });
-    const second = db(2);
-    w.reply({
-      id,
-      kind: 'result',
-      result: result([
-        { name: 'Empty', db: db(0) },
-        { name: 'Body', db: second },
-        { name: 'Chassis', db: db(5) },
-      ]),
-      timings,
-    });
-    await expect(pending).resolves.toEqual({ db: second, cluster: 'Body', clusterCount: 3, timings });
+  it('sends a copy of the bytes, passes on each stage and resolves with every cluster', async () => {
+    const { importWithCanmatrix } = await client();
+    const bytes = bytesOf('<NetworkDefinition/>');
+    const stages: ImportStage[] = [];
+    const pending = importWithCanmatrix('the_homer.kcd', bytes, (s) => stages.push(s));
+    const worker = await sent();
+    const request = worker.requests[0];
+    expect(request).toMatchObject({ importType: 'kcd', packages: ['lxml'], assetsUrl: 'http://localhost:4173/pyodide/' });
+    expect(request.bytes).not.toBe(bytes);
+    expect(bytes.byteLength).toBeGreaterThan(0); // still the caller's, to store
+    for (const stage of ['runtime', 'packages', 'reading'] as const) worker.reply({ id: worker.id, kind: 'stage', stage });
+    const clusters = [
+      { name: 'Motor', db: parseDbc('BO_ 1 A: 8 ECU\n') },
+      { name: 'Comfort', db: parseDbc('') },
+    ];
+    worker.reply({ ...result({ clusters }), id: worker.id });
+    const imported = await pending;
     expect(stages).toEqual(['runtime', 'packages', 'reading']);
+    expect(imported).toStrictEqual({ clusters, timings });
   });
 
-  it('shows the first cluster when none holds messages', async () => {
-    const { importWithCanmatrix } = await freshClient();
-    const pending = importWithCanmatrix(file('a.json', '{}'));
-    const w = await worker();
-    const empty = db(0);
-    w.reply({ id: await w.lastId(), kind: 'result', result: result([{ name: 'Only', db: empty }]), timings });
-    await expect(pending).resolves.toMatchObject({ db: empty, cluster: 'Only', clusterCount: 1 });
+  it('names the runtime or the packages when either did not load, and keeps the browser’s message', async () => {
+    const { importWithCanmatrix, failure } = await client();
+    const runtime = importWithCanmatrix('test.arxml', bytesOf('<AUTOSAR/>'));
+    let worker = await sent();
+    const message = 'Failed to fetch dynamically imported module: http://localhost:4173/pyodide/pyodide.asm.mjs';
+    worker.reply({ id: worker.id, kind: 'error', message, stage: 'runtime' });
+    expect(await failure(runtime)).toEqual({ failure: 'runtime', message });
+
+    const packages = importWithCanmatrix('test.xlsx', bytesOf('PK'));
+    await vi.waitFor(() => expect(worker.requests).toHaveLength(2));
+    worker = FakeWorker.last()!;
+    worker.reply({ id: worker.id, kind: 'error', message: "Failed to load 'openpyxl.whl': request failed.", stage: 'packages' });
+    expect(await failure(packages)).toEqual({ failure: 'packages', message: "Failed to load 'openpyxl.whl': request failed." });
   });
 
-  it('fails with canmatrix’s own error when it found no cluster, or says so itself', async () => {
-    const { importWithCanmatrix } = await freshClient();
-    const first = importWithCanmatrix(file('a.sym'));
-    const w = await worker();
-    w.reply({ id: await w.lastId(), kind: 'result', result: result([], 'ParseError: line 3'), timings });
-    await expect(first).rejects.toThrow('ParseError: line 3');
-
-    const second = importWithCanmatrix(file('b.sym'));
-    await vi.waitFor(() => expect(w.posted).toHaveLength(2));
-    w.reply({ id: w.posted[1].request.id, kind: 'result', result: result([], null), timings });
-    await expect(second).rejects.toThrow('canmatrix found no CAN database in this file');
+  it('passes on an error while reading as it is: it is about the file', async () => {
+    const { importWithCanmatrix, failure } = await client();
+    const pending = importWithCanmatrix('test.sym', bytesOf('FormatVersion=6.0'));
+    const worker = await sent();
+    worker.reply({ id: worker.id, kind: 'error', message: 'PythonError: boom', stage: 'reading' });
+    expect(await failure(pending)).toEqual({ failure: null, message: 'PythonError: boom' });
   });
 
-  it('rejects with the worker’s error message', async () => {
-    const { importWithCanmatrix } = await freshClient();
-    const pending = importWithCanmatrix(file('a.xlsx'));
-    const w = await worker();
-    w.reply({ id: await w.lastId(), kind: 'error', message: 'No module named openpyxl' });
-    await expect(pending).rejects.toThrow('No module named openpyxl');
+  it('rejects with canmatrix’s error when it read nothing, and names a file without a database', async () => {
+    const { importWithCanmatrix, failure } = await client();
+    const broken = importWithCanmatrix('test.xml', bytesOf('<FIBEX/>'));
+    const worker = await sent();
+    worker.reply({ ...result({ error: "KeyError: 'CANCHANNEL01'" }), id: worker.id });
+    expect(await failure(broken)).toEqual({ failure: null, message: "KeyError: 'CANCHANNEL01'" });
+
+    const empty = importWithCanmatrix('empty.kcd', bytesOf('<NetworkDefinition/>'));
+    await vi.waitFor(() => expect(worker.requests).toHaveLength(2));
+    worker.reply({ ...result({ error: null }), id: worker.id });
+    expect(await failure(empty)).toEqual({ failure: 'no-database', message: 'canmatrix found no CAN database in this file' });
+  });
+
+  it('names the runtime when the worker itself fails, and starts a new one for the next import', async () => {
+    const { importWithCanmatrix, failure } = await client();
+    const first = importWithCanmatrix('test.arxml', bytesOf('<AUTOSAR/>'));
+    const worker = await sent();
+    worker.onerror?.({ message: '' });
+    expect(await failure(first)).toEqual({ failure: 'runtime', message: 'the import worker failed to start' });
+    expect(worker.terminated).toBe(true);
+
+    void importWithCanmatrix('test.arxml', bytesOf('<AUTOSAR/>'));
+    await vi.waitFor(() => expect(FakeWorker.all).toHaveLength(2));
+  });
+
+  it('refuses a file that is not a canmatrix format', async () => {
+    const { importWithCanmatrix, failure } = await client();
+    expect(await failure(importWithCanmatrix('demo.dbc', bytesOf('')))).toEqual({
+      failure: null,
+      message: 'not a format canmatrix reads: demo.dbc',
+    });
+    expect(FakeWorker.all).toHaveLength(0);
+  });
+});
+
+// The worker's life cycle; these cases came with the component tests (W2)
+// and were carried over to the cluster-returning API.
+describe('importWithCanmatrix: the worker', () => {
+  const read = (name: string, db = parseDbc('BO_ 1 A: 8 ECU\n')) => ({
+    ...result({ clusters: [{ name, db }] }),
+  });
+
+  it('starts a module worker on first use, and transfers the copy it posts', async () => {
+    const { importWithCanmatrix } = await client();
+    const pending = importWithCanmatrix('System.ARXML', bytesOf('bytes'));
+    const worker = await sent();
+    expect(String(worker.url)).toContain('worker');
+    expect(worker.options).toEqual({ type: 'module' });
+    const request = worker.requests[0];
+    expect(request).toMatchObject({ id: 1, importType: 'arxml', packages: ['lxml'] });
+    expect(new TextDecoder().decode(request.bytes)).toBe('bytes');
+    // The copy is transferred, not copied once more.
+    expect(worker.transfers[0]).toEqual([request.bytes]);
+    worker.reply({ ...read('CAN'), id: worker.id });
+    await expect(pending).resolves.toMatchObject({ clusters: [{ name: 'CAN' }] });
   });
 
   it('keeps one worker for every import, and matches replies by id', async () => {
-    const { importWithCanmatrix } = await freshClient();
-    const a = importWithCanmatrix(file('a.arxml'));
-    const b = importWithCanmatrix(file('b.arxml'));
-    const w = await worker();
-    await vi.waitFor(() => expect(w.posted).toHaveLength(2));
-    expect(FakeWorker.instances).toHaveLength(1);
-    const [idA, idB] = w.posted.map((p) => p.request.id);
+    const { importWithCanmatrix } = await client();
+    const a = importWithCanmatrix('a.arxml', bytesOf('<AUTOSAR/>'));
+    const b = importWithCanmatrix('b.arxml', bytesOf('<AUTOSAR/>'));
+    const worker = await sent();
+    await vi.waitFor(() => expect(worker.requests).toHaveLength(2));
+    expect(FakeWorker.all).toHaveLength(1);
+    const [idA, idB] = worker.requests.map((r) => r.id);
     expect(idB).toBe(idA + 1);
     // A reply for no pending request is ignored.
-    w.reply({ id: 99, kind: 'error', message: 'stray' });
-    w.reply({ id: idB, kind: 'result', result: result([{ name: 'B', db: db(1) }]), timings });
-    w.reply({ id: idA, kind: 'result', result: result([{ name: 'A', db: db(1) }]), timings });
-    await expect(a).resolves.toMatchObject({ cluster: 'A' });
-    await expect(b).resolves.toMatchObject({ cluster: 'B' });
+    worker.reply({ id: 99, kind: 'error', message: 'stray', stage: 'reading' });
+    worker.reply({ ...read('B'), id: idB });
+    worker.reply({ ...read('A'), id: idA });
+    await expect(a).resolves.toMatchObject({ clusters: [{ name: 'A' }] });
+    await expect(b).resolves.toMatchObject({ clusters: [{ name: 'B' }] });
     // A late stage message for a finished import changes nothing.
-    w.reply({ id: idA, kind: 'stage', stage: 'reading' });
+    worker.reply({ id: idA, kind: 'stage', stage: 'reading' });
   });
 
-  it('fails every pending import when the worker fails, and starts a new one next time', async () => {
-    const { importWithCanmatrix } = await freshClient();
-    const a = importWithCanmatrix(file('a.arxml'));
-    const b = importWithCanmatrix(file('b.arxml'));
-    const w = await worker();
-    await vi.waitFor(() => expect(w.posted).toHaveLength(2));
-    w.onerror!({ message: 'Failed to fetch worker script' });
-    await expect(a).rejects.toThrow('Failed to fetch worker script');
-    await expect(b).rejects.toThrow('Failed to fetch worker script');
-    expect(w.terminated).toBe(true);
-
-    const c = importWithCanmatrix(file('c.arxml'));
-    await vi.waitFor(() => expect(FakeWorker.instances).toHaveLength(2));
-    const next = FakeWorker.instances[1];
-    next.onerror!({ message: '' });
-    await expect(c).rejects.toThrow('the import worker failed to start');
+  it('fails every pending import with the worker’s message when it fails', async () => {
+    const { importWithCanmatrix, failure } = await client();
+    const a = importWithCanmatrix('a.arxml', bytesOf('<AUTOSAR/>'));
+    const b = importWithCanmatrix('b.arxml', bytesOf('<AUTOSAR/>'));
+    const worker = await sent();
+    await vi.waitFor(() => expect(worker.requests).toHaveLength(2));
+    worker.onerror?.({ message: 'Failed to fetch worker script' });
+    expect(await failure(a)).toEqual({ failure: 'runtime', message: 'Failed to fetch worker script' });
+    expect(await failure(b)).toEqual({ failure: 'runtime', message: 'Failed to fetch worker script' });
+    expect(worker.terminated).toBe(true);
   });
 });

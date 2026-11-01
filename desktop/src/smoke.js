@@ -5,7 +5,9 @@
   if (window.top !== window || window.__canviewerSmoke) return;
   window.__canviewerSmoke = true;
   // Start from a clean profile: no restored file, default theme and language.
+  // A stored DBC is in localStorage, a stored import in IndexedDB.
   localStorage.clear();
+  indexedDB.deleteDatabase('canviewer-import');
 
   const files = __FILES__;
   const report = { origin: location.origin, userAgent: navigator.userAgent, files: [], cspViolations: [], errors: [] };

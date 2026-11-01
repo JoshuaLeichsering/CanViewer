@@ -10,6 +10,7 @@ import { activateProps } from '../lib/keyboard';
 import { Icon } from './Icon';
 import { messageTag, MessageTag } from './MessageTag';
 import { useFocusableWhenScrolling } from './useFocusableWhenScrolling';
+import { ImportSource, IMP_PROBLEMS_ID } from './ImportSource';
 
 /** Rendering tens of thousands of problem rows would freeze the UI. */
 const MAX_PROBLEM_ROWS = 200;
@@ -64,6 +65,8 @@ export function Overview({
         {db.comment && <p className="lead">{db.comment}</p>}
       </header>
 
+      <ImportSource />
+
       <div className="facts wide large">
         {stats.map(([label, value]) => (
           <div className="fact" key={label}>
@@ -81,7 +84,7 @@ export function Overview({
               <b>{tn('problemsOne', 'problemsMany', db.problems.length)}.</b> {t('parseProblemsHint')}
             </span>
           </div>
-          <div className="card table-card" ref={problemsScroll}>
+          <div className="card table-card" id={IMP_PROBLEMS_ID} tabIndex={-1} ref={problemsScroll}>
             <h2>{t('parseProblemsTitle', { n: db.problems.length })}</h2>
             <table className="m3">
               <thead>

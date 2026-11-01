@@ -1,8 +1,9 @@
 # CI for every push and pull request: typecheck, all tests with the corpus
 # suites (which must run, never skip) and the coverage thresholds of
 # vite.config.ts, the production build, the network check that proves the
-# build makes no request outside its own origin, the end-to-end flows, and the
-# UI checks in a browser (e2e/ui-checks.mjs).
+# build makes no request outside its own origin, the end-to-end flows, the UI
+# checks in a browser (e2e/ui-checks.mjs), and the import UI's end-to-end
+# checks (e2e/import-ui.test.mjs).
 name: CI
 
 on:
@@ -96,6 +97,13 @@ jobs:
       - name: UI checks (axe-core accessibility, keyboard, error boundary, narrow layout)
         run: node e2e/ui-checks.mjs
 
+      - name: Import UI end-to-end checks (every format, clusters, source note, restore, cold start)
+        run: |
+          npx vite preview --port 4175 --strictPort > vite-preview-import-ui.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:4175/ > /dev/null && break; sleep 1; done
+          CANVIEWER_URL=http://localhost:4175/ CANVIEWER_E2E_OUT=import-ui \
+            node --test --test-reporter=spec e2e/import-ui.test.mjs
+
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -106,6 +114,8 @@ jobs:
             vite-preview.log
             playwright-report/
             test-results/
+            import-ui/
+            vite-preview-import-ui.log
           if-no-files-found: ignore
 
   licenses:

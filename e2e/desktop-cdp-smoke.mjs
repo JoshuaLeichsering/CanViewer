@@ -105,9 +105,17 @@ await page.addInitScript(() => {
   );
 });
 
-// Start from a clean profile (no restored file), and reload so that the page
+// Start from a clean profile (no restored file: a stored DBC is in
+// localStorage, a stored import in IndexedDB), and reload so that the page
 // load itself is recorded and the init script runs.
-await page.evaluate(() => localStorage.clear());
+await page.evaluate(
+  () =>
+    new Promise((resolve) => {
+      localStorage.clear();
+      const request = indexedDB.deleteDatabase('canviewer-import');
+      request.onsuccess = request.onerror = request.onblocked = () => resolve();
+    }),
+);
 await page.reload();
 await page.waitForSelector('.welcome, .page-header', { timeout: 60_000 });
 const env = await page.evaluate(() => ({
