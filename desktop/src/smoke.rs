@@ -72,7 +72,8 @@ fn base64(bytes: &[u8]) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::base64;
+    use super::{base64, files_from_env, FILES_VAR};
+    use std::{env, path::PathBuf};
 
     #[test]
     fn base64_matches_rfc_4648_vectors() {
@@ -80,5 +81,16 @@ mod tests {
         for (input, expected) in cases {
             assert_eq!(base64(input.as_bytes()), expected);
         }
+    }
+
+    // The only test that touches CANVIEWER_SMOKE_FILES, so parallel tests
+    // cannot see it change.
+    #[test]
+    fn self_test_files_come_from_the_environment_and_are_off_without_it() {
+        let files = vec![PathBuf::from("examples/demo.dbc"), PathBuf::from("third_party/canmatrix/test.arxml")];
+        env::set_var(FILES_VAR, env::join_paths(&files).unwrap());
+        assert_eq!(files_from_env(), Some(files));
+        env::remove_var(FILES_VAR);
+        assert_eq!(files_from_env(), None);
     }
 }

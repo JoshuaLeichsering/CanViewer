@@ -1,6 +1,7 @@
 # CI for every push and pull request: typecheck, all tests with the corpus
-# suites (which must run, never skip), the production build, and the network
-# check that proves the build makes no request outside its own origin.
+# suites (which must run, never skip) and the coverage thresholds of
+# vite.config.ts, the production build, the network check that proves the
+# build makes no request outside its own origin, and the end-to-end flows.
 name: CI
 
 on:
@@ -45,19 +46,31 @@ jobs:
       - name: Typecheck
         run: npx tsc --noEmit
 
-      - name: Tests (verbose)
-        run: npx vitest run --reporter=verbose --reporter=json --outputFile.json=test-report.json
+      - name: Tests (verbose) with coverage and its thresholds
+        run: npx vitest run --coverage --reporter=verbose --reporter=json --outputFile.json=test-report.json
 
       - name: Every corpus suite ran in full, nothing skipped
         run: node scripts/check-test-report.mjs test-report.json
 
+      - name: Coverage summary
+        if: always() && hashFiles('coverage/coverage-summary.json') != ''
+        run: |
+          { echo '### Coverage'; echo; node scripts/coverage-summary.mjs; echo; echo 'Full report: the `coverage-report` artifact of this run.'; } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: coverage/
+          if-no-files-found: ignore
+
       - name: Production build
         run: npm run build
 
-      - name: Install Playwright's Chromium for the network check
-        run: |
-          npm install --no-save --no-package-lock --prefix "$RUNNER_TEMP/pw" playwright@1.63.0
-          "$RUNNER_TEMP/pw/node_modules/.bin/playwright" install --with-deps chromium
+      # Playwright itself comes with npm ci (a pinned dev dependency); its
+      # Chromium is downloaded here only, in CI.
+      - name: Install Playwright's Chromium
+        run: npx playwright install --with-deps chromium
 
       - name: Network check (no request outside the app's origin, works offline)
         env:
@@ -65,11 +78,17 @@ jobs:
         run: |
           npx vite preview --port 4173 --strictPort > vite-preview.log 2>&1 &
           for i in $(seq 1 30); do curl -sf http://localhost:4173/ > /dev/null && break; sleep 1; done
-          NODE_PATH="$RUNNER_TEMP/pw/node_modules" node e2e/network-check.mjs \
+          node e2e/network-check.mjs \
             http://localhost:4173/ network-check \
             third_party/canmatrix/tests/files/arxml/test.arxml \
             third_party/canmatrix/tests/files/arxml/ARXMLContainerTest.arxml \
             examples/demo.dbc dist
+
+      - name: End-to-end flows (open, navigate, decode, theme, language, deep links, offline)
+        env:
+          # The network check's server still holds 4173.
+          E2E_PORT: '4174'
+        run: npm run e2e
 
       - uses: actions/upload-artifact@v4
         if: always()
@@ -79,4 +98,6 @@ jobs:
             test-report.json
             network-check/
             vite-preview.log
+            playwright-report/
+            test-results/
           if-no-files-found: ignore
