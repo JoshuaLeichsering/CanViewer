@@ -24,7 +24,7 @@ interface Statement {
 }
 
 /** Statement keywords that are recognized but not modeled by the viewer. */
-const SKIPPED_KEYWORDS = [
+export const SKIPPED_KEYWORDS = [
   'NS_',
   'BS_',
   'EV_',
