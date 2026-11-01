@@ -71,6 +71,12 @@ jobs:
             third_party/canmatrix/tests/files/arxml/ARXMLContainerTest.arxml \
             examples/demo.dbc dist
 
+      - name: Traces and frame encoder, end to end (no request outside the origin)
+        run: |
+          npx vite preview --port 4174 --strictPort > vite-preview-trc.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:4174/ > /dev/null && break; sleep 1; done
+          NODE_PATH="$RUNNER_TEMP/pw/node_modules" node e2e/trc-traces-encoder.mjs http://localhost:4174/ trc-traces-encoder
+
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -79,4 +85,6 @@ jobs:
             test-report.json
             network-check/
             vite-preview.log
+            trc-traces-encoder/
+            vite-preview-trc.log
           if-no-files-found: ignore
