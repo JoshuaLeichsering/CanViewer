@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /**
  * The text of a DBC file. DBC files from Vector tools are often Windows-1252,
  * so the bytes are read as UTF-8 when they are valid UTF-8 and as

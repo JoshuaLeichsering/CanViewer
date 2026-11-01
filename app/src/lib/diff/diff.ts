@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 import { isJ1939Database } from '../dbc/j1939';
 import { hexId } from '../format';
 import type {

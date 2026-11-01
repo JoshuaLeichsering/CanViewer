@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 import type { ChangeKind, MessageDiff } from '../lib/diff/diff';
 import type { Scalar } from '../lib/diff/fields';
 import type { DbcSignal } from '../lib/dbc/types';

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 import { importWithCanmatrix, type ImportStage } from '../canmatrix/client';
 import { canmatrixFormatFor } from '../canmatrix/formats';
 import { decodeDbc } from '../dbc/decode';

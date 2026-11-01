@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 // End-to-end check of diff mode (the Compare destination) on a production build.
 //
 // Drives the app in Chromium through its own file inputs, the way a user does:

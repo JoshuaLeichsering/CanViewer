@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 import { NO_NODE } from '../dbc/parser';
 import { isCanFd, isJ1939Pg } from '../dbc/canfd';
 import type {
