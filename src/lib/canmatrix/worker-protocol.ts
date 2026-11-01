@@ -5,6 +5,13 @@ export type ImportStage = 'runtime' | 'packages' | 'reading';
 
 export interface WorkerRequest {
   id: number;
+  /**
+   * Absolute URL of the directory holding the Pyodide runtime and wheels.
+   * Resolved by the page, not the worker: with a relative base (`--base ./`,
+   * or a host serving the app below a path) the worker's own URL points into
+   * assets/, where these files are not.
+   */
+  assetsUrl: string;
   bytes: ArrayBuffer;
   importType: string;
   /** Lock entries the format needs beyond canmatrix itself. */

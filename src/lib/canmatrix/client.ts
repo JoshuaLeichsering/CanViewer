@@ -62,7 +62,13 @@ export async function importWithCanmatrix(
   if (!format) throw new Error(`not a format canmatrix reads: ${file.name}`);
   const bytes = await file.arrayBuffer();
   const id = nextId++;
-  const request: WorkerRequest = { id, bytes, importType: format.importType, packages: format.packages };
+  const request: WorkerRequest = {
+    id,
+    assetsUrl: new URL(`${import.meta.env.BASE_URL}pyodide/`, document.baseURI).href,
+    bytes,
+    importType: format.importType,
+    packages: format.packages,
+  };
   const { result, timings } = await new Promise<{ result: CanmatrixReadResult; timings: ImportTimings }>(
     (resolve, reject) => {
       pending.set(id, { resolve, reject, onStage });
