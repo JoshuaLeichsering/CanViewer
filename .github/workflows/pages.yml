@@ -107,10 +107,10 @@ jobs:
       - name: Links in the built site
         run: node scripts/docs/check-links.mjs --site "$SITE" --base "$BASE"
 
+      # Playwright itself comes with npm ci (a pinned dev dependency), as in
+      # ci.yml; its Chromium is downloaded here only, in CI.
       - name: Install Playwright's Chromium for the browser checks
-        run: |
-          npm install --no-save --no-package-lock --prefix "$RUNNER_TEMP/pw" playwright@1.63.0
-          "$RUNNER_TEMP/pw/node_modules/.bin/playwright" install --with-deps chromium
+        run: npx playwright install --with-deps chromium
 
       - name: Serve the site the way GitHub Pages does
         run: |
@@ -122,7 +122,7 @@ jobs:
         env:
           PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS: '1'
         run: |
-          NODE_PATH="$RUNNER_TEMP/pw/node_modules" node e2e/network-check.mjs \
+          node e2e/network-check.mjs \
             "http://localhost:4174${BASE}app/" network-check \
             third_party/canmatrix/tests/files/arxml/test.arxml \
             third_party/canmatrix/tests/files/arxml/ARXMLContainerTest.arxml \
@@ -130,7 +130,7 @@ jobs:
 
       - name: Crawl of every page of the site (no request outside the origin, nothing broken)
         run: |
-          NODE_PATH="$RUNNER_TEMP/pw/node_modules" node e2e/docs-crawl.mjs \
+          node e2e/docs-crawl.mjs \
             "http://localhost:4174$BASE" docs-crawl
 
       - uses: actions/upload-artifact@v4

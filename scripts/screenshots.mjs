@@ -7,7 +7,8 @@
 // is needed), of a 1280 × 800 viewport (wider where a shot says so) at a
 // device scale of 1, or of one element of it.
 //
-// Usage (Playwright must be installed; it is not a dependency of the app):
+// Usage (Playwright is a dev dependency; fetch its Chromium once with
+// `npx playwright install chromium`):
 //   npm run build && npx vite preview --port 4173 --strictPort &
 //   node scripts/screenshots.mjs http://localhost:4173/ [--out <dir>] [--all] [--only <name>,…]
 //

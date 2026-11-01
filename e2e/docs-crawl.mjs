@@ -9,7 +9,8 @@
 // localhost unresolvable, so a request to another host could not succeed even
 // if the site tried one.
 //
-// Usage (Playwright must be installed; it is not a dependency of the app):
+// Usage (Playwright is a dev dependency; fetch its Chromium once with
+// `npx playwright install chromium`):
 //   node e2e/static-server.mjs <root-dir> 4174 &
 //   node e2e/docs-crawl.mjs http://localhost:4174/CanViewer/ <out-dir>
 import { mkdirSync, writeFileSync } from 'node:fs';

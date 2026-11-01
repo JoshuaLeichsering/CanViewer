@@ -8,9 +8,8 @@ VitePress. Everything runs from the repository root.
 
 - Node.js 22 and npm.
 - git, with the submodules for the corpus suites.
-- For the browser checks and the screenshots: Playwright with its Chromium
-  (`npm install --no-save playwright` and `npx playwright install chromium`, or a global
-  install found through `NODE_PATH`). It is not a dependency of the app.
+- For the browser checks and the screenshots: Playwright's Chromium. Playwright is a
+  pinned dev dependency; fetch its browser once with `npx playwright install chromium`.
 - For the desktop app: Rust and the [Tauri prerequisites](https://tauri.app/start/prerequisites/)
   of your system.
 
