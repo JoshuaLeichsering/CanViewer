@@ -3,8 +3,8 @@
 # vite.config.ts, the production build, the network check that proves the
 # build makes no request outside its own origin, the end-to-end flows, the UI
 # checks in a browser (e2e/ui-checks.mjs), the import UI's end-to-end checks
-# (e2e/import-ui.test.mjs), and the browser checks of the signal table and of
-# a 5000-message database.
+# (e2e/import-ui.test.mjs), the browser checks of the signal table and of a
+# 5000-message database, and the export check.
 name: CI
 
 on:
@@ -48,6 +48,11 @@ jobs:
 
       - name: Typecheck
         run: npx tsc --noEmit
+
+      # The export tests compile the generated C structs with cc -fsyntax-only;
+      # in CI they fail rather than skip without a compiler.
+      - name: C compiler for the export tests
+        run: cc --version
 
       - name: Tests (verbose) with coverage and its thresholds
         run: npx vitest run --coverage --reporter=verbose --reporter=json --outputFile.json=test-report.json
@@ -114,6 +119,12 @@ jobs:
           node e2e/signal-table.mjs http://localhost:4176/ tbl-checks examples/demo.dbc
           node e2e/large-database.mjs http://localhost:4176/ tbl-checks
 
+      - name: Export check (downloads and copies equal the pinned files)
+        run: |
+          npx vite preview --port 4177 --strictPort > vite-preview-export.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:4177/ > /dev/null && break; sleep 1; done
+          node e2e/export-check.mjs http://localhost:4177/ export-check examples/demo.dbc
+
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -128,6 +139,8 @@ jobs:
             vite-preview-import-ui.log
             tbl-checks/
             vite-preview-tbl.log
+            export-check/
+            vite-preview-export.log
           if-no-files-found: ignore
 
   licenses:

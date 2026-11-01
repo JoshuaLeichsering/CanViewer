@@ -2,3 +2,5 @@ app/src/lib/canmatrix/import-corpus-baseline.json linguist-generated=true
 app/src/lib/dbc/corpus-baseline.json linguist-generated=true
 app/src/lib/canmatrix/mapper-dbc-baseline.json linguist-generated=true
 THIRD_PARTY_NOTICES.md linguist-generated=true
+# Pinned export output is compared byte for byte (the CSV files end their records with CRLF).
+app/src/lib/export/pinned/** -text

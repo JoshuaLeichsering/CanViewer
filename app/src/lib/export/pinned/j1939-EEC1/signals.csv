@@ -1,0 +1,9 @@
+messageId,messageIdHex,messageName,name,startBit,length,byteOrder,valueType,factor,offset,min,max,unit,receivers,multiplex,multiplexSwitch,multiplexRanges,values,comment,attr.SPN,attr.SystemSignalLongSymbol
+15729664,0x00F00400,EEC1,Engine_Torque_Mode,0,4,intel,unsigned,1,0,0,15,,,,,,,,899,
+15729664,0x00F00400,EEC1,Actual_Engine___Percent_Torque_H,4,4,intel,unsigned,1,0,0,15,,,,,,,,4154,Actual Engine - Percent Torque High Resolution
+15729664,0x00F00400,EEC1,Driver_s_Demand_Engine___Percent,8,8,intel,unsigned,1,0,0,255,,,,,,,,512,Driver's Demand Engine - Percent Torque
+15729664,0x00F00400,EEC1,Actual_Engine___Percent_Torque,16,8,intel,unsigned,1,0,0,255,,,,,,,,513,
+15729664,0x00F00400,EEC1,Engine_Speed,24,16,intel,unsigned,1,0,0,65535,,,,,,,,190,
+15729664,0x00F00400,EEC1,Source_Address_of_Controlling_De,40,8,intel,unsigned,1,0,0,255,,,,,,,,1483,Source Address of Controlling Device for Engine Control
+15729664,0x00F00400,EEC1,Engine_Starter_Mode,48,4,intel,unsigned,1,0,0,15,,,,,,,,1675,
+15729664,0x00F00400,EEC1,Engine_Demand___Percent_Torque,56,8,intel,unsigned,1,0,0,255,,,,,,,,2432,

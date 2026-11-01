@@ -9,6 +9,7 @@ import { hexId } from '../lib/format';
 import { activateProps } from '../lib/keyboard';
 import { messagePageSize } from '../lib/pages';
 import { Icon } from './Icon';
+import { ExportMenu } from './ExportMenu';
 import { messageTag, MessageTag } from './MessageTag';
 import { TablePager, usePage } from './TablePager';
 import { useFocusableWhenScrolling } from './useFocusableWhenScrolling';
@@ -61,11 +62,12 @@ export function Overview({
 
   return (
     <div>
-      <header className="page-header">
+      <header className="page-header exp-header">
         <div className="overline">
           {db.version ? t('overviewOverline', { v: db.version }) : t('overviewOverlineNoVersion')}
         </div>
         <h1>{fileName}</h1>
+        <ExportMenu db={db} fileName={fileName} />
         {db.comment && <p className="lead">{db.comment}</p>}
       </header>
 

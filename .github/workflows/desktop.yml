@@ -4,8 +4,11 @@
 # docs/spikes/2026-11-01-tauri-desktop/README.md.
 #
 # Every job opens examples/demo.dbc and canmatrix's test.arxml in the
-# installed app with its built-in self-test (desktop/src/smoke.rs). The Linux
-# job also runs the shell's unit tests (cargo test).
+# installed app with its built-in self-test (desktop/src/smoke.rs), which also
+# saves demo.dbc's message list through the export menu: the file must land
+# in the Downloads folder and equal the browser's export, the pinned
+# app/src/lib/export/pinned/demo.messages.csv (e2e/desktop-download-check.mjs).
+# Linux also runs the shell's unit tests (cargo test).
 # Windows also drives a CI-only variant with WebView2's DevTools port open and
 # records every request (e2e/desktop-cdp-smoke.mjs); macOS and Linux have no
 # such port in their webview.
@@ -112,10 +115,18 @@ jobs:
           New-Item -ItemType Directory -Force smoke | Out-Null
           $env:CANVIEWER_SMOKE_FILES = "$PWD\$env:SMOKE_DBC;$PWD\$env:SMOKE_ARXML"
           $env:CANVIEWER_SMOKE_OUT = "$PWD\smoke\self-test-windows.json"
+          # WebView2 saves downloads in the user's Downloads folder; start
+          # without an earlier export there, so that the name is not numbered.
+          $downloads = Join-Path $env:USERPROFILE 'Downloads'
+          Remove-Item "$downloads\demo*.csv" -ErrorAction SilentlyContinue
           $p = Start-Process $env:CANVIEWER_EXE -Wait -PassThru
           "self-test exit code: $($p.ExitCode)"
           if (Test-Path $env:CANVIEWER_SMOKE_OUT) { Get-Content $env:CANVIEWER_SMOKE_OUT }
-          exit $p.ExitCode
+          Copy-Item "$downloads\demo*.csv" smoke -ErrorAction SilentlyContinue
+          node e2e/desktop-download-check.mjs "$downloads\demo.messages.csv"
+          $check = $LASTEXITCODE
+          if ($p.ExitCode -ne 0) { exit $p.ExitCode }
+          exit $check
 
       - name: Uninstall
         if: always() && env.CANVIEWER_EXE != ''
@@ -216,6 +227,11 @@ jobs:
           mkdir -p smoke
           export CANVIEWER_SMOKE_FILES="$PWD/$SMOKE_DBC:$PWD/$SMOKE_ARXML"
           export CANVIEWER_SMOKE_OUT="$PWD/smoke/self-test-macos.json"
+          # The app saves downloads in $HOME/Downloads: here an empty one this
+          # job makes, outside the folders that macOS guards with a prompt.
+          export HOME="$RUNNER_TEMP/home"
+          downloads="$HOME/Downloads"
+          mkdir -p "$downloads"
           app=$(ls -d /Applications/CanViewer.app/Contents/MacOS/* | head -1)
           set +e
           "$app" > smoke/stdout-macos.txt 2> smoke/stderr-macos.txt
@@ -223,6 +239,8 @@ jobs:
           set -e
           echo "self-test exit code: $code"
           cat "$CANVIEWER_SMOKE_OUT" 2>/dev/null || cat smoke/stderr-macos.txt
+          cp "$downloads"/demo*.csv smoke/ 2>/dev/null || true
+          node e2e/desktop-download-check.mjs "$downloads/demo.messages.csv" || { test "$code" -ne 0 || code=1; }
           exit $code
 
       - name: Uninstall
@@ -310,12 +328,20 @@ jobs:
           mkdir -p smoke
           export CANVIEWER_SMOKE_FILES="$PWD/$SMOKE_DBC:$PWD/$SMOKE_ARXML"
           export CANVIEWER_SMOKE_OUT="$PWD/smoke/self-test-linux-deb.json"
+          # The app saves downloads in the XDG Downloads folder that
+          # user-dirs.dirs names: here an empty one this job makes.
+          export XDG_CONFIG_HOME="$RUNNER_TEMP/xdg-config"
+          downloads="$RUNNER_TEMP/Downloads"
+          mkdir -p "$XDG_CONFIG_HOME" "$downloads"
+          printf 'XDG_DOWNLOAD_DIR="%s"\n' "$downloads" > "$XDG_CONFIG_HOME/user-dirs.dirs"
           set +e
           xvfb-run -a "$CANVIEWER_BIN" > smoke/stdout-linux-deb.txt 2> smoke/stderr-linux-deb.txt
           code=$?
           set -e
           echo "self-test exit code: $code"
           cat "$CANVIEWER_SMOKE_OUT" 2>/dev/null || tail -50 smoke/stderr-linux-deb.txt
+          cp "$downloads"/demo*.csv smoke/ 2>/dev/null || true
+          node e2e/desktop-download-check.mjs "$downloads/demo.messages.csv" || { test "$code" -ne 0 || code=1; }
           exit $code
 
       - name: Uninstall the deb

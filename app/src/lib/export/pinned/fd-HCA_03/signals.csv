@@ -1,0 +1,8 @@
+messageId,messageIdHex,messageName,name,startBit,length,byteOrder,valueType,factor,offset,min,max,unit,receivers,multiplex,multiplexSwitch,multiplexRanges,values,comment
+771,0x303,HCA_03,RequestStatus,12,4,intel,unsigned,1,0,0,15,,XXX,,,,,
+771,0x303,HCA_03,Power,16,8,intel,unsigned,0.4,0,0,100,percent,XXX,,,,,
+771,0x303,HCA_03,Curvature,24,15,intel,unsigned,0.0000067,0,0,0.219,Unit_rad/m,XXX,,,,,
+771,0x303,HCA_03,Curvature_VZ,39,1,intel,unsigned,1,0,0,1,,XXX,,,,,
+771,0x303,HCA_03,Unknown_01,53,1,motorola,unsigned,1,0,0,1,,XXX,,,,,
+771,0x303,HCA_03,Vibration,56,1,motorola,unsigned,1,0,0,1,,XXX,,,,,
+771,0x303,HCA_03,HighSendRate,66,1,intel,unsigned,1,0,0,1,,XXX,,,,,
