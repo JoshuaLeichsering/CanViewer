@@ -15,7 +15,7 @@ export const NO_NODE = 'Vector__XXX';
 const EXT_FLAG = 0x80000000;
 
 /** Longest a single signal may be (CAN FD frame = 64 bytes = 512 bits). */
-const MAX_SIGNAL_BITS = 512;
+export const MAX_SIGNAL_BITS = 512;
 
 const MAX_PROBLEMS = 1000;
 
