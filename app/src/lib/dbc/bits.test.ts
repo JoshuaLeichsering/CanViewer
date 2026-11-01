@@ -122,6 +122,13 @@ describe('extractRawValue', () => {
     expect(raw).toBeCloseTo(13.5);
   });
 
+  it('decodes ieee double', () => {
+    const s = makeSignal({ startBit: 0, length: 64, valueType: 'double' });
+    // -2.5 = 0xC004000000000000, little endian in the frame
+    const raw = extractRawValue(s, new Uint8Array([0, 0, 0, 0, 0, 0, 0x04, 0xc0]));
+    expect(raw).toBe(-2.5);
+  });
+
   it('returns null when data is too short', () => {
     const s = makeSignal({ startBit: 0, length: 16 });
     expect(extractRawValue(s, new Uint8Array([0x01]))).toBeNull();

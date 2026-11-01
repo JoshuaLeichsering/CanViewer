@@ -7,3 +7,6 @@ vendor
 test-report.json
 network-check/
 vite-preview.log
+/coverage/
+/test-results/
+/playwright-report/

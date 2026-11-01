@@ -4,7 +4,8 @@
 # docs/spikes/2026-11-01-tauri-desktop/README.md.
 #
 # Every job opens examples/demo.dbc and canmatrix's test.arxml in the
-# installed app with its built-in self-test (desktop/src/smoke.rs).
+# installed app with its built-in self-test (desktop/src/smoke.rs). The Linux
+# job also runs the shell's unit tests (cargo test).
 # Windows also drives a CI-only variant with WebView2's DevTools port open and
 # records every request (e2e/desktop-cdp-smoke.mjs); macOS and Linux have no
 # such port in their webview.
@@ -265,6 +266,11 @@ jobs:
         with:
           workspaces: desktop
           cache-on-failure: true
+
+      # The shell's own unit tests (desktop/src/smoke.rs). Linux only: it has
+      # the system libraries already, and its minutes are the cheapest.
+      - name: Unit tests of the desktop shell
+        run: cargo test --manifest-path desktop/Cargo.toml --locked
 
       - name: Build the package (deb; no AppImage, see the license audit)
         run: npx tauri build --ci --bundles deb --config "$NO_BEFORE_BUILD"
