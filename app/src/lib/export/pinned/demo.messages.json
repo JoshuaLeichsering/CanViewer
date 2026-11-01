@@ -1,0 +1,855 @@
+{
+  "source": "demo.dbc",
+  "databaseVersion": "CanViewer Demo 1.0",
+  "messages": [
+    {
+      "id": 256,
+      "idHex": "0x100",
+      "isExtended": false,
+      "name": "EngineData",
+      "dlc": 8,
+      "canFd": false,
+      "sender": "ECM",
+      "transmitters": [],
+      "comment": "Engine status broadcast, 10 ms cycle.",
+      "attributes": {
+        "GenMsgCycleTime": 10,
+        "GenMsgSendType": "Cyclic"
+      },
+      "signals": [
+        {
+          "name": "EngineSpeed",
+          "startBit": 0,
+          "length": 16,
+          "byteOrder": "intel",
+          "valueType": "unsigned",
+          "factor": 0.25,
+          "offset": 0,
+          "min": 0,
+          "max": 16383.75,
+          "unit": "rpm",
+          "receivers": [
+            "TCM",
+            "ABS",
+            "IC"
+          ],
+          "multiplex": {
+            "role": "none"
+          },
+          "comment": "Crankshaft rotational speed.",
+          "attributes": {
+            "GenSigStartValue": 0
+          }
+        },
+        {
+          "name": "EngineTemp",
+          "startBit": 16,
+          "length": 8,
+          "byteOrder": "intel",
+          "valueType": "unsigned",
+          "factor": 1,
+          "offset": -40,
+          "min": -40,
+          "max": 215,
+          "unit": "degC",
+          "receivers": [
+            "IC"
+          ],
+          "multiplex": {
+            "role": "none"
+          },
+          "attributes": {}
+        },
+        {
+          "name": "ThrottlePosition",
+          "startBit": 24,
+          "length": 8,
+          "byteOrder": "intel",
+          "valueType": "unsigned",
+          "factor": 0.4,
+          "offset": 0,
+          "min": 0,
+          "max": 100,
+          "unit": "%",
+          "receivers": [
+            "TCM"
+          ],
+          "multiplex": {
+            "role": "none"
+          },
+          "attributes": {}
+        },
+        {
+          "name": "EngineTorque",
+          "startBit": 32,
+          "length": 12,
+          "byteOrder": "intel",
+          "valueType": "unsigned",
+          "factor": 0.5,
+          "offset": 0,
+          "min": 0,
+          "max": 2047.5,
+          "unit": "Nm",
+          "receivers": [
+            "TCM",
+            "ABS"
+          ],
+          "multiplex": {
+            "role": "none"
+          },
+          "attributes": {}
+        },
+        {
+          "name": "TorqueRequest",
+          "startBit": 44,
+          "length": 12,
+          "byteOrder": "intel",
+          "valueType": "signed",
+          "factor": 0.5,
+          "offset": 0,
+          "min": -1024,
+          "max": 1023.5,
+          "unit": "Nm",
+          "receivers": [
+            "TCM"
+          ],
+          "multiplex": {
+            "role": "none"
+          },
+          "attributes": {}
+        },
+        {
+          "name": "EngineRunning",
+          "startBit": 56,
+          "length": 1,
+          "byteOrder": "intel",
+          "valueType": "unsigned",
+          "factor": 1,
+          "offset": 0,
+          "min": 0,
+          "max": 1,
+          "unit": "",
+          "receivers": [
+            "IC"
+          ],
+          "multiplex": {
+            "role": "none"
+          },
+          "values": {
+            "0": "Stopped",
+            "1": "Running"
+          },
+          "attributes": {}
+        }
+      ]
+    },
+    {
+      "id": 512,
+      "idHex": "0x200",
+      "isExtended": false,
+      "name": "GearboxData",
+      "dlc": 8,
+      "canFd": false,
+      "sender": "TCM",
+      "transmitters": [
+        "ECM"
+      ],
+      "attributes": {
+        "GenMsgCycleTime": 20
+      },
+      "signals": [
+        {
+          "name": "GearPosition",
+          "startBit": 0,
+          "length": 4,
+          "byteOrder": "intel",
+          "valueType": "unsigned",
+          "factor": 1,
+          "offset": 0,
+          "min": 0,
+          "max": 15,
+          "unit": "",
+          "receivers": [
+            "IC",
+            "ECM"
+          ],
+          "multiplex": {
+            "role": "none"
+          },
+          "values": {
+            "0": "Neutral",
+            "1": "Gear 1",
+            "2": "Gear 2",
+            "3": "Gear 3",
+            "4": "Gear 4",
+            "5": "Gear 5",
+            "6": "Gear 6",
+            "15": "Reverse"
+          },
+          "attributes": {}
+        },
+        {
+          "name": "GearboxTemp",
+          "startBit": 8,
+          "length": 8,
+          "byteOrder": "intel",
+          "valueType": "unsigned",
+          "factor": 1,
+          "offset": -40,
+          "min": -40,
+          "max": 215,
+          "unit": "degC",
+          "receivers": [
+            "IC"
+          ],
+          "multiplex": {
+            "role": "none"
+          },
+          "attributes": {}
+        },
+        {
+          "name": "TorqueConverterLock",
+          "startBit": 16,
+          "length": 1,
+          "byteOrder": "intel",
+          "valueType": "unsigned",
+          "factor": 1,
+          "offset": 0,
+          "min": 0,
+          "max": 1,
+          "unit": "",
+          "receivers": [
+            "ECM"
+          ],
+          "multiplex": {
+            "role": "none"
+          },
+          "values": {
+            "0": "Open",
+            "1": "Locked"
+          },
+          "attributes": {}
+        },
+        {
+          "name": "OutputShaftSpeed",
+          "startBit": 24,
+          "length": 16,
+          "byteOrder": "intel",
+          "valueType": "unsigned",
+          "factor": 0.125,
+          "offset": 0,
+          "min": 0,
+          "max": 8191.875,
+          "unit": "rpm",
+          "receivers": [
+            "ECM",
+            "ABS"
+          ],
+          "multiplex": {
+            "role": "none"
+          },
+          "attributes": {}
+        }
+      ]
+    },
+    {
+      "id": 768,
+      "idHex": "0x300",
+      "isExtended": false,
+      "name": "BrakeData",
+      "dlc": 6,
+      "canFd": false,
+      "sender": "ABS",
+      "transmitters": [],
+      "attributes": {
+        "GenMsgCycleTime": 20
+      },
+      "signals": [
+        {
+          "name": "WheelSpeedFL",
+          "startBit": 7,
+          "length": 16,
+          "byteOrder": "motorola",
+          "valueType": "unsigned",
+          "factor": 0.01,
+          "offset": 0,
+          "min": 0,
+          "max": 655.35,
+          "unit": "km/h",
+          "receivers": [
+            "IC",
+            "ECM"
+          ],
+          "multiplex": {
+            "role": "none"
+          },
+          "attributes": {}
+        },
+        {
+          "name": "WheelSpeedFR",
+          "startBit": 23,
+          "length": 16,
+          "byteOrder": "motorola",
+          "valueType": "unsigned",
+          "factor": 0.01,
+          "offset": 0,
+          "min": 0,
+          "max": 655.35,
+          "unit": "km/h",
+          "receivers": [
+            "IC",
+            "ECM"
+          ],
+          "multiplex": {
+            "role": "none"
+          },
+          "attributes": {}
+        },
+        {
+          "name": "BrakePressure",
+          "startBit": 39,
+          "length": 10,
+          "byteOrder": "motorola",
+          "valueType": "unsigned",
+          "factor": 0.5,
+          "offset": 0,
+          "min": 0,
+          "max": 511.5,
+          "unit": "bar",
+          "receivers": [
+            "ECM"
+          ],
+          "multiplex": {
+            "role": "none"
+          },
+          "comment": "Master cylinder pressure.",
+          "attributes": {}
+        },
+        {
+          "name": "AbsActive",
+          "startBit": 45,
+          "length": 1,
+          "byteOrder": "motorola",
+          "valueType": "unsigned",
+          "factor": 1,
+          "offset": 0,
+          "min": 0,
+          "max": 1,
+          "unit": "",
+          "receivers": [
+            "IC"
+          ],
+          "multiplex": {
+            "role": "none"
+          },
+          "values": {
+            "0": "Inactive",
+            "1": "Active"
+          },
+          "attributes": {}
+        }
+      ]
+    },
+    {
+      "id": 1024,
+      "idHex": "0x400",
+      "isExtended": false,
+      "name": "DiagData",
+      "dlc": 8,
+      "canFd": false,
+      "sender": "Tester",
+      "transmitters": [],
+      "comment": "Diagnostic data message.\nSecond line of this comment.",
+      "attributes": {
+        "GenMsgSendType": "Event"
+      },
+      "signals": [
+        {
+          "name": "MuxSelector",
+          "startBit": 0,
+          "length": 8,
+          "byteOrder": "intel",
+          "valueType": "unsigned",
+          "factor": 1,
+          "offset": 0,
+          "min": 0,
+          "max": 255,
+          "unit": "",
+          "receivers": [
+            "ECM"
+          ],
+          "multiplex": {
+            "role": "multiplexor"
+          },
+          "attributes": {}
+        },
+        {
+          "name": "SensorVoltage",
+          "startBit": 8,
+          "length": 16,
+          "byteOrder": "intel",
+          "valueType": "unsigned",
+          "factor": 0.001,
+          "offset": 0,
+          "min": 0,
+          "max": 65.535,
+          "unit": "V",
+          "receivers": [
+            "ECM"
+          ],
+          "multiplex": {
+            "role": "multiplexed",
+            "switchValue": 0
+          },
+          "attributes": {}
+        },
+        {
+          "name": "SensorCurrent",
+          "startBit": 8,
+          "length": 16,
+          "byteOrder": "intel",
+          "valueType": "unsigned",
+          "factor": 0.01,
+          "offset": 0,
+          "min": 0,
+          "max": 655.35,
+          "unit": "A",
+          "receivers": [
+            "ECM"
+          ],
+          "multiplex": {
+            "role": "multiplexed",
+            "switchValue": 1
+          },
+          "attributes": {}
+        },
+        {
+          "name": "ErrorCode",
+          "startBit": 8,
+          "length": 16,
+          "byteOrder": "intel",
+          "valueType": "unsigned",
+          "factor": 1,
+          "offset": 0,
+          "min": 0,
+          "max": 65535,
+          "unit": "",
+          "receivers": [
+            "ECM"
+          ],
+          "multiplex": {
+            "role": "multiplexed",
+            "switchValue": 2,
+            "extended": {
+              "switchName": "MuxSelector",
+              "ranges": [
+                [
+                  2,
+                  2
+                ]
+              ]
+            }
+          },
+          "values": {
+            "0": "No error",
+            "1": "Sensor short to ground",
+            "2": "Sensor short to battery",
+            "3": "Sensor open circuit"
+          },
+          "attributes": {}
+        }
+      ]
+    },
+    {
+      "id": 1280,
+      "idHex": "0x500",
+      "isExtended": false,
+      "name": "PowerData",
+      "dlc": 8,
+      "canFd": false,
+      "sender": "ECM",
+      "transmitters": [],
+      "attributes": {},
+      "signals": [
+        {
+          "name": "BatteryVoltage",
+          "startBit": 0,
+          "length": 32,
+          "byteOrder": "intel",
+          "valueType": "float",
+          "factor": 1,
+          "offset": 0,
+          "min": 0,
+          "max": 100,
+          "unit": "V",
+          "receivers": [
+            "IC"
+          ],
+          "multiplex": {
+            "role": "none"
+          },
+          "attributes": {}
+        },
+        {
+          "name": "Consumption",
+          "startBit": 32,
+          "length": 16,
+          "byteOrder": "intel",
+          "valueType": "unsigned",
+          "factor": 0.1,
+          "offset": 0,
+          "min": 0,
+          "max": 6553.5,
+          "unit": "l/h",
+          "receivers": [
+            "IC"
+          ],
+          "multiplex": {
+            "role": "none"
+          },
+          "attributes": {}
+        }
+      ]
+    },
+    {
+      "id": 1536,
+      "idHex": "0x600",
+      "isExtended": false,
+      "name": "AdasObjects",
+      "dlc": 24,
+      "canFd": true,
+      "sender": "ECM",
+      "transmitters": [],
+      "comment": "ADAS object list broadcast (CAN FD, 24-byte payload).",
+      "attributes": {
+        "GenMsgCycleTime": 50,
+        "VFrameFormat": "StandardCAN_FD"
+      },
+      "signals": [
+        {
+          "name": "ObjCount",
+          "startBit": 0,
+          "length": 4,
+          "byteOrder": "intel",
+          "valueType": "unsigned",
+          "factor": 1,
+          "offset": 0,
+          "min": 0,
+          "max": 15,
+          "unit": "",
+          "receivers": [
+            "IC"
+          ],
+          "multiplex": {
+            "role": "none"
+          },
+          "attributes": {}
+        },
+        {
+          "name": "Obj1Dist",
+          "startBit": 8,
+          "length": 16,
+          "byteOrder": "intel",
+          "valueType": "unsigned",
+          "factor": 0.01,
+          "offset": 0,
+          "min": 0,
+          "max": 655.35,
+          "unit": "m",
+          "receivers": [
+            "IC",
+            "ABS"
+          ],
+          "multiplex": {
+            "role": "none"
+          },
+          "attributes": {}
+        },
+        {
+          "name": "Obj1Speed",
+          "startBit": 24,
+          "length": 16,
+          "byteOrder": "intel",
+          "valueType": "signed",
+          "factor": 0.01,
+          "offset": 0,
+          "min": -327.68,
+          "max": 327.67,
+          "unit": "m/s",
+          "receivers": [
+            "ABS"
+          ],
+          "multiplex": {
+            "role": "none"
+          },
+          "attributes": {}
+        },
+        {
+          "name": "Obj1Angle",
+          "startBit": 40,
+          "length": 16,
+          "byteOrder": "intel",
+          "valueType": "signed",
+          "factor": 0.1,
+          "offset": 0,
+          "min": -3276.8,
+          "max": 3276.7,
+          "unit": "deg",
+          "receivers": [
+            "IC"
+          ],
+          "multiplex": {
+            "role": "none"
+          },
+          "attributes": {}
+        },
+        {
+          "name": "Obj2Dist",
+          "startBit": 56,
+          "length": 16,
+          "byteOrder": "intel",
+          "valueType": "unsigned",
+          "factor": 0.01,
+          "offset": 0,
+          "min": 0,
+          "max": 655.35,
+          "unit": "m",
+          "receivers": [
+            "IC",
+            "ABS"
+          ],
+          "multiplex": {
+            "role": "none"
+          },
+          "attributes": {}
+        },
+        {
+          "name": "Obj2Speed",
+          "startBit": 72,
+          "length": 16,
+          "byteOrder": "intel",
+          "valueType": "signed",
+          "factor": 0.01,
+          "offset": 0,
+          "min": -327.68,
+          "max": 327.67,
+          "unit": "m/s",
+          "receivers": [
+            "ABS"
+          ],
+          "multiplex": {
+            "role": "none"
+          },
+          "attributes": {}
+        }
+      ]
+    },
+    {
+      "id": 201326595,
+      "idHex": "0x0C000003",
+      "isExtended": true,
+      "name": "J1939_TSC1",
+      "dlc": 8,
+      "canFd": false,
+      "j1939": {
+        "priority": 3,
+        "extendedDataPage": 0,
+        "dataPage": 0,
+        "pduFormat": 0,
+        "pduSpecific": 0,
+        "pduType": "PDU1",
+        "destinationAddress": 0,
+        "pgn": 0,
+        "sourceAddress": 3
+      },
+      "sender": "TCM",
+      "transmitters": [],
+      "attributes": {
+        "VFrameFormat": "J1939PG",
+        "GenMsgCycleTime": 10
+      },
+      "signals": [
+        {
+          "name": "EngOverrideCtrlMode",
+          "startBit": 0,
+          "length": 2,
+          "byteOrder": "intel",
+          "valueType": "unsigned",
+          "factor": 1,
+          "offset": 0,
+          "min": 0,
+          "max": 3,
+          "unit": "",
+          "receivers": [
+            "ECM"
+          ],
+          "multiplex": {
+            "role": "none"
+          },
+          "attributes": {}
+        },
+        {
+          "name": "EngRequestedSpeed",
+          "startBit": 8,
+          "length": 16,
+          "byteOrder": "intel",
+          "valueType": "unsigned",
+          "factor": 0.125,
+          "offset": 0,
+          "min": 0,
+          "max": 8031.875,
+          "unit": "rpm",
+          "receivers": [
+            "ECM"
+          ],
+          "multiplex": {
+            "role": "none"
+          },
+          "attributes": {}
+        }
+      ]
+    },
+    {
+      "id": 217056256,
+      "idHex": "0x0CF00400",
+      "isExtended": true,
+      "name": "J1939_EEC1",
+      "dlc": 8,
+      "canFd": false,
+      "j1939": {
+        "priority": 3,
+        "extendedDataPage": 0,
+        "dataPage": 0,
+        "pduFormat": 240,
+        "pduSpecific": 4,
+        "pduType": "PDU2",
+        "pgn": 61444,
+        "sourceAddress": 0
+      },
+      "sender": "ECM",
+      "transmitters": [],
+      "attributes": {
+        "VFrameFormat": "J1939PG"
+      },
+      "signals": [
+        {
+          "name": "ActualEnginePercentTorque",
+          "startBit": 16,
+          "length": 8,
+          "byteOrder": "intel",
+          "valueType": "unsigned",
+          "factor": 1,
+          "offset": -125,
+          "min": -125,
+          "max": 125,
+          "unit": "%",
+          "receivers": [],
+          "multiplex": {
+            "role": "none"
+          },
+          "attributes": {}
+        },
+        {
+          "name": "EngineSpeedJ1939",
+          "startBit": 24,
+          "length": 16,
+          "byteOrder": "intel",
+          "valueType": "unsigned",
+          "factor": 0.125,
+          "offset": 0,
+          "min": 0,
+          "max": 8031.875,
+          "unit": "rpm",
+          "receivers": [],
+          "multiplex": {
+            "role": "none"
+          },
+          "attributes": {}
+        }
+      ]
+    },
+    {
+      "id": 419361024,
+      "idHex": "0x18FEF100",
+      "isExtended": true,
+      "name": "J1939_CCVS1",
+      "dlc": 8,
+      "canFd": false,
+      "j1939": {
+        "priority": 6,
+        "extendedDataPage": 0,
+        "dataPage": 0,
+        "pduFormat": 254,
+        "pduSpecific": 241,
+        "pduType": "PDU2",
+        "pgn": 65265,
+        "sourceAddress": 0
+      },
+      "sender": "ECM",
+      "transmitters": [],
+      "attributes": {
+        "VFrameFormat": "J1939PG",
+        "GenMsgCycleTime": 100
+      },
+      "signals": [
+        {
+          "name": "ParkingBrakeSwitch",
+          "startBit": 2,
+          "length": 2,
+          "byteOrder": "intel",
+          "valueType": "unsigned",
+          "factor": 1,
+          "offset": 0,
+          "min": 0,
+          "max": 3,
+          "unit": "",
+          "receivers": [
+            "IC"
+          ],
+          "multiplex": {
+            "role": "none"
+          },
+          "attributes": {}
+        },
+        {
+          "name": "WheelBasedVehicleSpeed",
+          "startBit": 8,
+          "length": 16,
+          "byteOrder": "intel",
+          "valueType": "unsigned",
+          "factor": 0.00390625,
+          "offset": 0,
+          "min": 0,
+          "max": 250.996,
+          "unit": "km/h",
+          "receivers": [
+            "IC"
+          ],
+          "multiplex": {
+            "role": "none"
+          },
+          "attributes": {}
+        },
+        {
+          "name": "CruiseCtrlActive",
+          "startBit": 24,
+          "length": 2,
+          "byteOrder": "intel",
+          "valueType": "unsigned",
+          "factor": 1,
+          "offset": 0,
+          "min": 0,
+          "max": 3,
+          "unit": "",
+          "receivers": [
+            "IC"
+          ],
+          "multiplex": {
+            "role": "none"
+          },
+          "attributes": {}
+        }
+      ]
+    }
+  ]
+}

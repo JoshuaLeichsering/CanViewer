@@ -1,0 +1,2 @@
+id,idHex,isExtended,name,dlc,canFd,j1939Pgn,sender,transmitters,signalCount,comment
+771,0x303,false,HCA_03,24,true,,XXX,,7,

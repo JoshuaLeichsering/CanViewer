@@ -1,0 +1,11 @@
+id,idHex,isExtended,name,dlc,canFd,j1939Pgn,sender,transmitters,signalCount,comment,attr.GenMsgCycleTime,attr.GenMsgSendType,attr.VFrameFormat
+256,0x100,false,EngineData,8,false,,ECM,,6,"Engine status broadcast, 10 ms cycle.",10,Cyclic,
+512,0x200,false,GearboxData,8,false,,TCM,ECM,4,,20,,
+768,0x300,false,BrakeData,6,false,,ABS,,4,,20,,
+1024,0x400,false,DiagData,8,false,,Tester,,4,"Diagnostic data message.
+Second line of this comment.",,Event,
+1280,0x500,false,PowerData,8,false,,ECM,,2,,,,
+1536,0x600,false,AdasObjects,24,true,,ECM,,6,"ADAS object list broadcast (CAN FD, 24-byte payload).",50,,StandardCAN_FD
+201326595,0x0C000003,true,J1939_TSC1,8,false,0,TCM,,2,,10,,J1939PG
+217056256,0x0CF00400,true,J1939_EEC1,8,false,61444,ECM,,2,,,,J1939PG
+419361024,0x18FEF100,true,J1939_CCVS1,8,false,65265,ECM,,3,,100,,J1939PG

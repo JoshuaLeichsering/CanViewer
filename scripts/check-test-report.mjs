@@ -35,6 +35,13 @@ const EXPECTED = [
   { file: 'import-corpus.test.ts', pattern: / reads as pinned$/, count: 114, what: 'non-DBC corpus files read through canmatrix' },
   { file: 'import-corpus.test.ts', pattern: / matches its DBC twin .* as pinned$/, count: 70, what: 'non-DBC files compared with their DBC twin' },
   { file: 'mapper.test.ts', pattern: / differs from CanViewer’s parser only as pinned$/, count: 58, what: 'OEM DBC files through the canmatrix mapper', when: 'app/src/lib/canmatrix/mapper.test.ts' },
+  // The export suites run over every DBC file of the submodules: the 58 OEM
+  // files, 87 from cantools and 4 from canmatrix. The C compile tests also
+  // fail, rather than skip, when CI has no C compiler.
+  { file: 'table.test.ts', pattern: /: CSV and JSON read back as the model$/, count: 149, what: 'corpus DBC files exported as CSV and JSON and read back' },
+  { file: 'pseudo-code.test.ts', pattern: /: every signal decodes as CanViewer decodes it$/, count: 149, what: 'corpus DBC files decoded by the generated pseudo-code' },
+  { file: 'c-struct.test.ts', pattern: /^every pinned C struct$/, count: 1, what: 'run of cc over the pinned C structs' },
+  { file: 'c-struct.test.ts', pattern: /: every message's C struct compiles$/, count: 149, what: 'corpus DBC files whose C structs compiled with cc' },
 ];
 
 const problems = [];
