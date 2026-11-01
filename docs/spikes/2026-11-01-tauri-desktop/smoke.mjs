@@ -1,4 +1,4 @@
-// Smoke test for the packaged desktop app (Tauri on Windows).
+// Smoke test for the packaged desktop app (Tauri on Windows): request evidence.
 //
 // Drives the app's own WebView2 over the Chrome DevTools Protocol, the way
 // Playwright documents for WebView2 apps: start the app with
@@ -101,7 +101,9 @@ await page.addInitScript(() => {
   );
 });
 
-// Reload so the page load itself is recorded and the init script runs.
+// Start from a clean profile (no restored file), and reload so that the page
+// load itself is recorded and the init script runs.
+await page.evaluate(() => localStorage.clear());
 await page.reload();
 await page.waitForSelector('.welcome, .page-header', { timeout: 60_000 });
 const env = await page.evaluate(() => ({

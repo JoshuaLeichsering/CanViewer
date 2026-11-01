@@ -47,6 +47,10 @@
       "icons/icon.ico"
     ],
     "category": "DeveloperTool",
-    "shortDescription": "A viewer for CAN database files"
+    "shortDescription": "A viewer for CAN database files",
+    "macOS": {
+      "signingIdentity": "-",
+      "hardenedRuntime": false
+    }
   }
 }

@@ -1,0 +1,330 @@
+# Spike: can CI build CanViewer as a Tauri desktop app on Windows, macOS and
+# Linux, install each package, and use it, ARXML import through Pyodide
+# included? See docs/spikes/2026-11-01-tauri-desktop/README.md.
+#
+# Every job opens examples/demo.dbc and canmatrix's test.arxml in the
+# installed app with its built-in self-test (src-tauri/src/smoke.rs).
+# Windows also drives the app over WebView2's DevTools port and records every
+# request (smoke.mjs); macOS and Linux have no such port in their webview.
+name: Desktop spike (Tauri)
+
+on:
+  push:
+    branches: [claude/elegant-ptolemy-w4idkj-tauri-windows]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: desktop-spike-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  SMOKE_DBC: examples/demo.dbc
+  SMOKE_ARXML: third_party/canmatrix/tests/files/arxml/test.arxml
+  NO_BEFORE_BUILD: '{"build":{"beforeBuildCommand":""}}'
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Corpus submodule for the ARXML smoke file
+        run: git submodule update --init --depth 1 third_party/canmatrix
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - uses: actions/cache@v4
+        with:
+          path: vendor/pyodide
+          key: pyodide-wheels-${{ hashFiles('src/lib/canmatrix/wheels.lock.json') }}
+      - run: npm run fetch-wheels
+      - name: Build the web app
+        run: npm run build
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+          cache-on-failure: true
+
+      - name: Build the installers (MSI and NSIS)
+        shell: bash
+        run: npx tauri build --ci --bundles msi,nsis --config "$NO_BEFORE_BUILD"
+
+      - name: Package sizes
+        shell: bash
+        run: |
+          {
+            echo '### Windows'; echo; echo '| File | Bytes |'; echo '|---|---|'
+            for f in src-tauri/target/release/bundle/msi/*.msi src-tauri/target/release/bundle/nsis/*.exe; do
+              echo "| $(basename "$f") | $(stat -c %s "$f") |"
+            done
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: canviewer-windows
+          path: |
+            src-tauri/target/release/bundle/msi/*.msi
+            src-tauri/target/release/bundle/nsis/*.exe
+          if-no-files-found: error
+
+      - name: WebView2 runtime on the runner
+        shell: pwsh
+        run: |
+          $key = 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}'
+          if (Test-Path $key) { "WebView2 runtime $((Get-ItemProperty $key).pv)" } else { 'WebView2 runtime: not registered' }
+          [System.Environment]::OSVersion.VersionString
+
+      - name: Install the MSI silently
+        shell: pwsh
+        run: |
+          $msi = (Get-ChildItem src-tauri/target/release/bundle/msi/*.msi | Select-Object -First 1).FullName
+          $p = Start-Process msiexec.exe -ArgumentList "/i `"$msi`" /qn /l*v msi-install.log" -Wait -PassThru
+          "msiexec /i exit code: $($p.ExitCode)"
+          if ($p.ExitCode -ne 0) { Get-Content msi-install.log -Tail 60; exit $p.ExitCode }
+          $exe = Get-ChildItem 'C:\Program Files' -Recurse -Depth 2 -Filter *.exe |
+                 Where-Object { $_.Directory.Name -eq 'CanViewer' -and $_.Name -notlike 'uninstall*' } |
+                 Select-Object -First 1
+          if (-not $exe) { Get-Content msi-install.log -Tail 60; throw 'installed CanViewer executable not found' }
+          "installed: $($exe.FullName) ($($exe.Length) bytes)"
+          "CANVIEWER_EXE=$($exe.FullName)" | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
+
+      - name: Self-test of the installed app
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force smoke | Out-Null
+          $env:CANVIEWER_SMOKE_FILES = "$PWD\$env:SMOKE_DBC;$PWD\$env:SMOKE_ARXML"
+          $env:CANVIEWER_SMOKE_OUT = "$PWD\smoke\self-test-windows.json"
+          $p = Start-Process $env:CANVIEWER_EXE -Wait -PassThru
+          "self-test exit code: $($p.ExitCode)"
+          if (Test-Path $env:CANVIEWER_SMOKE_OUT) { Get-Content $env:CANVIEWER_SMOKE_OUT }
+          exit $p.ExitCode
+
+      - name: Drive the installed app over CDP and record every request
+        shell: pwsh
+        env:
+          # Playwright's documented way to drive a WebView2 app. wry's default
+          # arguments are repeated in case this list replaces them.
+          WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS: --remote-debugging-port=9222 --disable-features=msWebOOUI,msPdfOOUI,msSmartScreenProtection
+        run: |
+          npm install --no-save --no-package-lock --prefix "$env:RUNNER_TEMP\pw" playwright-core@1.63.0 | Out-Null
+          $env:NODE_PATH = "$env:RUNNER_TEMP\pw\node_modules"
+          $app = Start-Process $env:CANVIEWER_EXE -PassThru
+          node docs/spikes/2026-11-01-tauri-desktop/smoke.mjs --cdp http://127.0.0.1:9222 --out smoke/cdp-windows `
+            --dbc $env:SMOKE_DBC --arxml $env:SMOKE_ARXML
+          $code = $LASTEXITCODE
+          if (-not $app.HasExited) { Stop-Process -Id $app.Id -Force }
+          exit $code
+
+      - name: Uninstall
+        if: always() && env.CANVIEWER_EXE != ''
+        shell: pwsh
+        run: |
+          Get-Process canviewer -ErrorAction SilentlyContinue | Stop-Process -Force
+          $msi = (Get-ChildItem src-tauri/target/release/bundle/msi/*.msi | Select-Object -First 1).FullName
+          $p = Start-Process msiexec.exe -ArgumentList "/x `"$msi`" /qn /l*v msi-uninstall.log" -Wait -PassThru
+          "msiexec /x exit code: $($p.ExitCode)"
+          "executable still present: $(Test-Path $env:CANVIEWER_EXE)"
+          if ($p.ExitCode -ne 0 -or (Test-Path $env:CANVIEWER_EXE)) { exit 1 }
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smoke-windows
+          path: |
+            smoke/
+            msi-install.log
+            msi-uninstall.log
+          if-no-files-found: ignore
+
+  macos:
+    runs-on: macos-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Corpus submodule for the ARXML smoke file
+        run: git submodule update --init --depth 1 third_party/canmatrix
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - uses: actions/cache@v4
+        with:
+          path: vendor/pyodide
+          key: pyodide-wheels-${{ hashFiles('src/lib/canmatrix/wheels.lock.json') }}
+      - run: npm run fetch-wheels
+      - name: Build the web app
+        run: npm run build
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+          cache-on-failure: true
+
+      - name: Build the app bundle and the DMG (ad-hoc signed)
+        run: npx tauri build --ci --bundles app,dmg --config "$NO_BEFORE_BUILD"
+
+      - name: Package sizes
+        run: |
+          {
+            echo '### macOS'; echo; echo '| File | Bytes |'; echo '|---|---|'
+            for f in src-tauri/target/release/bundle/dmg/*.dmg; do echo "| $(basename "$f") | $(stat -f %z "$f") |"; done
+            echo "| CanViewer.app (du -sk) | $(( $(du -sk src-tauri/target/release/bundle/macos/CanViewer.app | cut -f1) * 1024 )) |"
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: canviewer-macos
+          path: src-tauri/target/release/bundle/dmg/*.dmg
+          if-no-files-found: error
+
+      - name: Install from the DMG
+        run: |
+          sw_vers
+          dmg=$(ls src-tauri/target/release/bundle/dmg/*.dmg | head -1)
+          hdiutil attach "$dmg" -nobrowse -mountpoint /Volumes/CanViewer
+          cp -R /Volumes/CanViewer/CanViewer.app /Applications/
+          hdiutil detach /Volumes/CanViewer
+          codesign -dv /Applications/CanViewer.app 2>&1 | grep -E 'Identifier|Signature|Format' || true
+          spctl --assess --type execute -vv /Applications/CanViewer.app 2>&1 || echo "(Gatekeeper rejects it: expected for an ad-hoc signature)"
+          ls /Applications/CanViewer.app/Contents/MacOS/
+
+      - name: Self-test of the installed app
+        run: |
+          mkdir -p smoke
+          export CANVIEWER_SMOKE_FILES="$PWD/$SMOKE_DBC:$PWD/$SMOKE_ARXML"
+          export CANVIEWER_SMOKE_OUT="$PWD/smoke/self-test-macos.json"
+          app=$(ls -d /Applications/CanViewer.app/Contents/MacOS/* | head -1)
+          set +e
+          "$app" > smoke/stdout-macos.txt 2> smoke/stderr-macos.txt
+          code=$?
+          set -e
+          echo "self-test exit code: $code"
+          cat "$CANVIEWER_SMOKE_OUT" 2>/dev/null || cat smoke/stderr-macos.txt
+          exit $code
+
+      - name: Uninstall
+        if: always()
+        run: |
+          rm -rf /Applications/CanViewer.app
+          test ! -e /Applications/CanViewer.app && echo "removed /Applications/CanViewer.app"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smoke-macos
+          path: smoke/
+          if-no-files-found: ignore
+
+  linux:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Corpus submodule for the ARXML smoke file
+        run: git submodule update --init --depth 1 third_party/canmatrix
+      - name: System libraries for Tauri, and Xvfb for the smoke test
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev libxdo-dev libssl-dev patchelf file xvfb
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - uses: actions/cache@v4
+        with:
+          path: vendor/pyodide
+          key: pyodide-wheels-${{ hashFiles('src/lib/canmatrix/wheels.lock.json') }}
+      - run: npm run fetch-wheels
+      - name: Build the web app
+        run: npm run build
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+          cache-on-failure: true
+
+      - name: Build the packages (deb and AppImage)
+        run: npx tauri build --ci --bundles deb,appimage --config "$NO_BEFORE_BUILD"
+
+      - name: Package sizes
+        run: |
+          {
+            echo '### Linux'; echo; echo '| File | Bytes |'; echo '|---|---|'
+            for f in src-tauri/target/release/bundle/deb/*.deb src-tauri/target/release/bundle/appimage/*.AppImage; do
+              echo "| $(basename "$f") | $(stat -c %s "$f") |"
+            done
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: canviewer-linux
+          path: |
+            src-tauri/target/release/bundle/deb/*.deb
+            src-tauri/target/release/bundle/appimage/*.AppImage
+          if-no-files-found: error
+
+      - name: Install the deb
+        run: |
+          deb=$(ls src-tauri/target/release/bundle/deb/*.deb | head -1)
+          pkg=$(dpkg-deb -f "$deb" Package)
+          sudo apt-get install -y "./$deb"
+          bin=$(dpkg -L "$pkg" | grep '^/usr/bin/' | head -1)
+          echo "package $pkg installed, binary $bin"
+          dpkg -s libwebkit2gtk-4.1-0 | grep -E '^Version'
+          echo "CANVIEWER_PKG=$pkg" >> "$GITHUB_ENV"
+          echo "CANVIEWER_BIN=$bin" >> "$GITHUB_ENV"
+
+      - name: Self-test of the installed deb
+        env:
+          # No GPU under Xvfb.
+          WEBKIT_DISABLE_DMABUF_RENDERER: '1'
+        run: |
+          mkdir -p smoke
+          export CANVIEWER_SMOKE_FILES="$PWD/$SMOKE_DBC:$PWD/$SMOKE_ARXML"
+          export CANVIEWER_SMOKE_OUT="$PWD/smoke/self-test-linux-deb.json"
+          set +e
+          xvfb-run -a "$CANVIEWER_BIN" > smoke/stdout-linux-deb.txt 2> smoke/stderr-linux-deb.txt
+          code=$?
+          set -e
+          echo "self-test exit code: $code"
+          cat "$CANVIEWER_SMOKE_OUT" 2>/dev/null || tail -50 smoke/stderr-linux-deb.txt
+          exit $code
+
+      - name: Self-test of the AppImage
+        env:
+          WEBKIT_DISABLE_DMABUF_RENDERER: '1'
+          # The runner has no FUSE 2; extract and run instead of mounting.
+          APPIMAGE_EXTRACT_AND_RUN: '1'
+        run: |
+          appimage=$(ls src-tauri/target/release/bundle/appimage/*.AppImage | head -1)
+          chmod +x "$appimage"
+          export CANVIEWER_SMOKE_FILES="$PWD/$SMOKE_DBC:$PWD/$SMOKE_ARXML"
+          export CANVIEWER_SMOKE_OUT="$PWD/smoke/self-test-linux-appimage.json"
+          set +e
+          xvfb-run -a "$appimage" > smoke/stdout-linux-appimage.txt 2> smoke/stderr-linux-appimage.txt
+          code=$?
+          set -e
+          echo "self-test exit code: $code"
+          cat "$CANVIEWER_SMOKE_OUT" 2>/dev/null || tail -50 smoke/stderr-linux-appimage.txt
+          exit $code
+
+      - name: Uninstall the deb
+        if: always() && env.CANVIEWER_PKG != ''
+        run: |
+          sudo apt-get remove -y "$CANVIEWER_PKG"
+          test ! -e "$CANVIEWER_BIN" && echo "removed $CANVIEWER_BIN"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smoke-linux
+          path: smoke/
+          if-no-files-found: ignore
