@@ -5,6 +5,7 @@ import { declaredFrameFormat, isCanFd, isJ1939Pg, isValidFrameSize, paddedFdSize
 import { ADDRESS_NAMES, decomposeJ1939Id, isJ1939Database, PGN_NAMES } from '../lib/dbc/j1939';
 import { useI18n } from '../lib/i18n';
 import { fmtNum, hexId, muxLabel } from '../lib/format';
+import { activateProps } from '../lib/keyboard';
 import { BitMatrix, signalNumber, signalTone } from './BitMatrix';
 import { AttributesCard } from './AttributesCard';
 import { Icon } from './Icon';
@@ -232,7 +233,8 @@ export function MessageDetail({
               <tr
                 key={signal.name + index}
                 className={`clickable ${selectedSignal === signal.name ? 'selected' : ''}`}
-                onClick={() => toggle(signal.name)}
+                aria-current={selectedSignal === signal.name ? 'true' : undefined}
+                {...activateProps(() => toggle(signal.name))}
               >
                 <td>
                   <span className="sig-name">

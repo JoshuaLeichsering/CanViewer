@@ -37,6 +37,18 @@ const en = {
   copyLink: 'Copy link',
   linkCopied: 'Link copied',
   copyFailed: 'Could not copy the link',
+
+  // rough edges (W6): narrow layout, keyboard, error boundary
+  rghBackMessages: 'All messages',
+  rghBackNodes: 'All nodes',
+  rghBackTables: 'All value tables',
+  rghCrashTitle: 'Something went wrong',
+  rghCrashText:
+    'CanViewer ran into an error and cannot show this view. The last opened file is stored in this browser and opens again on every start, so the error can come back after a reload. Resetting the stored file starts CanViewer empty. Files on disk are not touched.',
+  rghCrashReset: 'Reset stored file',
+  rghCrashReload: 'Reload',
+  rghCrashDetails: 'Error details',
+
   filterAll: 'All',
   filterExtended: 'Extended',
   filterFd: 'CAN FD',
@@ -227,6 +239,17 @@ const de: Record<MsgKey, string> = {
   copyLink: 'Link kopieren',
   linkCopied: 'Link kopiert',
   copyFailed: 'Link konnte nicht kopiert werden',
+
+  rghBackMessages: 'Alle Botschaften',
+  rghBackNodes: 'Alle Knoten',
+  rghBackTables: 'Alle Wertetabellen',
+  rghCrashTitle: 'Etwas ist schiefgelaufen',
+  rghCrashText:
+    'CanViewer ist auf einen Fehler gestoßen und kann diese Ansicht nicht anzeigen. Die zuletzt geöffnete Datei ist in diesem Browser gespeichert und öffnet sich bei jedem Start erneut, daher kann der Fehler nach dem Neuladen wiederkommen. Wird die gespeicherte Datei zurückgesetzt, startet CanViewer leer. Dateien auf dem Datenträger bleiben unberührt.',
+  rghCrashReset: 'Gespeicherte Datei zurücksetzen',
+  rghCrashReload: 'Neu laden',
+  rghCrashDetails: 'Fehlerdetails',
+
   filterAll: 'Alle',
   filterExtended: 'Extended',
   filterFd: 'CAN FD',

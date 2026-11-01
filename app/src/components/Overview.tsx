@@ -5,8 +5,10 @@ import { isCanFd } from '../lib/dbc/canfd';
 import { decomposeJ1939Id, isJ1939Database, PGN_NAMES } from '../lib/dbc/j1939';
 import { useI18n } from '../lib/i18n';
 import { hexId } from '../lib/format';
+import { activateProps } from '../lib/keyboard';
 import { Icon } from './Icon';
 import { messageTag, MessageTag } from './MessageTag';
+import { useFocusableWhenScrolling } from './useFocusableWhenScrolling';
 
 /** Rendering tens of thousands of problem rows would freeze the UI. */
 const MAX_PROBLEM_ROWS = 200;
@@ -21,6 +23,8 @@ export function Overview({
   onSelect: (s: Selection) => void;
 }) {
   const { t, tn } = useI18n();
+  const problemsScroll = useFocusableWhenScrolling<HTMLDivElement>();
+  const attrDefsScroll = useFocusableWhenScrolling<HTMLDivElement>();
   const totalSignals = db.messages.reduce((n, m) => n + m.signals.length, 0);
   const skippedEntries = Object.entries(db.skipped);
   const networkAttributes = Object.entries(db.attributes);
@@ -76,7 +80,7 @@ export function Overview({
               <b>{tn('problemsOne', 'problemsMany', db.problems.length)}.</b> {t('parseProblemsHint')}
             </span>
           </div>
-          <div className="card table-card">
+          <div className="card table-card" ref={problemsScroll}>
             <h2>{t('parseProblemsTitle', { n: db.problems.length })}</h2>
             <table className="m3">
               <thead>
@@ -139,7 +143,7 @@ export function Overview({
                 <tr
                   key={`${m.rawId}.${occurrenceOf(db, m)}`}
                   className="clickable"
-                  onClick={() => onSelect({ kind: 'message', rawId: m.rawId, occ: occurrenceOf(db, m) })}
+                  {...activateProps(() => onSelect({ kind: 'message', rawId: m.rawId, occ: occurrenceOf(db, m) }))}
                 >
                   <td className="id">{hexId(m.id, m.isExtended)}</td>
                   {j1939Db && (
@@ -165,7 +169,7 @@ export function Overview({
       </div>
 
       {db.attributeDefinitions.length > 0 && (
-        <div className="card table-card">
+        <div className="card table-card" ref={attrDefsScroll}>
           <h2>{t('attrDefsTitle')}</h2>
           <table className="m3">
             <thead>

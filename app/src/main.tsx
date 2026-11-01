@@ -1,10 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { App } from './App';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { I18nProvider } from './lib/i18n';
 import { applyInitialTheme, ThemeProvider } from './lib/theme';
 import './fonts.css';
 import './styles.css';
+import './narrow.css';
 
 applyInitialTheme();
 
@@ -23,7 +25,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <I18nProvider>
       <ThemeProvider>
-        <App />
+        <ErrorBoundary>
+          <App />
+        </ErrorBoundary>
       </ThemeProvider>
     </I18nProvider>
   </React.StrictMode>,

@@ -5,6 +5,8 @@ import { canmatrixFormatFor } from './lib/canmatrix/formats';
 import { findMessageByOccurrence, occurrenceOf } from './lib/dbc/identity';
 import type { DbcDatabase } from './lib/dbc/types';
 import { useI18n } from './lib/i18n';
+import { isSearchShortcut } from './lib/keyboard';
+import { readStoredFile } from './lib/stored-file';
 import { NavRail, type Destination } from './components/NavRail';
 import { ListPane, type MessageFilter } from './components/ListPane';
 import { MessageDetail } from './components/MessageDetail';
@@ -13,6 +15,7 @@ import { ValueTableDetail } from './components/ValueTableDetail';
 import { Overview } from './components/Overview';
 import { NetworkGraph } from './components/NetworkGraph';
 import { Icon } from './components/Icon';
+import { BackToList, type ListKind } from './components/BackToList';
 
 export type Selection =
   | { kind: 'overview' }
@@ -41,6 +44,15 @@ function selectionToHash(sel: Selection): string {
 }
 
 function hashToSelection(hash: string): Selection {
+  try {
+    return parseHash(hash);
+  } catch {
+    // A malformed escape (e.g. "%E0") in a hand-edited link: show the overview.
+    return { kind: 'overview' };
+  }
+}
+
+function parseHash(hash: string): Selection {
   const msg = hash.match(/^#msg=(\d+)(?:\.(\d+))?(?:\/(.+))?$/);
   if (msg) {
     return {
@@ -97,6 +109,9 @@ export function App() {
   const [dragging, setDragging] = useState(false);
   const [importing, setImporting] = useState<{ name: string; stage: ImportStage } | null>(null);
   const [snack, setSnack] = useState<Snack | null>(null);
+  // On narrow screens the list pane and the detail take turns (see narrow.css).
+  const [pane, setPane] = useState<'list' | 'detail'>('detail');
+  const [searchFocus, setSearchFocus] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dragDepth = useRef(0);
   const initialHash = useRef(window.location.hash);
@@ -165,10 +180,9 @@ export function App() {
     restoredOnce.current = true;
 
     try {
-      const saved = localStorage.getItem('canviewer.file');
+      const saved = readStoredFile();
       if (saved) {
-        const { name, text } = JSON.parse(saved) as { name: string; text: string };
-        loadText(name, text);
+        loadText(saved.name, saved.text);
         if (initialHash.current) setSelection(hashToSelection(initialHash.current));
       }
     } catch {
@@ -199,6 +213,7 @@ export function App() {
   const navigate = useCallback(
     (destination: Destination) => {
       if (!db) return;
+      setPane('list');
       const last = lastShown.current[destination];
       if (last && destination !== 'overview' && destination !== 'network') {
         setSelection(last);
@@ -227,6 +242,50 @@ export function App() {
     [db],
   );
 
+  // A selection made from a list or a link opens the detail (on narrow screens).
+  const show = useCallback((s: Selection) => {
+    setSelection(s);
+    setPane('detail');
+  }, []);
+
+  // A deep link pasted into the address bar of the open app changes only the hash.
+  useEffect(() => {
+    if (!db) return;
+    const follow = () => show(hashToSelection(window.location.hash));
+    window.addEventListener('hashchange', follow);
+    return () => window.removeEventListener('hashchange', follow);
+  }, [db, show]);
+
+  // "/" focuses the message search, from any view.
+  useEffect(() => {
+    if (!db || db.messages.length === 0) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (!isSearchShortcut(e)) return;
+      e.preventDefault();
+      navigate('messages');
+      setSearchFocus((n) => n + 1);
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [db, navigate]);
+
+  // When the panes take turns on a narrow screen, the focused element can be in
+  // the pane that is now hidden. Move the focus to the back button of the
+  // detail, or to the selected item of the list, so it is not lost. On wide
+  // screens both panes stay visible and the focus stays where it is.
+  const paneShown = useRef(pane);
+  useEffect(() => {
+    if (paneShown.current === pane) return;
+    paneShown.current = pane;
+    const focused = document.activeElement;
+    if (focused && focused !== document.body && focused.getClientRects().length > 0) return;
+    document.querySelector<HTMLElement>(pane === 'detail' ? '.rgh-back' : '.list-pane .list-item.active')?.focus();
+  }, [pane]);
+
+  useEffect(() => {
+    if (searchFocus > 0) document.querySelector<HTMLInputElement>('.list-pane input[type=search]')?.focus();
+  }, [searchFocus]);
+
   const copyLink = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(window.location.href);
@@ -248,7 +307,7 @@ export function App() {
   );
 
   const destination = db ? DESTINATION_OF[selection.kind] : null;
-  const listKind =
+  const listKind: ListKind | null =
     destination === 'messages' ? 'messages' : destination === 'nodes' ? 'nodes' : destination === 'tables' ? 'tables' : null;
   const enabled = useMemo<Record<Destination, boolean>>(
     () => ({
@@ -268,7 +327,7 @@ export function App() {
 
   return (
     <div
-      className={`app ${listKind ? 'with-list' : ''}`}
+      className={`app ${listKind ? `with-list rgh-pane-${pane}` : ''}`}
       onDragOver={(e) => e.preventDefault()}
       onDragEnter={(e) => {
         e.preventDefault();
@@ -312,7 +371,8 @@ export function App() {
           db={db}
           kind={listKind}
           selection={selection}
-          onSelect={setSelection}
+          onSelect={show}
+          onBrowse={setSelection}
           search={search}
           onSearch={setSearch}
           filter={filter}
@@ -322,7 +382,10 @@ export function App() {
 
       <main className="main">
         {db ? (
-          <MainView db={db} fileName={fileName} selection={selection} onSelect={setSelection} onCopyLink={copyLink} />
+          <>
+            {listKind && <BackToList kind={listKind} onBack={() => setPane('list')} />}
+            <MainView db={db} fileName={fileName} selection={selection} onSelect={show} onCopyLink={copyLink} />
+          </>
         ) : (
           <div className="welcome">
             <div className="welcome-card">

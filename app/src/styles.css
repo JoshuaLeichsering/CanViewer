@@ -354,6 +354,26 @@ h3 {
   color: var(--on-surface-var);
   display: flex;
 }
+/* The "/" shortcut hint, for devices with a keyboard. */
+.rgh-kbd {
+  min-width: 20px;
+  padding: 0 5px;
+  border: 1px solid var(--outline);
+  border-radius: 4px;
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 18px;
+  text-align: center;
+  color: var(--on-surface-var);
+}
+.search-field:focus-within .rgh-kbd {
+  display: none;
+}
+@media (hover: none) {
+  .rgh-kbd {
+    display: none;
+  }
+}
 .chips {
   display: flex;
   flex-wrap: wrap;
@@ -909,8 +929,19 @@ table.m3 tbody tr.selected:hover {
   );
   color: var(--on-err-c);
 }
-.cell.dim .cell-inner {
-  opacity: 0.45;
+/* Dimmed signals: the color fades (as with 45 % opacity on the card), while
+   the number keeps a readable contrast. Conflicts are never dimmed. */
+.cell.dim.tone-0 .cell-inner {
+  background: color-mix(in srgb, var(--t0) 45%, var(--sc-low));
+}
+.cell.dim.tone-1 .cell-inner {
+  background: color-mix(in srgb, var(--t1) 45%, var(--sc-low));
+}
+.cell.dim.tone-2 .cell-inner {
+  background: color-mix(in srgb, var(--t2) 45%, var(--sc-low));
+}
+.cell.dim:not(.conflict) .cell-inner {
+  color: var(--on-surface-var);
 }
 .bitlayout.compact .cell {
   height: 22px;
@@ -1177,6 +1208,15 @@ tr.selected .sig-chip {
 .ng-node.sel circle {
   fill: var(--primary);
 }
+/* Chromium outlines a focused SVG element even after a click; the ring
+   below marks keyboard focus instead. */
+.ng-node:focus {
+  outline: none;
+}
+.ng-node:focus-visible circle {
+  stroke: var(--on-surface);
+  stroke-width: 4px;
+}
 .ng-node.dim {
   opacity: 0.3;
 }
@@ -1336,6 +1376,44 @@ tr.selected .sig-chip {
   margin-top: 16px;
   font-size: 13px;
   color: var(--on-surface-var);
+}
+
+/* the error boundary's recovery screen */
+.rgh-crash-icon {
+  margin: 0 auto;
+  color: var(--error);
+}
+.rgh-crash h1 {
+  margin-top: 12px;
+  font-size: 24px;
+  line-height: 32px;
+}
+.rgh-crash .actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+.rgh-crash-details {
+  margin-top: 24px;
+  text-align: left;
+  color: var(--on-surface-var);
+}
+.rgh-crash-details summary {
+  cursor: pointer;
+}
+.rgh-crash-details pre {
+  max-height: 240px;
+  margin: 8px 0 0;
+  padding: 12px;
+  overflow: auto;
+  border-radius: 8px;
+  background: var(--sc-high);
+  color: var(--on-surface);
+  font-family: var(--mono);
+  font-size: 12px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 .drop-overlay {

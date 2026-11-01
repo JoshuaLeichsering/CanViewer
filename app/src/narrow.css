@@ -1,0 +1,146 @@
+/*
+ * Narrow screens. Below 840 px the list pane and the detail take turns instead
+ * of standing side by side (App sets .rgh-pane-list or .rgh-pane-detail, and
+ * the detail gets a back button). Below 600 px, Material's compact width, the
+ * navigation rail becomes a navigation bar at the bottom, and its menu, open
+ * file and theme buttons move to a bar at the top.
+ */
+
+.rgh-back {
+  display: none;
+}
+
+@media (max-width: 839px) {
+  .app.with-list {
+    grid-template-columns: 88px minmax(0, 1fr);
+  }
+  .app.with-list.rgh-pane-detail .list-pane,
+  .app.with-list.rgh-pane-list .main {
+    display: none;
+  }
+  .app.with-list .rgh-back {
+    display: inline-flex;
+    margin: 8px 0 0 -12px;
+  }
+}
+
+@media (max-width: 599px) {
+  .app,
+  .app.with-list {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 56px 0 80px;
+  }
+
+  /* navigation bar */
+  .rail {
+    position: fixed;
+    z-index: 20;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 80px;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 0;
+    padding: 0;
+    background: var(--sc);
+  }
+  .rail-item {
+    flex: 1 1 0;
+    min-width: 0;
+    justify-content: center;
+    padding: 0 2px;
+  }
+  .rail-item .label {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .rail-spacer {
+    display: none;
+  }
+
+  /* top bar: the menu on the left, open file and theme on the right */
+  .rail > div:first-child,
+  .rail > .rail-icon-btn,
+  .rail-fab {
+    position: fixed;
+    top: 4px;
+  }
+  .rail > div:first-child {
+    left: 4px;
+  }
+  .rail > .rail-icon-btn {
+    right: 4px;
+  }
+  .rail-fab {
+    right: 56px;
+    width: 48px;
+    height: 48px;
+    margin: 0;
+    border-radius: 24px;
+    background: none;
+    color: var(--on-surface-var);
+    box-shadow: none;
+  }
+  .menu-popover {
+    position: fixed;
+    top: 52px;
+    left: 8px;
+  }
+
+  .list-pane {
+    margin: 0 8px;
+  }
+  .main {
+    padding: 0 16px 32px;
+  }
+  .page-header h1 {
+    font-size: 28px;
+    line-height: 36px;
+  }
+  .fact {
+    border-right: 0;
+  }
+
+  /* The bit layout shrinks its columns to fit. */
+  .bitlayout-card {
+    flex: 1 1 100%;
+    padding: 16px 12px;
+  }
+  .bitlayout {
+    grid-template-columns: 28px repeat(8, minmax(0, 1fr));
+  }
+
+  /* Text that may break anywhere (a problem's line) keeps a readable width;
+     the table scrolls sideways in its card instead. */
+  table.m3 .wrap-anywhere {
+    min-width: 240px;
+  }
+
+  /* The graph keeps a readable size and scrolls sideways inside its card. */
+  .graph-card {
+    overflow-x: auto;
+  }
+  .graph-wrap {
+    min-width: 480px;
+  }
+  .graph-note {
+    position: sticky;
+    left: 0;
+  }
+
+  .welcome {
+    padding: 16px;
+  }
+  .welcome-card {
+    padding: 32px 20px 24px;
+  }
+
+  .snackbar {
+    bottom: 88px;
+    min-width: 0;
+    width: calc(100vw - 32px);
+  }
+}

@@ -4,6 +4,7 @@ import type { Selection } from '../App';
 import { occurrenceOf } from '../lib/dbc/identity';
 import { useI18n } from '../lib/i18n';
 import { Icon } from './Icon';
+import { useFocusableWhenScrolling } from './useFocusableWhenScrolling';
 
 /** A value map as a canonical string, so equal maps compare equal. */
 const canonical = (values: Record<number, string>) =>
@@ -25,6 +26,7 @@ export function ValueTableDetail({
   onSelect: (s: Selection) => void;
 }) {
   const { t } = useI18n();
+  const scrollable = useFocusableWhenScrolling<HTMLDivElement>();
   const rows = Object.entries(table.values)
     .map(([raw, label]) => [Number(raw), label] as const)
     .sort((a, b) => a[0] - b[0]);
@@ -47,7 +49,7 @@ export function ValueTableDetail({
         <h1>{table.name}</h1>
       </header>
       <div className="row">
-        <div className="card table-card" style={{ flex: '1 1 420px', maxWidth: 640 }}>
+        <div className="card table-card" ref={scrollable} style={{ flex: '1 1 420px', maxWidth: 640 }}>
           <table className="m3">
             <thead>
               <tr>

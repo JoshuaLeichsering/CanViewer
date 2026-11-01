@@ -4,6 +4,7 @@ import { occurrenceOf } from '../lib/dbc/identity';
 import { isJ1939Database } from '../lib/dbc/j1939';
 import { useI18n } from '../lib/i18n';
 import { hexId } from '../lib/format';
+import { activateProps } from '../lib/keyboard';
 import { messageTag, MessageTag } from './MessageTag';
 
 export function NodeDetail({
@@ -69,7 +70,7 @@ export function NodeDetail({
                 <tr
                   key={`${m.rawId}.${occurrenceOf(db, m)}`}
                   className="clickable"
-                  onClick={() => onSelect({ kind: 'message', rawId: m.rawId, occ: occurrenceOf(db, m) })}
+                  {...activateProps(() => onSelect({ kind: 'message', rawId: m.rawId, occ: occurrenceOf(db, m) }))}
                 >
                   <td className="id">{hexId(m.id, m.isExtended)}</td>
                   <td className="strong nowrap">
@@ -108,14 +109,14 @@ export function NodeDetail({
                 <tr
                   key={`${message.rawId}.${occurrenceOf(db, message)}/${signal.name}#${i}`}
                   className="clickable"
-                  onClick={() =>
+                  {...activateProps(() =>
                     onSelect({
                       kind: 'message',
                       rawId: message.rawId,
                       occ: occurrenceOf(db, message),
                       signal: signal.name,
-                    })
-                  }
+                    }),
+                  )}
                 >
                   <td className="strong">{signal.name}</td>
                   <td>{message.name}</td>
