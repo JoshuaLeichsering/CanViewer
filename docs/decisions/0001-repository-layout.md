@@ -66,8 +66,12 @@ How the tools are pointed at it:
   allows them because they are inside the repository (its default `server.fs.allow`).
 - Relative paths from the sources to the rest of the repository gain one level: the
   tests in `app/src/lib/*/` reach `third_party/`, `examples/` and `vendor/pyodide/`
-  through `../../../..`, and `app/src/fonts.css` reaches `node_modules/` through
-  `../../`.
+  through `../../../..`, the test in `app/src/components/` reaches `examples/` through
+  `../../..`, and `app/src/fonts.css` reaches `node_modules/` through `../../`.
+- A `?raw` import whose path is wrong does not always fail: Vite then opens the path
+  relative to the working directory, and a checkout inside another one can find the
+  file there. Run the tests from a checkout that is not nested in another before
+  trusting a move.
 - Static files that must be served as they are would go in `app/public/`, because Vite's
   `publicDir` is relative to its root. There are none today.
 - Paths in documentation and comments are written from the repository root
@@ -77,7 +81,15 @@ How the tools are pointed at it:
 - The files were moved with `git mv`, so `git log --follow` shows their history.
 - The move changed no behaviour. Built from the moves and the config changes alone,
   `dist/` was byte-identical to the build before them: the same 27 files with the same
-  SHA-256 each.
+  SHA-256 each. The changes after that touch documentation, comments, tests and checks,
+  and only one of them reaches the build. The canmatrix adapter
+  (`app/src/lib/canmatrix/canviewer_adapter.py`) is bundled as text, and its docstring
+  now names `app/src/lib/dbc/types.ts` and `app/src/lib/dbc/canfd.ts`. That changes the
+  worker chunk, and with it the chunk's hashed name, the index chunk and `index.html`
+  that refer to it, and the service worker's shell cache name (so a browser that has
+  run the app caches the shell again; the Pyodide cache is kept). The other 23 files
+  are byte-identical, and those 4 are identical once the two paths and the derived names
+  are put back.
 - The desktop workflow runs only for pull requests that change `desktop/`,
   `e2e/desktop-*` or the workflow itself, for `v*` tags, and on demand, because Windows
   and macOS minutes are expensive. A change to `app/` alone does not build the desktop
