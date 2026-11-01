@@ -16,19 +16,27 @@
 //     (run `npm run fetch-wheels` first);
 //   - the Rust crates: `cargo metadata` for desktop/Cargo.lock and each crate's
 //     license files (needs cargo, and downloads the crates once);
+//   - the helpers the build tools put into the bundle: package-lock.json for
+//     their version and their license files in node_modules/;
 //   - what no metadata describes (the libraries inside the Pyodide runtime and
-//     inside two wheels, and the icon paths copied into the sources):
+//     inside two wheels, the icon paths copied into the sources, notices in
+//     crates' source files, and the Rust standard library):
 //     scripts/license-policy.mjs, with license texts from upstream in
-//     scripts/third-party/licenses/.
+//     scripts/third-party/licenses/. The standard library is reviewed for one
+//     Rust version; this script fails when the toolchain it runs with ships a
+//     library that the review does not list.
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
+  BUILD_HELPERS,
+  CRATE_FILE_NOTICES,
   NOT_BUNDLED,
   NPM_TEXTS,
   PYODIDE_COMPONENTS,
+  RUST_STD,
   STANDARD_TEXTS,
   VENDORED,
   WHEEL_BUNDLED,
@@ -212,6 +220,99 @@ function collectWheels() {
   return out.sort((a, b) => byText(a.name, b.name));
 }
 
+/** The part of a file between two patterns: from the start of `from` to the start of `to`, without Markdown quote markers. */
+export function excerpt(text, from, to) {
+  const start = text.search(from);
+  if (start < 0) return undefined;
+  const rest = text.slice(start);
+  const firstLine = rest.indexOf('\n') + 1;
+  const end = rest.slice(firstLine).search(to);
+  if (end < 0) return undefined;
+  return rest
+    .slice(0, firstLine + end)
+    .split('\n')
+    .map((l) => l.replace(/^> ?/, ''))
+    .join('\n');
+}
+
+function collectBuildHelpers() {
+  const lock = JSON.parse(readFileSync(join(root, 'package-lock.json'), 'utf8'));
+  return BUILD_HELPERS.map((h) => {
+    const version = lock.packages[`node_modules/${h.versionOf}`]?.version;
+    if (!version) throw new Error(`${h.name}: ${h.versionOf} is not in package-lock.json`);
+    const text = excerpt(readFileSync(join(root, h.text.file), 'utf8'), h.text.from, h.text.to);
+    if (!text) throw new Error(`${h.name}: its license text is no longer found in ${h.text.file}; update BUILD_HELPERS`);
+    return { ...h, version: h.bundledIn ? `in ${h.versionOf} ${version}` : version, files: [text] };
+  });
+}
+
+/** A comment block without its comment markers: //, ///, //!, /*, * and *\/. */
+export function uncomment(lines) {
+  return lines
+    .map((l) =>
+      l
+        .replace(/^\s*(\/\/[/!]?|\/\*+|\*\/|\*(?!\/))\s?/, '')
+        .replace(/\s*\*\/\s*$/, '')
+        .trimEnd(),
+    )
+    .join('\n');
+}
+
+/** The lines of `text` from the one containing `from` to the one containing `to`, or undefined. */
+export function linesBetween(text, from, to) {
+  const lines = text.split(/\r?\n/);
+  const a = lines.findIndex((l) => l.includes(from));
+  if (a < 0) return undefined;
+  const b = lines.findIndex((l, i) => i >= a && l.includes(to));
+  if (b < 0) return undefined;
+  return lines.slice(a, b + 1);
+}
+
+/** The notices of CRATE_FILE_NOTICES for one crate, read from its downloaded sources. */
+function crateNotices(name, version, dir) {
+  return CRATE_FILE_NOTICES.filter((n) => n.crate === name).map((n) => {
+    const path = join(dir, n.file);
+    const where = `${name} ${version}, ${n.file}`;
+    if (!existsSync(path)) throw new Error(`${where} no longer exists; update CRATE_FILE_NOTICES`);
+    if (n.texts) {
+      // A Windows binary keeps its version resource in UTF-16.
+      const buf = readFileSync(path);
+      if (!buf.includes(Buffer.from(n.marker, 'latin1')) && !buf.includes(Buffer.from(n.marker, 'utf16le'))) throw new Error(`${where} no longer contains "${n.marker}"; update CRATE_FILE_NOTICES`);
+      return { file: n.file, what: n.what, files: [], textFiles: n.texts };
+    }
+    const lines = linesBetween(readFileSync(path, 'utf8'), n.from, n.to);
+    if (!lines) throw new Error(`${where} no longer holds the notice from "${n.from}" to "${n.to}"; update CRATE_FILE_NOTICES`);
+    const block = n.file.endsWith('.md') ? lines.join('\n') : uncomment(lines);
+    return { file: n.file, what: n.what, files: [`${where}:\n\n${block}`], textFiles: [] };
+  });
+}
+
+/**
+ * The Rust standard library as RUST_STD lists it. Fails when the toolchain on
+ * this machine ships a library for its host that the list does not know.
+ */
+function collectRustStd() {
+  const sysroot = execFileSync('rustc', ['--print', 'sysroot']).toString('utf8').trim();
+  const host = execFileSync('rustc', ['-vV']).toString('utf8').match(/^host: (.+)$/m)[1];
+  const libDir = join(sysroot, 'lib/rustlib', host, 'lib');
+  const shipped = new Set(
+    readdirSync(libDir)
+      .map((f) => f.match(/^lib(.+)-[0-9a-f]+\.rlib$/)?.[1])
+      .filter(Boolean),
+  );
+  const known = new Set([
+    ...RUST_STD.components.flatMap((c) => c.crates ?? [c.name]).map((n) => n.replace(/-/g, '_')),
+    ...RUST_STD.notLinked,
+  ]);
+  const unknown = [...shipped].filter((n) => !known.has(n)).sort();
+  if (unknown.length) {
+    throw new Error(
+      `the Rust standard library of this toolchain (${host}) holds ${unknown.join(', ')}, which RUST_STD in scripts/license-policy.mjs does not list; review them`,
+    );
+  }
+  return RUST_STD;
+}
+
 /** The first alternative of an OR expression that has a standard text, for crates that ship no license file. */
 function standardTextsFor(expression) {
   const alternatives = expression.replace(/\s*\/\s*/g, ' OR ').split(/\s+OR\s+/).map((a) => a.replace(/[()]/g, '').trim());
@@ -244,14 +345,18 @@ function collectCrates() {
       source: p.repository ?? `https://crates.io/crates/${p.name}`,
       files,
       standard: files.length ? [] : standardTextsFor(p.license),
+      notices: crateNotices(p.name, p.version, dir),
     });
+  }
+  for (const n of CRATE_FILE_NOTICES) {
+    if (!out.some((c) => c.name === n.crate)) throw new Error(`CRATE_FILE_NOTICES: ${n.crate} is not in desktop/Cargo.lock; remove the entry`);
   }
   return out.sort((a, b) => byText(a.name, b.name) || byVersion(a.version, b.version));
 }
 
 // ---------------------------------------------------------------- render
 
-export function render({ npm, wheels, crates }) {
+export function render({ npm, wheels, crates, buildHelpers = [], rustStd }) {
   const texts = new Texts();
   const slugger = new Slugger();
   const contents = [];
@@ -292,6 +397,11 @@ export function render({ npm, wheels, crates }) {
   section('Icons');
   for (const v of VENDORED) component(v.name, { ...v, textFiles: v.texts });
 
+  if (buildHelpers.length) {
+    section('Build tool helpers', 'Small pieces of code that the build tools add to the app’s JavaScript, with the version of the tool.');
+    for (const h of buildHelpers) component(h.name, h);
+  }
+
   section(
     'Pyodide runtime',
     'In `pyodide/` next to the app (`pyodide.asm.mjs`, `pyodide.asm.wasm`, `python_stdlib.zip`), with the loader in the import worker’s JavaScript. ' +
@@ -328,14 +438,57 @@ export function render({ npm, wheels, crates }) {
     '| Crate | Version | License | License text |',
     '|---|---|---|---|',
   );
+  const noticeRows = [];
   for (const c of crates) {
     const user = `${c.name} ${c.version}`;
     const ns = [...c.files.flatMap((t) => texts.add(t, user)), ...c.standard.flatMap((f) => texts.addFile(f, user))];
+    for (const n of c.notices ?? []) {
+      const nns = [...n.files.flatMap((t) => texts.add(t, user)), ...n.textFiles.flatMap((f) => texts.addFile(f, user))];
+      ns.push(...nns);
+      noticeRows.push(`| ${c.name} ${c.version} | \`${n.file}\` | ${n.what.replace(/\|/g, '\\|')} | ${textLinks([...new Set(nns)])} |`);
+    }
     const name = c.source ? `[${c.name}](${c.source})` : c.name;
     body.push(`| ${name} | ${c.version} | ${c.license.replace(/\|/g, '\\|')} | ${textLinks([...new Set(ns)])} |`);
   }
   body.push('');
   contents.push(`| [${cratesHeading}](#${cratesAnchor}) | ${crates.length} crates | see the list | desktop app |`);
+  if (noticeRows.length) {
+    const heading = 'Notices in the crates’ source files';
+    slugger.slug(heading);
+    body.push(
+      `#### ${heading}`,
+      '',
+      'Some crates hold code with notices of its own, in the files below, which their license files do not carry. The texts are copied from those files.',
+      '',
+      '| Crate | File | What | Text |',
+      '|---|---|---|---|',
+      ...noticeRows,
+      '',
+    );
+  }
+
+  if (rustStd) {
+    const heading = 'Rust standard library';
+    const anchor = slugger.slug(heading);
+    body.push(
+      `### ${heading}`,
+      '',
+      `Linked statically into the desktop binary on all three systems, from the Rust toolchain that builds it; reviewed for Rust ${rustStd.version}. ` +
+        'The parts under a choice of licenses are used under the MIT license.',
+      '',
+      `- Source: <${rustStd.source}>`,
+      '',
+      '| Part | Version | License | License text |',
+      '|---|---|---|---|',
+    );
+    for (const c of rustStd.components) {
+      const user = `Rust standard library: ${c.name}`;
+      const ns = c.texts.flatMap((f) => texts.addFile(f, user));
+      body.push(`| ${c.name} | ${c.version ?? rustStd.version} | ${c.license} | ${textLinks([...new Set(ns)])} |`);
+    }
+    body.push('');
+    contents.push(`| [${heading}](#${anchor}) | ${rustStd.version} | see the list | desktop app |`);
+  }
 
   body.push('## License texts', '');
   for (const t of texts.list) {
@@ -376,7 +529,13 @@ export function render({ npm, wheels, crates }) {
 
 function main() {
   const check = process.argv.includes('--check');
-  const md = render({ npm: collectNpm(), wheels: collectWheels(), crates: collectCrates() });
+  const md = render({
+    npm: collectNpm(),
+    wheels: collectWheels(),
+    crates: collectCrates(),
+    buildHelpers: collectBuildHelpers(),
+    rustStd: collectRustStd(),
+  });
   if (check) {
     const current = existsSync(OUT) ? readFileSync(OUT, 'utf8') : '';
     if (current === md) {

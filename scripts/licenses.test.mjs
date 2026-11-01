@@ -5,8 +5,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { declaredLicense, withHeader } from './check-spdx-headers.mjs';
-import { ALLOWED, isAllowed } from './license-policy.mjs';
-import { render } from './third-party-notices.mjs';
+import { ALLOWED, BUILD_HELPERS, classifyModule, isAllowed } from './license-policy.mjs';
+import { excerpt, linesBetween, render, uncomment } from './third-party-notices.mjs';
 
 test('license expressions are allowed when some choice uses allowed licenses only', () => {
   assert.equal(isAllowed('MIT'), true);
@@ -78,4 +78,70 @@ test('identical texts appear once, and the Apache License once, keeping what a c
   // react and react-dom share one MIT text; gamma gets the standard MIT text.
   assert.match(md, /Used by: react, react-dom\./);
   assert.match(md, /Copyright \(c\) <year> <copyright holders>/);
+});
+
+test('a crate notice is copied without its comment markers', () => {
+  const rs = [
+    '// Copyright 2014-2021 The winit contributors',
+    '// SPDX-License-Identifier: Apache-2.0',
+    '',
+    '//! Docs.',
+    '/* Copyright (c) 2010 Someone. All rights reserved.',
+    ' * Redistribution is permitted.',
+    ' *',
+    ' *    1. Keep this notice.',
+    ' */',
+    'fn main() {}',
+  ].join('\n');
+  assert.equal(uncomment(linesBetween(rs, 'winit contributors', 'SPDX')), 'Copyright 2014-2021 The winit contributors\nSPDX-License-Identifier: Apache-2.0');
+  assert.equal(
+    uncomment(linesBetween(rs, 'Copyright (c) 2010', '*/')),
+    'Copyright (c) 2010 Someone. All rights reserved.\nRedistribution is permitted.\n\n   1. Keep this notice.\n',
+  );
+  assert.equal(linesBetween(rs, 'not there', 'SPDX'), undefined);
+  assert.equal(linesBetween(rs, 'winit contributors', 'not there'), undefined);
+});
+
+test('a license text is cut from a longer file between two headings, without quote markers', () => {
+  const md = '# Core license\nMIT\n\n# Bundled\n## a, b-plugin, c\nLicense: MIT\n\n> Copyright B\n>\n> Permission.\n\n---------------------\n\n## d\n';
+  assert.equal(excerpt(md, /^# Core license$/m, /^# Bundled$/m), '# Core license\nMIT\n\n');
+  assert.equal(excerpt(md, /^## [^\n]*b-plugin[^\n]*$/m, /^-{20,}$/m), '## a, b-plugin, c\nLicense: MIT\n\nCopyright B\n\nPermission.\n\n');
+  assert.equal(excerpt(md, /^## nothing$/m, /^-{20,}$/m), undefined);
+});
+
+test('every module of the bundle is the app\'s own, a file, or a reviewed build helper', () => {
+  const [vite, commonjs] = BUILD_HELPERS.map((h) => h.name);
+  assert.equal(classifyModule('\0vite/modulepreload-polyfill.js'), vite);
+  assert.equal(classifyModule('__vite-browser-external'), vite);
+  assert.equal(classifyModule('\0commonjsHelpers.js'), commonjs);
+  assert.equal(classifyModule('\0/repo/node_modules/react/index.js?commonjs-module'), commonjs);
+  assert.equal(classifyModule('\0virtual:canviewer-pyodide-lock'), 'own');
+  assert.equal(classifyModule('/repo/node_modules/react/index.js'), 'file');
+  assert.equal(classifyModule('C:/repo/app/src/main.tsx'), 'file');
+  assert.equal(classifyModule('\0some-plugin:helper'), 'unknown');
+  assert.equal(classifyModule('virtual-thing'), 'unknown');
+});
+
+test('the notices list build helpers, crate file notices and the Rust standard library', () => {
+  const data = sample();
+  data.crates[0].notices = [{ file: 'src/keys.rs', what: 'W3C notice.', files: ['alpha 1.0.0, src/keys.rs:\n\nCopyright W3C'], textFiles: [] }];
+  data.buildHelpers = [{ name: 'Vite (runtime helpers)', version: '6.4.3', license: 'MIT', source: 'https://example.org/vite', files: [mit('Vite')] }];
+  data.rustStd = {
+    version: '1.97.0',
+    source: 'https://example.org/rust',
+    components: [
+      { name: 'core and std', crates: ['core', 'std'], license: 'MIT OR Apache-2.0', texts: ['spdx-MIT.txt'] },
+      { name: 'gimli', version: '0.32.3', license: 'MIT OR Apache-2.0', texts: ['spdx-Apache-2.0.txt'] },
+    ],
+  };
+  const md = render(data);
+  assert.match(md, /^\| \[Vite \(runtime helpers\)\]\(#vite-runtime-helpers\) \| 6\.4\.3 \| MIT \|/m);
+  assert.match(md, /^\| \[Rust standard library\]\(#rust-standard-library\) \| 1\.97\.0 \| see the list \| desktop app \|$/m);
+  assert.match(md, /^\| core and std \| 1\.97\.0 \| MIT OR Apache-2\.0 \| \[Text \d+\]/m);
+  assert.match(md, /^\| gimli \| 0\.32\.3 \|/m);
+  const notice = md.match(/^\| alpha 1\.0\.0 \| `src\/keys\.rs` \| W3C notice\. \| \[Text (\d+)\]\(#text-\d+\) \|$/m);
+  assert.ok(notice, 'the crate notice has a row');
+  // The crate's own row links the notice's text as well.
+  assert.match(md, new RegExp(`^\\| \\[alpha\\].*\\[Text ${notice[1]}\\]`, 'm'));
+  assert.match(md, /alpha 1\.0\.0, src\/keys\.rs:\n\nCopyright W3C/);
 });

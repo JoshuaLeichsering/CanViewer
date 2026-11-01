@@ -7,6 +7,10 @@
  *   the import worker's) must have a row with its version in the contents of
  *   THIRD_PARTY_NOTICES.md; the build fails if one is missing, or if a package
  *   that scripts/license-policy.mjs lists as not bundled turns up after all.
+ * - Every virtual module (code a plugin or a build tool generates rather than
+ *   reads from a file) must be CanViewer's own or one of the BUILD_HELPERS of
+ *   scripts/license-policy.mjs, which must have a row; an unknown one fails
+ *   the build, so that a new helper gets a notice.
  * - Every file under pyodide/ must be covered: the runtime files by the
  *   pyodide row, each wheel by its file name.
  * - dist/LICENSE.txt and dist/THIRD_PARTY_NOTICES.md are written after the
@@ -19,7 +23,7 @@ import { copyFileSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Plugin } from 'vite';
-import { NOT_BUNDLED } from './license-policy.mjs';
+import { NOT_BUNDLED, classifyModule } from './license-policy.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const NOTICES = join(root, 'THIRD_PARTY_NOTICES.md');
@@ -36,9 +40,10 @@ const versionOf = (name: string) =>
 
 const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-/** Whether the notices' contents table has a row for this component and version. */
-function hasRow(notices: string, name: string, version: string) {
-  return new RegExp(`^\\| \\[${escape(name)}\\]\\(#[^)]*\\) \\| ${escape(version)} \\|`, 'm').test(notices);
+/** Whether the notices' contents table has a row for this component and version (any version if not given). */
+function hasRow(notices: string, name: string, version?: string) {
+  const v = version === undefined ? '[^|]+' : escape(version);
+  return new RegExp(`^\\| \\[${escape(name)}\\]\\(#[^)]*\\) \\| ${v} \\|`, 'm').test(notices);
 }
 
 export function legalFiles({ emit }: { emit: boolean }): Plugin {
@@ -52,17 +57,26 @@ export function legalFiles({ emit }: { emit: boolean }): Plugin {
     generateBundle(_options, bundle) {
       const notices = readFileSync(NOTICES, 'utf8');
       const packages = new Set<string>();
+      const helpers = new Set<string>();
+      const problems: string[] = [];
       for (const item of Object.values(bundle)) {
         const paths =
           item.type === 'chunk'
             ? Object.keys(item.modules)
             : [...((item as { originalFileNames?: string[] }).originalFileNames ?? [])];
         for (const p of paths) {
+          if (item.type === 'chunk') {
+            const kind = classifyModule(p);
+            if (kind === 'unknown') problems.push(`${item.fileName} holds the virtual module ${JSON.stringify(p)}, which BUILD_HELPERS in scripts/license-policy.mjs does not know`);
+            else if (kind !== 'own' && kind !== 'file') helpers.add(kind);
+          }
           const name = packageOf(p);
           if (name) packages.add(name.replace(/^\0/, ''));
         }
       }
-      const problems: string[] = [];
+      for (const name of [...helpers].sort()) {
+        if (!hasRow(notices, name)) problems.push(`${name} is in the bundle but not in THIRD_PARTY_NOTICES.md`);
+      }
       for (const name of [...packages].sort()) {
         if (name in NOT_BUNDLED) problems.push(`${name} is bundled, but scripts/license-policy.mjs says it is not (NOT_BUNDLED)`);
         else if (!hasRow(notices, name, versionOf(name))) problems.push(`${name} ${versionOf(name)} is bundled but not in THIRD_PARTY_NOTICES.md`);

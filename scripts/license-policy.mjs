@@ -38,18 +38,21 @@ export const ALLOWED = new Set([
 ]);
 
 /**
- * Parts whose license is not on the list, shipped until the owner decides,
- * each with the reason. The checks print them as warnings and do not fail.
+ * Parts whose license is not on the list and that still ship while a decided
+ * removal is under way, each with the reason. The check prints them as
+ * warnings, and fails on an exception that matches nothing shipped, so that
+ * the entry goes with the part: once it is gone, the part cannot come back
+ * without failing the check.
  */
 export const EXCEPTIONS = {
   xlrd:
     'xlrd 1.2.0 includes code under the original four-clause BSD license of David Giffin, ' +
     'whose advertising clause the FSF considers incompatible with the GPL. It is used only to import .xls files. ' +
-    'Pending the owner: keep it (with an additional permission for it), or drop .xls import.',
+    'The owner decided to drop .xls import; delete this entry with the wheel.',
   xlwt:
     'xlwt 1.3.0 includes code under the four-clause BSD license of pyExcelerator (Roman V. Kiseliov), ' +
     'whose advertising clause the FSF considers incompatible with the GPL. canmatrix imports it whenever it reads .xls files. ' +
-    'Pending the owner: keep it (with an additional permission for it), or drop .xls import.',
+    'The owner decided to drop .xls import; delete this entry with the wheel.',
 };
 
 /**
@@ -162,9 +165,12 @@ export const WHEEL_BUNDLED = {
 
 /**
  * What the Pyodide runtime (node_modules/pyodide, copied to dist/pyodide/)
- * contains besides Pyodide itself. Identified from Pyodide's build files at
- * its release tag (Makefile.envs and cpython/Makefile) and confirmed by the
- * markers, strings that scripts/check-licenses.mjs finds in the runtime files.
+ * and Pyodide's loader (pyodide.mjs, bundled into the import worker) contain
+ * besides Pyodide itself. Identified from Pyodide's build files and sources at
+ * its release tag (Makefile.envs, cpython/Makefile, src/js/vendor/,
+ * src/js/fs/) and from CPython's Modules/_hacl/, and confirmed by the
+ * markers: strings (or patterns) that scripts/check-licenses.mjs finds in the
+ * runtime files.
  */
 export const PYODIDE_COMPONENTS = [
   {
@@ -173,13 +179,39 @@ export const PYODIDE_COMPONENTS = [
     license: 'PSF-2.0',
     texts: ['cpython-LICENSE.txt', 'cpython-incorporated-software.txt'],
     source: 'https://github.com/python/cpython/tree/v3.14.2',
-    note: 'The interpreter in pyodide.asm.wasm and its standard library in python_stdlib.zip, with the code CPython incorporates (expat, libmpdec, HACL*, and others; see the second text).',
+    note:
+      'The interpreter in pyodide.asm.wasm and its standard library in python_stdlib.zip, with the code CPython ' +
+      'incorporates that the second text lists (expat, libmpdec, mimalloc, SipHash24 and others). ' +
+      'HACL* and KaRaMeL, which CPython also incorporates, are listed below. ' +
+      'Some standard-library files carry their own notice, which python_stdlib.zip keeps in the file: ' +
+      'tomllib (MIT), profile.py and pstats.py (Apache-2.0).',
     markers: [
       ['pyodide.asm.wasm', 'Copyright (c) 2001 Python Software Foundation.'],
       ['pyodide.asm.wasm', 'expat_2.7.3'],
       ['pyodide.asm.wasm', 'libmpdec'],
-      ['pyodide.asm.wasm', 'Hacl_'],
+      ['python_stdlib.zip', 'tomllib/_parser.py'],
+      ['python_stdlib.zip', 'pstats.py'],
     ],
+  },
+  {
+    name: 'HACL* (in CPython)',
+    version: 'commit 8ba599b',
+    license: 'MIT',
+    texts: ['hacl-star-LICENSE.txt'],
+    source: 'https://github.com/hacl-star/hacl-star/tree/8ba599b2f6c9701b3dc961db895b0856a2210f76',
+    note: 'The hash functions of CPython’s hashlib, from CPython’s Modules/_hacl/ (the commit its refresh.sh records), compiled into pyodide.asm.wasm. The text is the header of those files.',
+    markers: [
+      ['pyodide.asm.wasm', './Modules/_hacl/Hacl_Hash_SHA3.c'],
+      ['pyodide.asm.wasm', 'HACL* internal routine failed'],
+    ],
+  },
+  {
+    name: 'KaRaMeL krmllib (in CPython’s HACL* copy)',
+    license: 'Apache-2.0 AND MIT',
+    texts: ['karamel-krmllib-notice.txt', 'spdx-Apache-2.0.txt', 'spdx-MIT.txt'],
+    source: 'https://github.com/python/cpython/tree/v3.14.2/Modules/_hacl/include/krml',
+    note: 'The runtime headers of the KaRaMeL compiler that HACL* is generated with, compiled into pyodide.asm.wasm. Their files state the notice in the first text.',
+    markers: [['pyodide.asm.wasm', 'KaRaMeL abort at']],
   },
   {
     name: 'Emscripten runtime',
@@ -263,7 +295,92 @@ export const PYODIDE_COMPONENTS = [
     source: 'https://github.com/facebook/zstd/tree/v1.5.7',
     markers: [['pyodide.asm.wasm', 'ZSTD_versionString']],
   },
+  {
+    name: 'stackframe (in Pyodide’s loader)',
+    version: '1.3.4',
+    license: 'MIT',
+    texts: ['pyodide-stackframe-LICENSE.txt'],
+    source: 'https://github.com/stacktracejs/stackframe',
+    note: 'Ported by Pyodide (src/js/vendor/stackframe/) into pyodide.mjs, which the import worker’s JavaScript bundles. The text is the license Pyodide keeps with the port.',
+    markers: [['pyodide.mjs', 'StackFrame']],
+  },
+  {
+    name: 'error-stack-parser (in Pyodide’s loader)',
+    version: '2.1.4',
+    license: 'MIT',
+    texts: ['pyodide-stackframe-LICENSE.txt'],
+    source: 'https://github.com/stacktracejs/error-stack-parser',
+    note: 'Ported by Pyodide (src/js/vendor/stackframe/) into pyodide.mjs, which the import worker’s JavaScript bundles.',
+    markers: [['pyodide.mjs', 'ErrorStackParser']],
+  },
+  {
+    name: '@arrowood.dev/socket (as Pyodide’s wintercg-sockets)',
+    version: '0.2.0',
+    license: 'MIT',
+    texts: ['arrowood-socket-LICENSE.txt'],
+    source: 'https://github.com/Ethan-Arrowood/socket',
+    note: 'Adapted by Pyodide (src/js/fs/wintercg-sockets.ts) into pyodide.asm.mjs. It serves sockets in Node.js only; the browser does not run it.',
+    markers: [['pyodide.asm.mjs', 'wintercg-sockets: call init() first']],
+  },
+  {
+    name: 'esbuild helpers (in Pyodide’s JavaScript)',
+    license: 'MIT',
+    texts: ['esbuild-LICENSE.txt'],
+    source: 'https://github.com/evanw/esbuild',
+    note: 'The small helper that esbuild adds to code it builds with names kept, in pyodide.mjs and pyodide.asm.mjs, which Pyodide builds with esbuild.',
+    markers: [
+      ['pyodide.mjs', /\(\w+,\w+\)=>\w+\(\w+,"name",\{value:\w+,configurable:!0\}\)/],
+      ['pyodide.asm.mjs', /\(\w+,\w+\)=>\w+\(\w+,"name",\{value:\w+,configurable:!0\}\)/],
+    ],
+  },
 ];
+
+/**
+ * Code that the build tools put into the app's JavaScript. scripts/vite-legal.ts
+ * sorts every module of the bundle: the app's own, an npm package's, or one of
+ * these, by its module id; an unknown virtual module fails the build. The
+ * version is the one of `versionOf` in package-lock.json (for a part that
+ * package bundles, `bundledIn`, the version of that package), and the license
+ * text comes from that package's own license file in node_modules/.
+ */
+export const BUILD_HELPERS = [
+  {
+    name: 'Vite (runtime helpers)',
+    versionOf: 'vite',
+    license: 'MIT',
+    source: 'https://github.com/vitejs/vite',
+    note: 'The module preload polyfill and the stub for Node.js built-ins that Vite adds to the bundle.',
+    ids: [/^\0vite\//, /^__vite-browser-external$/],
+    text: { file: 'node_modules/vite/LICENSE.md', from: /^# Vite core license$/m, to: /^# Licenses of bundled dependencies$/m },
+  },
+  {
+    name: '@rollup/plugin-commonjs (helpers, as bundled in Vite)',
+    versionOf: 'vite',
+    bundledIn: true,
+    license: 'MIT',
+    source: 'https://github.com/rollup/plugins/tree/master/packages/commonjs',
+    note: 'The wrappers and helpers with which Vite’s copy of the plugin bundles CommonJS modules such as React. The text is the plugin’s entry in Vite’s license file.',
+    ids: [/^\0commonjsHelpers\.js$/, /\?commonjs-[a-z-]+$/],
+    text: { file: 'node_modules/vite/LICENSE.md', from: /^## [^\n]*@rollup\/plugin-commonjs[^\n]*$/m, to: /^-{20,}$/m },
+  },
+];
+
+/** Virtual modules of CanViewer's own Vite plugins (scripts/vite-plugins.ts), by module id. */
+export const OWN_VIRTUAL_MODULES = [/^\0virtual:canviewer-/];
+
+/**
+ * Sorts a module id of the bundle: the name of the build helper it belongs
+ * to, 'own' for CanViewer's own virtual modules, 'file' for a module read from
+ * a file, or 'unknown' for a virtual module nobody has reviewed.
+ */
+export function classifyModule(id) {
+  const helper = BUILD_HELPERS.find((h) => h.ids.some((re) => re.test(id)));
+  if (helper) return helper.name;
+  if (OWN_VIRTUAL_MODULES.some((re) => re.test(id))) return 'own';
+  // A virtual module's id starts with \0 by convention; a file's is an absolute path.
+  if (id.startsWith('\0') || !/^(\/|[A-Za-z]:[\\/])/.test(id)) return 'unknown';
+  return 'file';
+}
 
 /** Third-party parts copied into CanViewer's own sources. */
 export const VENDORED = [
@@ -301,4 +418,121 @@ export const STANDARD_TEXTS = {
   'BSD-3-Clause': 'spdx-BSD-3-Clause.txt',
   Zlib: 'spdx-Zlib.txt',
   'MPL-2.0': 'pyodide-LICENSE.txt',
+};
+
+/**
+ * Notices in the source files of crates that the crates' license files do
+ * not carry. scripts/third-party-notices.mjs copies each from the crate as
+ * cargo downloads it: the lines from the one that contains `from` to the one
+ * that contains `to`, without the comment markers. It fails when they are no
+ * longer found, so the list stays true when a crate is upgraded. With `texts`
+ * instead, the file must exist and contain `marker`, and the texts come from
+ * scripts/third-party/licenses/.
+ */
+export const CRATE_FILE_NOTICES = [
+  {
+    crate: 'tao',
+    file: 'src/keyboard.rs',
+    from: 'The winit contributors',
+    to: 'END OF W3C SHORT NOTICE',
+    what:
+      'The winit copyright that tao’s files derived from winit carry, and the W3C license and short notice ' +
+      'for the `Key` and `KeyCode` enums, which the license asks to show where users can see them.',
+  },
+  {
+    crate: 'keyboard-types',
+    file: 'README.md',
+    from: 'are derived from the two W3C working',
+    to: 'uievents-code/',
+    what:
+      'src/named_key.rs and src/code.rs are derived from W3C documents; the W3C license reproduced with ' +
+      'tao’s src/keyboard.rs applies to them too.',
+  },
+  {
+    crate: 'tauri',
+    file: 'src/resources/mod.rs',
+    from: 'the Deno authors',
+    to: 'core/resources.rs',
+    what: 'Code derived from Deno, under the MIT license.',
+  },
+  {
+    crate: 'muda',
+    file: 'src/platform_impl/gtk/icon.rs',
+    from: 'The winit contributors',
+    to: 'SPDX-License-Identifier: Apache-2.0',
+    what:
+      'The winit copyright of the files derived from winit (also src/platform_impl/gtk4/icon.rs; ' +
+      'src/icon.rs and src/platform_impl/windows/ name the winit file they are taken from).',
+  },
+  {
+    crate: 'futures-channel',
+    file: 'src/mpsc/queue.rs',
+    from: 'Copyright (c) 2010-2011 Dmitry Vyukov',
+    to: 'policies, either expressed or implied, of Dmitry Vyukov.',
+    what: 'The queue of the channel, under a BSD-2-Clause-Views license.',
+  },
+  {
+    crate: 'webview2-com-sys',
+    file: 'x64/WebView2Loader.dll',
+    marker: '1.0.3800.47',
+    texts: ['webview2-sdk-LICENSE.txt'],
+    what:
+      'The WebView2 loader from Microsoft’s WebView2 SDK 1.0.3800.47, which the crate bundles (Windows). ' +
+      'The text is the SDK’s license, as its NuGet package states it.',
+  },
+];
+
+/**
+ * The Rust standard library, which the desktop binary links statically. It
+ * comes with the Rust toolchain that builds the release, so the list is
+ * reviewed for one version: the toolchain's share/doc/rust/COPYRIGHT-library.html
+ * (in-tree files) and library/Cargo.lock at the release tag. That document
+ * leaves out addr2line, adler2, memchr, miniz_oxide and object, whose license
+ * files come from crates.io. The crates of the dual-licensed parts are used
+ * under the MIT license, whose texts carry their copyright lines.
+ *
+ * scripts/third-party-notices.mjs fails when the toolchain it runs with ships
+ * a library (an rlib for the host) that is in neither `components` nor
+ * `notLinked`, so a new dependency of the standard library gets a review.
+ */
+export const RUST_STD = {
+  version: '1.97.0',
+  source: 'https://github.com/rust-lang/rust/tree/1.97.0/library',
+  components: [
+    {
+      name: 'core, alloc, std and the other in-tree libraries',
+      crates: ['core', 'alloc', 'std', 'std_detect', 'panic_unwind', 'panic_abort', 'unwind'],
+      license: 'MIT OR Apache-2.0',
+      texts: ['rust-std/COPYRIGHT-library.txt', 'spdx-MIT.txt', 'spdx-Apache-2.0.txt', 'rust-std/Unicode-3.0.txt'],
+    },
+    {
+      name: 'compiler_builtins, with libm',
+      crates: ['compiler_builtins'],
+      version: '0.1.160',
+      license: 'MIT AND Apache-2.0 WITH LLVM-exception AND (MIT OR Apache-2.0)',
+      texts: ['rust-std/compiler-builtins-LICENSE.txt', 'rust-std/libm-LICENSE.txt', 'llvm-compiler-rt-LICENSE.txt'],
+    },
+    { name: 'addr2line', version: '0.25.1', license: 'Apache-2.0 OR MIT', texts: ['rust-std/addr2line-LICENSE-MIT.txt'] },
+    { name: 'adler2', version: '2.0.1', license: '0BSD OR MIT OR Apache-2.0', texts: ['rust-std/adler2-LICENSE-MIT.txt'] },
+    { name: 'cfg-if', version: '1.0.4', license: 'MIT OR Apache-2.0', texts: ['rust-std/cfg-if-LICENSE-MIT.txt'] },
+    { name: 'gimli', version: '0.32.3', license: 'MIT OR Apache-2.0', texts: ['rust-std/gimli-LICENSE-MIT.txt'] },
+    { name: 'hashbrown', version: '0.17.1', license: 'MIT OR Apache-2.0', texts: ['rust-std/hashbrown-LICENSE-MIT.txt'] },
+    { name: 'libc', version: '0.2.185', license: 'MIT OR Apache-2.0', texts: ['rust-std/libc-LICENSE-MIT.txt'] },
+    { name: 'memchr', version: '2.7.6', license: 'Unlicense OR MIT', texts: ['rust-std/memchr-LICENSE-MIT.txt'] },
+    { name: 'miniz_oxide', version: '0.8.9', license: 'MIT OR Zlib OR Apache-2.0', texts: ['rust-std/miniz_oxide-LICENSE-MIT.txt'] },
+    { name: 'object', version: '0.37.3', license: 'Apache-2.0 OR MIT', texts: ['rust-std/object-LICENSE-MIT.txt'] },
+    { name: 'rustc-demangle', version: '0.1.27', license: 'MIT/Apache-2.0', texts: ['rust-std/rustc-demangle-LICENSE-MIT.txt'] },
+  ],
+  /** Libraries of the toolchain that a release binary does not link: the compiler's, the test harness's, profiling, shims. */
+  notLinked: [
+    'getopts',
+    'proc_macro',
+    'profiler_builtins',
+    'rustc_literal_escaper',
+    'rustc_std_workspace_alloc',
+    'rustc_std_workspace_core',
+    'rustc_std_workspace_std',
+    'sysroot',
+    'test',
+  ],
 };
