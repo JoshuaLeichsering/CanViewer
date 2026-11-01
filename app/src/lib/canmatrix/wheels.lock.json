@@ -174,46 +174,6 @@
       },
       "unvendored_tests": false,
       "version": "1.17.0"
-    },
-    "xlrd": {
-      "depends": [],
-      "file_name": "xlrd-1.2.0-py2.py3-none-any.whl",
-      "imports": [
-        "xlrd"
-      ],
-      "install_dir": "site",
-      "name": "xlrd",
-      "package_type": "package",
-      "sha256": "e551fb498759fa3a5384a94ccd4c3c02eb7c00ea424426e212ac0c57be9dfbde",
-      "tool": {
-        "canviewer": {
-          "source": "https://files.pythonhosted.org/packages/b0/16/63576a1a001752e34bf8ea62e367997530dc553b689356b9879339cf45a4/xlrd-1.2.0-py2.py3-none-any.whl",
-          "size": 103251,
-          "origin": "pypi"
-        }
-      },
-      "unvendored_tests": false,
-      "version": "1.2.0"
-    },
-    "xlwt": {
-      "depends": [],
-      "file_name": "xlwt-1.3.0-py2.py3-none-any.whl",
-      "imports": [
-        "xlwt"
-      ],
-      "install_dir": "site",
-      "name": "xlwt",
-      "package_type": "package",
-      "sha256": "a082260524678ba48a297d922cc385f58278b8aa68741596a87de01a9c628b2e",
-      "tool": {
-        "canviewer": {
-          "source": "https://files.pythonhosted.org/packages/44/48/def306413b25c3d01753603b1a222a011b8621aed27cd7f89cbc27e6b0f4/xlwt-1.3.0-py2.py3-none-any.whl",
-          "size": 99981,
-          "origin": "pypi"
-        }
-      },
-      "unvendored_tests": false,
-      "version": "1.3.0"
     }
   }
 }

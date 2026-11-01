@@ -114,7 +114,7 @@ Two more submodules hold files in other formats, for the canmatrix import adapte
 that is being built (see [the handover](docs/handover/2026-11-01-multi-format-import.md)):
 the test files of [ebroecker/canmatrix](https://github.com/ebroecker/canmatrix)
 (tag 1.3.3.1, BSD-2-Clause) and [cantools/cantools](https://github.com/cantools/cantools)
-(tag 45.1.2, MIT), 122 ARXML, KCD, SYM, DBF, FIBEX, JSON, YAML, XLS and XLSX files.
+(tag 45.1.2, MIT), 114 ARXML, KCD, SYM, DBF, FIBEX, JSON, YAML and XLSX files.
 [import-corpus.test.ts](app/src/lib/canmatrix/import-corpus.test.ts) reads each one
 through canmatrix under Pyodide in Node, the same runtime the app will use, with
 the network blocked. Where a file has a DBC twin (78 of them), it compares the two

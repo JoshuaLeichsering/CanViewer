@@ -25,7 +25,9 @@ export const CANMATRIX_FORMATS: Record<string, CanmatrixFormat> = {
   yaml: { importType: 'yaml', packages: ['pyyaml'] },
   yml: { importType: 'yaml', packages: ['pyyaml'] },
   xlsx: { importType: 'xlsx', packages: ['openpyxl'] },
-  xls: { importType: 'xls', packages: ['xlrd', 'xlwt'] },
+  // No .xls: canmatrix reads it with xlrd 1.2.0, whose license includes an
+  // original-BSD advertising clause that is incompatible with the GPL
+  // (docs/handover/2026-11-01-license-audit.md). .xlsx covers Excel files.
 };
 
 export function fileExtension(fileName: string): string {

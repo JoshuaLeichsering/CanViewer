@@ -176,7 +176,7 @@ describe.skipIf(corpus.length === 0)('non-DBC corpus (canmatrix and cantools sub
     // The handover's inventory (docs/handover/2026-11-01-multi-format-import.md,
     // task 2). Its ninth XLSX is examples/cmTemplate.xlsx, a template outside tests/.
     expect(count('canmatrix/')).toEqual({
-      arxml: 13, dbf: 8, json: 8, kcd: 8, sym: 8, xls: 8, xlsx: 8, xml: 8, yaml: 8,
+      arxml: 13, dbf: 8, json: 8, kcd: 8, sym: 8, xlsx: 8, xml: 8, yaml: 8,
     });
     expect(count('cantools/')).toEqual({ arxml: 15, kcd: 9, sym: 21 });
     expect(twins.length).toBeGreaterThanOrEqual(70);
