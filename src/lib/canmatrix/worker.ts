@@ -2,11 +2,12 @@
  * Web Worker that reads non-DBC files with canmatrix under Pyodide.
  *
  * Started on the first import only. The Pyodide runtime and every wheel come
- * from the app's own origin (`<base>/pyodide/`, put there by the Vite plugin
- * in vite.config.ts): the lock file passed to loadPyodide lists only the
- * self-hosted wheels, packageBaseUrl points at that same directory, and each
- * wheel is checked against the SHA-256 in the lock. There is no micropip and no
- * CDN fallback, so a missing file fails instead of being fetched elsewhere.
+ * from the app's own origin (`<base>pyodide/`, put there by the Vite plugin in
+ * scripts/vite-plugins.ts; the page passes its absolute URL): the lock file
+ * passed to loadPyodide lists only the self-hosted wheels, packageBaseUrl
+ * points at that same directory, and each wheel is checked against the
+ * SHA-256 in the lock. There is no micropip and no CDN fallback, so a missing
+ * file fails instead of being fetched elsewhere.
  */
 import { loadPyodide, type PyodideInterface } from 'pyodide';
 import type { PyProxy } from 'pyodide/ffi';
@@ -14,8 +15,6 @@ import adapterSource from './canviewer_adapter.py?raw';
 import lock from 'virtual:canviewer-pyodide-lock';
 import type { CanmatrixReadResult } from './types';
 import type { WorkerReply, WorkerRequest } from './worker-protocol';
-
-const ASSETS = new URL(`${import.meta.env.BASE_URL}pyodide/`, self.location.href).href;
 
 interface Runtime {
   pyodide: PyodideInterface;
@@ -30,13 +29,13 @@ const scope = self as unknown as {
 let runtime: Promise<Runtime> | undefined;
 const loaded = new Set<string>();
 
-function startRuntime(): Promise<Runtime> {
+function startRuntime(assetsUrl: string): Promise<Runtime> {
   runtime ??= (async () => {
     const quiet = () => {};
     const pyodide = await loadPyodide({
-      indexURL: ASSETS,
+      indexURL: assetsUrl,
       lockFileContents: JSON.stringify(lock),
-      packageBaseUrl: ASSETS,
+      packageBaseUrl: assetsUrl,
       stdout: quiet,
       stderr: quiet,
     });
@@ -52,11 +51,11 @@ function startRuntime(): Promise<Runtime> {
 }
 
 scope.onmessage = async (e) => {
-  const { id, bytes, importType, packages } = e.data;
+  const { id, assetsUrl, bytes, importType, packages } = e.data;
   const t0 = performance.now();
   try {
     scope.postMessage({ id, kind: 'stage', stage: 'runtime' });
-    const { pyodide, adapter } = await startRuntime();
+    const { pyodide, adapter } = await startRuntime(assetsUrl);
     const t1 = performance.now();
     const missing = packages.filter((p) => !loaded.has(p));
     if (missing.length) {
