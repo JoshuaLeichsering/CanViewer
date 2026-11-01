@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-or-later */
 /* Import UI: the progress of an import (ImportProgress.tsx), and where an
    imported database came from (ImportSource.tsx). Uses the tokens in
    app/src/styles.css. */

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /**
  * Why an import failed, when CanViewer knows the reason rather than
  * canmatrix: the file holds no CAN database, or the Python runtime or the

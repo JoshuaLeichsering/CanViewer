@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 // End-to-end checks of the import UI (handover task 5): opening and dropping
 // every format in app/src/lib/canmatrix/formats.ts, the cluster picker, the
 // source format with its lossy-conversion note, restoring an imported file on

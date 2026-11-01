@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 import { createContext, useContext, useRef } from 'react';
 import { canmatrixFormatLabels } from '../lib/canmatrix/formats';
 import type { ImportedSource } from '../lib/import/loader';

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /**
  * Opening files: which reader a file goes to, the import's progress, the
  * clusters of an imported file, and what is stored for the next start.

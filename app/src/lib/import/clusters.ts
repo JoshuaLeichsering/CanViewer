@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /**
  * Which cluster of an imported file to show first. ARXML, KCD and FIBEX files
  * can hold several (cantools' the_homer.kcd holds three); the user picks

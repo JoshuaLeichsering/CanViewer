@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { importWithCanmatrix } from '../canmatrix/client';
 import { DatabaseLoader, type LoaderEvent } from './loader';

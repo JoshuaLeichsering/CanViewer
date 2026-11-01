@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 import type { ImportStage } from '../lib/canmatrix/worker-protocol';
 import type { ImportProgress as Progress } from '../lib/import/loader';
 import { useI18n, type MsgKey } from '../lib/i18n';

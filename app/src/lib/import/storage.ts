@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /**
  * Where CanViewer keeps the last opened file, so that a reload shows it again.
  *
