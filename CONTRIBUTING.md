@@ -76,6 +76,8 @@ node e2e/trc-traces-encoder.mjs http://localhost:4179/ trc-traces-encoder   # Tr
 npx vite preview --port 4180 --strictPort &
 node e2e/editing.mjs http://localhost:4180/ editing-check examples/demo.dbc \
   third_party/cantools/tests/files/dbc/foobar.dbc                           # editing, Save as DBC
+node e2e/desktop-csp-check.mjs dist desktop-csp examples/demo.dbc \
+  third_party/canmatrix/tests/files/arxml/test.arxml   # the import worker under the desktop CSP
 ```
 
 The network check must end with `requests outside http://localhost:4173: 0`. Stop the
@@ -97,14 +99,18 @@ page, opened and dropped, a DBC file with an ARXML file read through canmatrix
 view, filters a large generated log, and encodes frames with the encoder card, all without
 a request outside the origin. `e2e/editing.mjs` edits a message and a signal, saves as
 DBC, reloads and opens the saved file again, and checks the prompts that guard unsaved
-edits and the list of what a saved file lacks. Stop the preview servers afterwards.
+edits and the list of what a saved file lacks. `e2e/desktop-csp-check.mjs` serves `dist/`
+itself with the desktop app's Content Security Policy, the way Tauri sends it, and fails
+unless the import worker runs under that policy and the desktop self-test script passes
+there. Stop the preview servers afterwards.
 
 If you change a dependency, also run `npm run notices` (it needs Rust's `cargo` and
 `rustc`, for the desktop crates and the Rust standard library) and commit the regenerated
 `THIRD_PARTY_NOTICES.md`. CI checks that it is up to date, and checks the crates' licenses
 with `cargo deny --manifest-path desktop/Cargo.toml check licenses`. The outputs of the
 check above (`test-report.json`, `network-check/`, `coverage/`, `test-results/`,
-`import-ui/`, `tbl-checks/`, `export-check/`, `diff-check/`, `trc-traces-encoder/`, `editing-check/`) are ignored by git, so the sweep for identifying information does not read them.
+`import-ui/`, `tbl-checks/`, `export-check/`, `diff-check/`, `trc-traces-encoder/`, `editing-check/`,
+`desktop-csp/`) are ignored by git, so the sweep for identifying information does not read them.
 
 ## Conventions
 
