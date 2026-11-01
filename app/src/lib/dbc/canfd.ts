@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 import type { AttrValue, DbcDatabase, DbcMessage } from './types';
 
 /** Payload sizes above 8 bytes that a CAN FD frame can carry on the wire. */

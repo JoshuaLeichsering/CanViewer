@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The icons CanViewer uses, from Material Symbols (Rounded, weight 400) by
  * Google, Apache License 2.0: https://github.com/google/material-design-icons.

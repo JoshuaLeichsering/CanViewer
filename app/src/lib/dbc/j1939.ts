@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 import type { DbcDatabase } from './types';
 import { isJ1939Pg } from './canfd';
 

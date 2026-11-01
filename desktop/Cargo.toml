@@ -2,6 +2,7 @@
 name = "canviewer"
 version = "0.1.0"
 description = "CanViewer: a viewer for CAN database files"
+license = "GPL-2.0-or-later"
 edition = "2021"
 publish = false
 

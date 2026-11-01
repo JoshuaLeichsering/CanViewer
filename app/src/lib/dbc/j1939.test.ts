@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 import { describe, expect, it } from 'vitest';
 import { decomposeJ1939Id, isJ1939Database, PGN_NAMES } from './j1939';
 import { parseDbc } from './parser';

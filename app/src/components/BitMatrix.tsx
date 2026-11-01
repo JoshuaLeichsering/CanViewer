@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 import { useMemo } from 'react';
 import type { DbcMessage } from '../lib/dbc/types';
 import { canCoexist, signalBitPositions } from '../lib/dbc/bits';

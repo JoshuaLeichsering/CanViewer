@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /* CanViewer service worker. Built into dist/sw.js by scripts/vite-plugins.ts,
  * which fills in the placeholders. Production builds only.
  *

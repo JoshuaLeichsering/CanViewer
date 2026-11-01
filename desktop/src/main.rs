@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 // Desktop shell for CanViewer: one window that shows the production web build
 // (dist/), embedded in the binary. No plugins and no network access: the web
 // app does all the work, as it does in the browser. The only addition is a

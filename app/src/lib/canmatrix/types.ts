@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 import type { DbcDatabase } from '../dbc/types';
 
 /** One CAN cluster (bus) found in a file. ARXML, KCD and FIBEX can hold several. */

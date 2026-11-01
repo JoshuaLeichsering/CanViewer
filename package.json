@@ -2,6 +2,7 @@
   "name": "canviewer",
   "private": true,
   "version": "0.1.0",
+  "license": "GPL-2.0-or-later",
   "type": "module",
   "scripts": {
     "predev": "node scripts/fetch-wheels.mjs --quiet",

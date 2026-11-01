@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /**
  * canmatrix under Pyodide in Node, for the test suites. Node only: the app
  * runs the same Python code in a Web Worker instead.

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /** Compact number formatting without float noise (0.30000000000000004 -> 0.3). */
 export function fmtNum(n: number): string {
   if (Number.isInteger(n)) return String(n);

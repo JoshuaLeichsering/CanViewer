@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 import type { CanmatrixReadResult } from './types';
 
 /** Steps of an import, for the loading state: the first import pays for all three. */

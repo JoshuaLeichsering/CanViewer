@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /**
  * Web Worker that reads non-DBC files with canmatrix under Pyodide.
  *
