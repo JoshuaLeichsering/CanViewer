@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { parseDbc } from './lib/dbc/parser';
+import { decodeDbc } from './lib/dbc/decode';
 import { importWithCanmatrix, type ImportStage } from './lib/canmatrix/client';
 import { canmatrixFormatFor } from './lib/canmatrix/formats';
 import { findMessageByOccurrence, occurrenceOf } from './lib/dbc/identity';
@@ -13,7 +14,7 @@ import { ValueTableDetail } from './components/ValueTableDetail';
 import { Overview } from './components/Overview';
 import { NetworkGraph } from './components/NetworkGraph';
 import { Icon } from './components/Icon';
-import { DiffView, type Comparison } from './components/DiffView';
+import { DiffView, type Comparison, type DiffViewHandle } from './components/DiffView';
 
 export type Selection =
   | { kind: 'overview' }
@@ -83,16 +84,6 @@ type Snack =
   | { kind: 'error'; text: string }
   | { kind: 'info'; text: string };
 
-/** DBC files from Vector tools are often Latin-1; fall back when UTF-8 fails. */
-async function readFileText(file: File): Promise<string> {
-  const buf = await file.arrayBuffer();
-  try {
-    return new TextDecoder('utf-8', { fatal: true }).decode(buf);
-  } catch {
-    return new TextDecoder('windows-1252').decode(buf);
-  }
-}
-
 export function App() {
   const { t } = useI18n();
   const [db, setDb] = useState<DbcDatabase | null>(null);
@@ -105,6 +96,7 @@ export function App() {
   const [snack, setSnack] = useState<Snack | null>(null);
   // Diff mode: the other version the open file is compared with.
   const [comparison, setComparison] = useState<Comparison | null>(null);
+  const diffRef = useRef<DiffViewHandle>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dragDepth = useRef(0);
   const initialHash = useRef(window.location.hash);
@@ -117,6 +109,8 @@ export function App() {
     setSearch('');
     setFilter('all');
     lastShown.current = {};
+    // A comparison belongs to the file it was made with.
+    setComparison(null);
   }, []);
 
   const loadText = useCallback(
@@ -137,7 +131,7 @@ export function App() {
     async (file: File) => {
       setSnack(null);
       if (!canmatrixFormatFor(file.name)) {
-        loadText(file.name, await readFileText(file));
+        loadText(file.name, decodeDbc(await file.arrayBuffer()));
         return;
       }
       // Non-DBC formats go through canmatrix in a Web Worker, loaded on first use.
@@ -253,7 +247,10 @@ export function App() {
       dragDepth.current = 0;
       setDragging(false);
       const file = e.dataTransfer.files[0];
-      if (file) void loadFile(file);
+      if (!file) return;
+      // On the Compare page a dropped file is the other version, not a new open file.
+      if (diffRef.current) diffRef.current.openOther(file);
+      else void loadFile(file);
     },
     [loadFile],
   );
@@ -296,7 +293,11 @@ export function App() {
       }}
       onDrop={onDrop}
     >
-      {dragging && <div className="drop-overlay">{t('dropOverlay')}</div>}
+      {dragging && (
+        <div className="drop-overlay">
+          {db && selection.kind === 'diff' ? t('difDropOverlay', { file: fileName }) : t('dropOverlay')}
+        </div>
+      )}
       <input
         ref={fileInputRef}
         type="file"
@@ -335,6 +336,7 @@ export function App() {
       <main className="main">
         {db && selection.kind === 'diff' ? (
           <DiffView
+            ref={diffRef}
             db={db}
             fileName={fileName}
             comparison={comparison}

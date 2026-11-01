@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import type { Selection } from '../App';
 import type { ImportStage } from '../lib/canmatrix/client';
 import { CANMATRIX_FORMATS } from '../lib/canmatrix/formats';
@@ -30,6 +30,11 @@ export interface Comparison {
   openIsLater: boolean;
 }
 
+/** What the app can ask of the Compare page: a file dropped on it is the other version. */
+export interface DiffViewHandle {
+  openOther: (file: File) => void;
+}
+
 type Filter = 'all' | Exclude<ChangeKind, 'unchanged'>;
 
 const KIND_KEYS: Record<Exclude<ChangeKind, 'unchanged'>, MsgKey> = {
@@ -53,20 +58,21 @@ const ACCEPT = ['.dbc', '.txt', ...Object.keys(CANMATRIX_FORMATS).map((ext) => `
  * listed per message (with their signals) and for the database's nodes, value
  * tables, attribute definitions and own properties; see app/src/lib/diff/diff.ts
  * for what is compared and how objects are matched.
+ *
+ * The other version is opened from the page or dropped on it (the app hands a
+ * dropped file to openOther). The comparison belongs to the open file: the app
+ * ends it when another file is opened.
  */
-export function DiffView({
-  db,
-  fileName,
-  comparison,
-  onComparison,
-  onSelect,
-}: {
-  db: DbcDatabase;
-  fileName: string;
-  comparison: Comparison | null;
-  onComparison: (c: Comparison | null) => void;
-  onSelect: (s: Selection) => void;
-}) {
+export const DiffView = forwardRef<
+  DiffViewHandle,
+  {
+    db: DbcDatabase;
+    fileName: string;
+    comparison: Comparison | null;
+    onComparison: (c: Comparison | null) => void;
+    onSelect: (s: Selection) => void;
+  }
+>(function DiffView({ db, fileName, comparison, onComparison, onSelect }, ref) {
   const { t, tn } = useI18n();
   const inputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState<{ name: string; stage: ImportStage | null } | null>(null);
@@ -91,6 +97,7 @@ export function DiffView({
   }, [copied]);
 
   const readOther = async (file: File) => {
+    if (loading) return;
     setError(null);
     setLoading({ name: file.name, stage: null });
     try {
@@ -104,6 +111,8 @@ export function DiffView({
       setLoading(null);
     }
   };
+
+  useImperativeHandle(ref, () => ({ openOther: (file) => void readOther(file) }));
 
   const openDialog = () => inputRef.current?.click();
 
@@ -197,6 +206,17 @@ export function DiffView({
             </button>
             <Version label={t('difAfter')} name={after.name} isOpen={comparison.openIsLater} openLabel={t('difOpenFile')} />
             <div className="dif-version-actions">
+              {hasChanges(diff) && (
+                <>
+                  <span role="status" className="dif-copy-status">
+                    {copied === 'ok' ? t('difCopied') : copied === 'failed' ? t('difCopyFailed') : ''}
+                  </span>
+                  <button className="btn text with-icon state" onClick={copy} data-testid="dif-copy">
+                    <Icon name="content_copy" size={18} />
+                    {t('difCopy')}
+                  </button>
+                </>
+              )}
               <button className="btn outlined with-icon state" onClick={openDialog} disabled={!!loading}>
                 <Icon name="upload_file" size={18} />
                 {t('difOpenOther')}
@@ -265,15 +285,6 @@ export function DiffView({
                       </button>
                     );
                   })}
-                </div>
-                <div className="dif-copy">
-                  <button className="btn text with-icon state" onClick={copy}>
-                    <Icon name="content_copy" size={18} />
-                    {t('difCopy')}
-                  </button>
-                  <span role="status" className="dif-copy-status">
-                    {copied === 'ok' ? t('difCopied') : copied === 'failed' ? t('difCopyFailed') : ''}
-                  </span>
                 </div>
               </div>
               <table className="m3 dif-table">
@@ -379,7 +390,7 @@ export function DiffView({
       )}
     </div>
   );
-}
+});
 
 function Version({ label, name, isOpen, openLabel }: { label: string; name: string; isOpen: boolean; openLabel: string }) {
   return (

@@ -77,8 +77,13 @@
 .dif-version-actions {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 8px;
   margin-left: auto;
+}
+.dif-copy-status {
+  font-size: 13px;
+  color: var(--on-surface-var);
 }
 
 /* the message list */
@@ -94,16 +99,6 @@
 }
 .dif-card-head .chips {
   margin-top: 0;
-}
-.dif-copy {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-left: auto;
-}
-.dif-copy-status {
-  font-size: 13px;
-  color: var(--on-surface-var);
 }
 table.m3 .dif-toggle-col {
   width: 48px;
