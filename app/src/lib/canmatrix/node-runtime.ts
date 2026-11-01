@@ -16,7 +16,7 @@ import type { CanmatrixReadResult } from './types';
 import lock from './wheels.lock.json';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const root = join(here, '../../..');
+const root = join(here, '../../../..');
 export const VENDOR_DIR = join(root, 'vendor/pyodide');
 const PYODIDE_DIR = join(root, 'node_modules/pyodide');
 const ADAPTER = readFileSync(join(here, 'canviewer_adapter.py'), 'utf8');

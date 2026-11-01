@@ -13,7 +13,7 @@ import type { DbcDatabase } from './types';
  * under third_party/ (run `git submodule update --init` to fetch them).
  * The suite is skipped when the submodules are not checked out.
  */
-const root = join(dirname(fileURLToPath(import.meta.url)), '../../..');
+const root = join(dirname(fileURLToPath(import.meta.url)), '../../../..');
 const OPENDBC_DIR = join(root, 'third_party/opendbc/opendbc/dbc');
 const MODEL3_FILE = join(root, 'third_party/model3dbc/Model3CAN.dbc');
 const BASELINE_FILE = join(dirname(fileURLToPath(import.meta.url)), 'corpus-baseline.json');

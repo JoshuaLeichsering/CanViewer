@@ -7,7 +7,7 @@ import { isJ1939Database } from '../lib/dbc/j1939';
 import { messageTag } from './MessageTag';
 
 const demo = parseDbc(
-  readFileSync(join(dirname(fileURLToPath(import.meta.url)), '../../examples/demo.dbc'), 'utf8'),
+  readFileSync(join(dirname(fileURLToPath(import.meta.url)), '../../../examples/demo.dbc'), 'utf8'),
 );
 const tagOf = (name: string) =>
   messageTag(demo, demo.messages.find((m) => m.name === name)!, isJ1939Database(demo));

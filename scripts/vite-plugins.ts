@@ -2,14 +2,14 @@
  * Vite plugins that keep the canmatrix import adapter self-hosted.
  *
  * pyodideAssets: the Pyodide runtime (from the `pyodide` npm package) and the
- * wheels in src/lib/canmatrix/wheels.lock.json (from vendor/pyodide, filled by
+ * wheels in app/src/lib/canmatrix/wheels.lock.json (from vendor/pyodide, filled by
  * scripts/fetch-wheels.mjs) are served under `<base>pyodide/` by the dev
  * server and copied to dist/pyodide/ by the build. Nothing else is published
  * there, and the build fails if a file is missing. The worker imports the lock
  * as `virtual:canviewer-pyodide-lock`, without the `tool.canviewer` download
  * sources, so that the app bundle names no host but its own.
  *
- * serviceWorker: emits sw.js (from src/service-worker.js) with the list of
+ * serviceWorker: emits sw.js (from app/src/service-worker.js) with the list of
  * built files to precache, so the app opens offline after the first visit.
  * The Pyodide files are not precached: they are cached when first used, so a
  * DBC-only visitor never downloads them.
@@ -21,7 +21,7 @@ import { fileURLToPath } from 'node:url';
 import type { Plugin, ResolvedConfig } from 'vite';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const lock = JSON.parse(readFileSync(join(root, 'src/lib/canmatrix/wheels.lock.json'), 'utf8')) as {
+const lock = JSON.parse(readFileSync(join(root, 'app/src/lib/canmatrix/wheels.lock.json'), 'utf8')) as {
   info: Record<string, string>;
   packages: Record<string, { file_name: string; tool?: unknown }>;
 };
@@ -119,7 +119,7 @@ export function serviceWorker(): Plugin {
         .digest('hex')
         .slice(0, 12);
       const pyodideVersion = createHash('sha256').update(JSON.stringify(lock)).digest('hex').slice(0, 12);
-      const source = readFileSync(join(root, 'src/service-worker.js'), 'utf8')
+      const source = readFileSync(join(root, 'app/src/service-worker.js'), 'utf8')
         .replace('__SHELL_VERSION__', version)
         .replace('__PYODIDE_VERSION__', pyodideVersion)
         .replace('__PRECACHE__', JSON.stringify(precache));

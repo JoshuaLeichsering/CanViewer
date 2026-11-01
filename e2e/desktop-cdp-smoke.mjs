@@ -5,8 +5,9 @@
 // arguments: the WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS variable that
 // Playwright documents has no effect, because wry always passes its own
 // arguments, so CI builds a variant with the flag in its window config
-// (cdp.conf.json). Connect with --cdp. For a local dry run against a static
-// server with the same CSP, --url launches Playwright's Chromium instead.
+// (e2e/desktop-cdp.conf.json). Connect with --cdp. For a local dry run against
+// a static server with the same CSP, --url launches Playwright's Chromium
+// instead.
 //
 // It reloads the page so that every request is seen from the start, opens a
 // DBC and an ARXML file through the app's file input, and records:
@@ -17,8 +18,8 @@
 // (the Pyodide worker), and no request left the app's origin.
 //
 // Usage:
-//   node smoke.mjs --cdp http://127.0.0.1:9222 --out DIR --dbc FILE --arxml FILE
-//   node smoke.mjs --url http://localhost:4175/ --out DIR --dbc FILE --arxml FILE
+//   node e2e/desktop-cdp-smoke.mjs --cdp http://127.0.0.1:9222 --out DIR --dbc FILE --arxml FILE
+//   node e2e/desktop-cdp-smoke.mjs --url http://localhost:4175/ --out DIR --dbc FILE --arxml FILE
 // Needs playwright-core (or playwright) resolvable, e.g. through NODE_PATH.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';

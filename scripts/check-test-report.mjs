@@ -31,7 +31,7 @@ const EXPECTED = [
   { file: 'corpus.test.ts', pattern: / matches the pinned baseline$/, count: 58, what: 'OEM DBC files matched against the baseline' },
   { file: 'import-corpus.test.ts', pattern: / reads as pinned$/, count: 122, what: 'non-DBC corpus files read through canmatrix' },
   { file: 'import-corpus.test.ts', pattern: / matches its DBC twin .* as pinned$/, count: 78, what: 'non-DBC files compared with their DBC twin' },
-  { file: 'mapper.test.ts', pattern: / differs from CanViewer’s parser only as pinned$/, count: 58, what: 'OEM DBC files through the canmatrix mapper', when: 'src/lib/canmatrix/mapper.test.ts' },
+  { file: 'mapper.test.ts', pattern: / differs from CanViewer’s parser only as pinned$/, count: 58, what: 'OEM DBC files through the canmatrix mapper', when: 'app/src/lib/canmatrix/mapper.test.ts' },
 ];
 
 const problems = [];

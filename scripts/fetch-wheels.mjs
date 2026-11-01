@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Fetches the Python wheels that the canmatrix import adapter runs on into
 // vendor/pyodide/, verifying each against the SHA-256 pinned in
-// src/lib/canmatrix/wheels.lock.json. The Pyodide runtime itself comes from the
+// app/src/lib/canmatrix/wheels.lock.json. The Pyodide runtime itself comes from the
 // `pyodide` npm package; nothing here is fetched by the app at run time.
 //
 //   node scripts/fetch-wheels.mjs              download what is missing
@@ -19,7 +19,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const lock = JSON.parse(readFileSync(join(root, 'src/lib/canmatrix/wheels.lock.json'), 'utf8'));
+const lock = JSON.parse(readFileSync(join(root, 'app/src/lib/canmatrix/wheels.lock.json'), 'utf8'));
 const target = join(root, 'vendor/pyodide');
 
 const args = process.argv.slice(2);

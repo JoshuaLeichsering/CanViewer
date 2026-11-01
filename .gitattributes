@@ -1,5 +1,5 @@
-src/lib/canmatrix/import-corpus-baseline.json linguist-generated=true
-src/lib/dbc/corpus-baseline.json linguist-generated=true
+app/src/lib/canmatrix/import-corpus-baseline.json linguist-generated=true
+app/src/lib/dbc/corpus-baseline.json linguist-generated=true
 docs/spikes/2026-11-01-pyodide-worker/requests.json linguist-generated=true
 docs/spikes/2026-11-01-pyodide-worker/requests.har linguist-generated=true
-src/lib/canmatrix/mapper-dbc-baseline.json linguist-generated=true
+app/src/lib/canmatrix/mapper-dbc-baseline.json linguist-generated=true

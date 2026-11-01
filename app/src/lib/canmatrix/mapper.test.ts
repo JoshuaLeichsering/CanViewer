@@ -23,7 +23,7 @@ import { missingWheels, startCanmatrix, type NodeCanmatrix } from './node-runtim
  * Needs the wheels in vendor/pyodide (`npm run fetch-wheels`); fails without.
  */
 const here = dirname(fileURLToPath(import.meta.url));
-const root = join(here, '../../..');
+const root = join(here, '../../../..');
 const decode = (buf: Uint8Array) => {
   try {
     return new TextDecoder('utf-8', { fatal: true }).decode(buf);

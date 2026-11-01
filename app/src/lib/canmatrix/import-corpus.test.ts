@@ -27,7 +27,7 @@ import type { CanmatrixReadResult, ImportedCluster } from './types';
  * fails instead of skipping.
  */
 const here = dirname(fileURLToPath(import.meta.url));
-const THIRD_PARTY = join(here, '../../../third_party');
+const THIRD_PARTY = join(here, '../../../../third_party');
 const CANMATRIX_TESTS = join(THIRD_PARTY, 'canmatrix/tests');
 const CANTOOLS_FILES = join(THIRD_PARTY, 'cantools/tests/files');
 const BASELINE_FILE = join(here, 'import-corpus-baseline.json');

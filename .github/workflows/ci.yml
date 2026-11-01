@@ -37,7 +37,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: vendor/pyodide
-          key: pyodide-wheels-${{ hashFiles('src/lib/canmatrix/wheels.lock.json') }}
+          key: pyodide-wheels-${{ hashFiles('app/src/lib/canmatrix/wheels.lock.json') }}
 
       - name: Fetch and verify the Pyodide wheels
         run: npm run fetch-wheels
@@ -65,7 +65,7 @@ jobs:
         run: |
           npx vite preview --port 4173 --strictPort > vite-preview.log 2>&1 &
           for i in $(seq 1 30); do curl -sf http://localhost:4173/ > /dev/null && break; sleep 1; done
-          NODE_PATH="$RUNNER_TEMP/pw/node_modules" node docs/spikes/2026-11-01-pyodide-worker/network-check.mjs \
+          NODE_PATH="$RUNNER_TEMP/pw/node_modules" node e2e/network-check.mjs \
             http://localhost:4173/ network-check \
             third_party/canmatrix/tests/files/arxml/test.arxml \
             third_party/canmatrix/tests/files/arxml/ARXMLContainerTest.arxml \

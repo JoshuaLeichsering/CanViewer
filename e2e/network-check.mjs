@@ -19,7 +19,7 @@
 // Usage (Playwright must be installed; it is not a dependency of the app):
 //   npm run build && npx vite preview --port 4173 --strictPort &
 //   PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS=1 \
-//     node docs/spikes/2026-11-01-pyodide-worker/network-check.mjs \
+//     node e2e/network-check.mjs \
 //     http://localhost:4173/ <out-dir> <first.arxml> <second.arxml> <file.dbc> dist
 import { mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
