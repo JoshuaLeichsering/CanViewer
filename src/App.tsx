@@ -1,17 +1,18 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { parseDbc } from './lib/dbc/parser';
 import { importWithCanmatrix, type ImportStage } from './lib/canmatrix/client';
 import { canmatrixFormatFor } from './lib/canmatrix/formats';
-import { findMessageByOccurrence } from './lib/dbc/identity';
+import { findMessageByOccurrence, occurrenceOf } from './lib/dbc/identity';
 import type { DbcDatabase } from './lib/dbc/types';
 import { useI18n } from './lib/i18n';
-import { Sidebar } from './components/Sidebar';
+import { NavRail, type Destination } from './components/NavRail';
+import { ListPane, type MessageFilter } from './components/ListPane';
 import { MessageDetail } from './components/MessageDetail';
 import { NodeDetail } from './components/NodeDetail';
 import { ValueTableDetail } from './components/ValueTableDetail';
 import { Overview } from './components/Overview';
 import { NetworkGraph } from './components/NetworkGraph';
-import { SettingsMenu } from './components/SettingsMenu';
+import { Icon } from './components/Icon';
 
 export type Selection =
   | { kind: 'overview' }
@@ -57,11 +58,24 @@ function hashToSelection(hash: string): Selection {
   return { kind: 'overview' };
 }
 
+const DESTINATION_OF: Record<Selection['kind'], Destination> = {
+  overview: 'overview',
+  message: 'messages',
+  graph: 'network',
+  node: 'nodes',
+  valueTable: 'tables',
+};
+
 const IMPORT_STAGE_KEYS = {
   runtime: 'importRuntime',
   packages: 'importPackages',
   reading: 'importReading',
 } as const;
+
+type Snack =
+  | { kind: 'progress'; text: string }
+  | { kind: 'error'; text: string }
+  | { kind: 'info'; text: string };
 
 /** DBC files from Vector tools are often Latin-1; fall back when UTF-8 fails. */
 async function readFileText(file: File): Promise<string> {
@@ -74,34 +88,46 @@ async function readFileText(file: File): Promise<string> {
 }
 
 export function App() {
-  const { t, tn } = useI18n();
+  const { t } = useI18n();
   const [db, setDb] = useState<DbcDatabase | null>(null);
   const [fileName, setFileName] = useState('');
   const [selection, setSelection] = useState<Selection>({ kind: 'overview' });
   const [search, setSearch] = useState('');
+  const [filter, setFilter] = useState<MessageFilter>('all');
   const [dragging, setDragging] = useState(false);
   const [importing, setImporting] = useState<{ name: string; stage: ImportStage } | null>(null);
-  const [importError, setImportError] = useState<string | null>(null);
+  const [snack, setSnack] = useState<Snack | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dragDepth = useRef(0);
   const initialHash = useRef(window.location.hash);
   const restoredOnce = useRef(false);
+  // The last item shown per destination, so the rail returns to it.
+  const lastShown = useRef<Partial<Record<Destination, Selection>>>({});
 
-  const loadText = useCallback((name: string, text: string) => {
-    setDb(parseDbc(text));
-    setFileName(name);
+  const resetView = useCallback(() => {
     setSelection({ kind: 'overview' });
     setSearch('');
-    try {
-      localStorage.setItem('canviewer.file', JSON.stringify({ name, text }));
-    } catch {
-      // File too large for localStorage — reopening after reload just won't restore it.
-    }
+    setFilter('all');
+    lastShown.current = {};
   }, []);
+
+  const loadText = useCallback(
+    (name: string, text: string) => {
+      setDb(parseDbc(text));
+      setFileName(name);
+      resetView();
+      try {
+        localStorage.setItem('canviewer.file', JSON.stringify({ name, text }));
+      } catch {
+        // File too large for localStorage — reopening after reload just won't restore it.
+      }
+    },
+    [resetView],
+  );
 
   const loadFile = useCallback(
     async (file: File) => {
-      setImportError(null);
+      setSnack(null);
       if (!canmatrixFormatFor(file.name)) {
         loadText(file.name, await readFileText(file));
         return;
@@ -112,8 +138,7 @@ export function App() {
         const imported = await importWithCanmatrix(file, (stage) => setImporting({ name: file.name, stage }));
         setDb(imported.db);
         setFileName(file.name);
-        setSelection({ kind: 'overview' });
-        setSearch('');
+        resetView();
         // Restoring an imported file on reload is not supported yet; drop the
         // stored DBC so that a reload does not show a different file.
         try {
@@ -122,12 +147,15 @@ export function App() {
           // storage unavailable
         }
       } catch (e) {
-        setImportError(t('importFailed', { name: file.name, error: e instanceof Error ? e.message : String(e) }));
+        setSnack({
+          kind: 'error',
+          text: t('importFailed', { name: file.name, error: e instanceof Error ? e.message : String(e) }),
+        });
       } finally {
         setImporting(null);
       }
     },
-    [loadText, t],
+    [loadText, resetView, t],
   );
 
   // Restore the last opened file on startup. Guarded by a ref so StrictMode's
@@ -154,7 +182,59 @@ export function App() {
     if (!db) return;
     const hash = selectionToHash(selection);
     history.replaceState(null, '', window.location.pathname + window.location.search + hash);
+    lastShown.current[DESTINATION_OF[selection.kind]] = selection;
   }, [db, selection]);
+
+  useEffect(() => {
+    document.title = db ? `${fileName} — CanViewer` : 'CanViewer — CAN Database Viewer';
+  }, [db, fileName]);
+
+  // Informational snackbars go away by themselves; errors stay until dismissed.
+  useEffect(() => {
+    if (snack?.kind !== 'info') return;
+    const timer = setTimeout(() => setSnack(null), 3000);
+    return () => clearTimeout(timer);
+  }, [snack]);
+
+  const navigate = useCallback(
+    (destination: Destination) => {
+      if (!db) return;
+      const last = lastShown.current[destination];
+      if (last && destination !== 'overview' && destination !== 'network') {
+        setSelection(last);
+        return;
+      }
+      switch (destination) {
+        case 'overview':
+          setSelection({ kind: 'overview' });
+          break;
+        case 'network':
+          setSelection({ kind: 'graph' });
+          break;
+        case 'messages': {
+          const first = [...db.messages].sort((a, b) => a.id - b.id)[0];
+          if (first) setSelection({ kind: 'message', rawId: first.rawId, occ: occurrenceOf(db, first) });
+          break;
+        }
+        case 'nodes':
+          if (db.nodes[0]) setSelection({ kind: 'node', name: db.nodes[0].name });
+          break;
+        case 'tables':
+          if (db.valueTables[0]) setSelection({ kind: 'valueTable', name: db.valueTables[0].name });
+          break;
+      }
+    },
+    [db],
+  );
+
+  const copyLink = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setSnack({ kind: 'info', text: t('linkCopied') });
+    } catch {
+      setSnack({ kind: 'error', text: t('copyFailed') });
+    }
+  }, [t]);
 
   const onDrop = useCallback(
     (e: React.DragEvent) => {
@@ -167,9 +247,28 @@ export function App() {
     [loadFile],
   );
 
+  const destination = db ? DESTINATION_OF[selection.kind] : null;
+  const listKind =
+    destination === 'messages' ? 'messages' : destination === 'nodes' ? 'nodes' : destination === 'tables' ? 'tables' : null;
+  const enabled = useMemo<Record<Destination, boolean>>(
+    () => ({
+      overview: !!db,
+      messages: !!db && db.messages.length > 0,
+      network: !!db,
+      nodes: !!db && db.nodes.length > 0,
+      tables: !!db && db.valueTables.length > 0,
+    }),
+    [db],
+  );
+  const openFileDialog = () => fileInputRef.current?.click();
+
+  const shownSnack: Snack | null = importing
+    ? { kind: 'progress', text: t(IMPORT_STAGE_KEYS[importing.stage], { name: importing.name }) }
+    : snack;
+
   return (
     <div
-      className="app"
+      className={`app ${listKind ? 'with-list' : ''}`}
       onDragOver={(e) => e.preventDefault()}
       onDragEnter={(e) => {
         e.preventDefault();
@@ -186,86 +285,77 @@ export function App() {
       onDrop={onDrop}
     >
       {dragging && <div className="drop-overlay">{t('dropOverlay')}</div>}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".dbc,.txt,.arxml"
+        className="visually-hidden"
+        tabIndex={-1}
+        aria-hidden="true"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) void loadFile(file);
+          e.target.value = '';
+        }}
+      />
 
-      <div className="toolbar">
-        <div className="brand">
-          Can<span>Viewer</span>
-        </div>
-        <button className="btn primary" onClick={() => fileInputRef.current?.click()}>
-          {t('openDbc')}
-        </button>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept=".dbc,.txt,.arxml"
-          style={{ display: 'none' }}
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file) void loadFile(file);
-            e.target.value = '';
-          }}
+      <NavRail
+        active={destination}
+        enabled={enabled}
+        badges={db ? { overview: db.problems.length } : {}}
+        onNavigate={navigate}
+        onOpenFile={openFileDialog}
+      />
+
+      {db && listKind && (
+        <ListPane
+          db={db}
+          kind={listKind}
+          selection={selection}
+          onSelect={setSelection}
+          search={search}
+          onSearch={setSearch}
+          filter={filter}
+          onFilter={setFilter}
         />
-        {importing && (
-          <div className="file-info" role="status">
-            {t(IMPORT_STAGE_KEYS[importing.stage], { name: importing.name })}
-          </div>
-        )}
-        {importError && (
-          <div className="file-info" role="alert" style={{ color: 'var(--danger)' }}>
-            {importError}
-          </div>
-        )}
-        {db && !importing && (
-          <div className="file-info">
-            <b>{fileName}</b>
-            {db.version && <> · {t('version')} “{db.version}”</>} · {db.messages.length}{' '}
-            {t('messagesWord')} · {db.messages.reduce((n, m) => n + m.signals.length, 0)}{' '}
-            {t('signalsWord')} · {db.nodes.length} {t('nodesWord')}
-          </div>
-        )}
-        <div className="spacer" />
-        {db && db.problems.length > 0 && (
-          <button
-            className="btn"
-            style={{ borderColor: 'var(--danger)', color: 'var(--danger)' }}
-            onClick={() => setSelection({ kind: 'overview' })}
-          >
-            {tn('parseProblemOne', 'parseProblemMany', db.problems.length)}
-          </button>
-        )}
-        <SettingsMenu />
-      </div>
+      )}
 
-      {!db ? (
-        <div className="main">
+      <main className="main">
+        {db ? (
+          <MainView db={db} fileName={fileName} selection={selection} onSelect={setSelection} onCopyLink={copyLink} />
+        ) : (
           <div className="welcome">
-            <h1>
-              Can<span style={{ color: 'var(--accent)' }}>Viewer</span>
-            </h1>
-            <p>{t('welcomeTagline')}</p>
-            <div className="actions">
-              <button className="btn primary" onClick={() => fileInputRef.current?.click()}>
-                {t('welcomeOpen')}
-              </button>
+            <div className="welcome-card">
+              <div className="brand">
+                Can<b>Viewer</b>
+              </div>
+              <p>{t('welcomeTagline')}</p>
+              <div className="actions">
+                <button className="btn filled with-icon state" onClick={openFileDialog}>
+                  <Icon name="upload_file" size={18} />
+                  {t('welcomeOpen')}
+                </button>
+              </div>
+              <div className="dropzone">{t('welcomeDrop')}</div>
+              <p className="formats">{t('welcomeFormats')}</p>
+              <p className="formats">
+                {t('welcomeExampleHint')} <code>examples/demo.dbc</code>
+              </p>
             </div>
-            <div className="dropzone">{t('welcomeDrop')}</div>
-            <p className="muted" style={{ marginTop: 18 }}>
-              {t('welcomeExampleHint')} <code>examples/demo.dbc</code>
-            </p>
           </div>
-        </div>
-      ) : (
-        <div className="content">
-          <Sidebar
-            db={db}
-            selection={selection}
-            onSelect={setSelection}
-            search={search}
-            onSearch={setSearch}
-          />
-          <div className="main">
-            <MainView db={db} selection={selection} onSelect={setSelection} />
-          </div>
+        )}
+      </main>
+
+      {shownSnack && (
+        <div className="snackbar" role={shownSnack.kind === 'error' ? 'alert' : 'status'}>
+          {shownSnack.kind === 'progress' && <Icon name="progress_activity" size={20} className="spinner" />}
+          {shownSnack.kind === 'error' && <Icon name="error" size={20} />}
+          <span className="msg">{shownSnack.text}</span>
+          {shownSnack.kind !== 'progress' && (
+            <button className="close state" title={t('dismiss')} aria-label={t('dismiss')} onClick={() => setSnack(null)}>
+              <Icon name="close" size={20} />
+            </button>
+          )}
         </div>
       )}
     </div>
@@ -274,41 +364,47 @@ export function App() {
 
 function MainView({
   db,
+  fileName,
   selection,
   onSelect,
+  onCopyLink,
 }: {
   db: DbcDatabase;
+  fileName: string;
   selection: Selection;
   onSelect: (s: Selection) => void;
+  onCopyLink: () => void;
 }) {
   switch (selection.kind) {
     case 'message': {
       const message = findMessageByOccurrence(db, selection.rawId, selection.occ);
-      if (!message) return <Overview db={db} onSelect={onSelect} />;
+      if (!message) return <Overview db={db} fileName={fileName} onSelect={onSelect} />;
       return (
         <MessageDetail
           db={db}
+          fileName={fileName}
           message={message}
           selectedSignal={selection.signal}
           onSelectSignal={(signal) =>
             onSelect({ kind: 'message', rawId: selection.rawId, occ: selection.occ, signal })
           }
+          onCopyLink={onCopyLink}
         />
       );
     }
     case 'node': {
       const node = db.nodes.find((n) => n.name === selection.name);
-      if (!node) return <Overview db={db} onSelect={onSelect} />;
-      return <NodeDetail db={db} node={node} onSelect={onSelect} />;
+      if (!node) return <Overview db={db} fileName={fileName} onSelect={onSelect} />;
+      return <NodeDetail db={db} fileName={fileName} node={node} onSelect={onSelect} />;
     }
     case 'valueTable': {
       const table = db.valueTables.find((t) => t.name === selection.name);
-      if (!table) return <Overview db={db} onSelect={onSelect} />;
-      return <ValueTableDetail table={table} />;
+      if (!table) return <Overview db={db} fileName={fileName} onSelect={onSelect} />;
+      return <ValueTableDetail db={db} fileName={fileName} table={table} onSelect={onSelect} />;
     }
     case 'graph':
-      return <NetworkGraph db={db} onSelect={onSelect} />;
+      return <NetworkGraph db={db} fileName={fileName} onSelect={onSelect} />;
     default:
-      return <Overview db={db} onSelect={onSelect} />;
+      return <Overview db={db} fileName={fileName} onSelect={onSelect} />;
   }
 }

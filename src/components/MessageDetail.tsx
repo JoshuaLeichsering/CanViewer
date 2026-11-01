@@ -1,26 +1,40 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { DbcDatabase, DbcMessage, DbcSignal } from '../lib/dbc/types';
-import { decodeFrame, parseHexBytes, signalOutOfBounds, signalsConflict } from '../lib/dbc/bits';
+import { decodeFrame, parseHexBytes, signalOutOfBounds, signalsConflict, type DecodedSignal } from '../lib/dbc/bits';
 import { declaredFrameFormat, isCanFd, isJ1939Pg, isValidFrameSize, paddedFdSize } from '../lib/dbc/canfd';
 import { ADDRESS_NAMES, decomposeJ1939Id, isJ1939Database, PGN_NAMES } from '../lib/dbc/j1939';
 import { useI18n } from '../lib/i18n';
 import { fmtNum, hexId, muxLabel } from '../lib/format';
-import { BitMatrix, paletteIndex } from './BitMatrix';
+import { BitMatrix, signalNumber, signalTone } from './BitMatrix';
 import { AttributesCard } from './AttributesCard';
+import { Icon } from './Icon';
+
+const hexByte = (n: number) => '0x' + n.toString(16).toUpperCase().padStart(2, '0');
 
 export function MessageDetail({
   db,
+  fileName,
   message,
   selectedSignal,
   onSelectSignal,
+  onCopyLink,
 }: {
   db: DbcDatabase;
+  fileName: string;
   message: DbcMessage;
   selectedSignal?: string;
   onSelectSignal: (name: string | undefined) => void;
+  onCopyLink: () => void;
 }) {
   const { t } = useI18n();
-  const selected = message.signals.find((s) => s.name === selectedSignal);
+  const selectedIndex = message.signals.findIndex((s) => s.name === selectedSignal);
+
+  // Decoder input lives here so the signal card can mark the decoded value.
+  // Cleared on switching messages: stale bytes would decode misleading values.
+  const [hexInput, setHexInput] = useState('');
+  useEffect(() => setHexInput(''), [message]);
+  const bytes = useMemo(() => parseHexBytes(hexInput, message.dlc), [hexInput, message.dlc]);
+  const decoded = useMemo(() => (bytes ? decodeFrame(message.signals, bytes) : null), [bytes, message]);
 
   const warnings = useMemo(() => {
     const list: string[] = [];
@@ -33,9 +47,7 @@ export function MessageDetail({
       for (let j = i + 1; j < message.signals.length; j++) {
         const a = message.signals[i];
         const b = message.signals[j];
-        if (signalsConflict(a, b)) {
-          list.push(t('warnOverlap', { a: a.name, b: b.name }));
-        }
+        if (signalsConflict(a, b)) list.push(t('warnOverlap', { a: a.name, b: b.name }));
       }
     }
     return list;
@@ -49,9 +61,7 @@ export function MessageDetail({
     if (declared === 'classic') {
       // Explicitly classic frames can never carry more than 8 bytes — an
       // FD padding hint would be wrong here, this is a plain contradiction.
-      if (message.dlc > 8) {
-        notes.push(t('noteClassicTooBig', { n: message.dlc }));
-      }
+      if (message.dlc > 8) notes.push(t('noteClassicTooBig', { n: message.dlc }));
       return notes;
     }
     if (message.dlc > 64) {
@@ -65,172 +75,186 @@ export function MessageDetail({
   // J1939 identifier breakdown for extended frames in J1939 contexts.
   const j1939 = useMemo(
     () =>
-      message.isExtended && (isJ1939Pg(db, message) || isJ1939Database(db))
-        ? decomposeJ1939Id(message.id)
-        : null,
+      message.isExtended && (isJ1939Pg(db, message) || isJ1939Database(db)) ? decomposeJ1939Id(message.id) : null,
     [db, message],
   );
 
   const cycleTime = message.attributes.GenMsgCycleTime;
   const sendType = message.attributes.GenMsgSendType;
+  const facts: Array<[string, string]> = [
+    [t('dlc'), t('factDlcValue', { n: message.dlc })],
+    [
+      t('sender'),
+      (message.sender || '—') + (message.transmitters.length > 0 ? ` +${message.transmitters.join(', ')}` : ''),
+    ],
+    [t('factCycle'), cycleTime !== undefined ? `${String(cycleTime)} ms` : '—'],
+    [t('sendType'), sendType !== undefined ? String(sendType) : '—'],
+    [t('signalsTitle'), String(message.signals.length)],
+  ];
 
-  const hexByte = (n: number) => '0x' + n.toString(16).toUpperCase().padStart(2, '0');
+  const toggle = (name: string) => onSelectSignal(selectedSignal === name ? undefined : name);
 
   return (
     <div>
-      <div className="card">
-        <div className="detail-header">
+      <header className="page-header split">
+        <div style={{ minWidth: 0 }}>
+          <div className="overline">{t('messageOverline', { file: fileName })}</div>
           <h1>{message.name}</h1>
-          <span className="mono">{hexId(message.id, message.isExtended)}</span>
-          <span className="mono muted">({message.id})</span>
-          {message.isExtended && <span className="pill ext">{t('pillExtended')}</span>}
-          {isCanFd(db, message) && <span className="pill fd">CAN FD</span>}
-          {isJ1939Pg(db, message) && <span className="pill node">J1939 PG</span>}
-        </div>
-        <div className="meta-row">
-          <span>
-            {t('dlc')} <b>{message.dlc}</b>
-          </span>
-          <span>
-            {t('sender')} <b>{message.sender || '—'}</b>
-            {message.transmitters.length > 0 && <> +{message.transmitters.join(', ')}</>}
-          </span>
-          {cycleTime !== undefined && (
-            <span>
-              {t('cycleTime')} <b>{String(cycleTime)} ms</b>
+          <div className="assist-chips">
+            <span className="assist-chip mono">
+              <Icon name="tag" size={18} />
+              {hexId(message.id, message.isExtended)} · {message.id}
             </span>
-          )}
-          {sendType !== undefined && (
-            <span>
-              {t('sendType')} <b>{String(sendType)}</b>
-            </span>
-          )}
-          <span>
-            {t('signalsTitle')} <b>{message.signals.length}</b>
-          </span>
-        </div>
-        {j1939 && (
-          <div className="meta-row">
-            <span>
-              {t('priority')} <b>{j1939.priority}</b>
-            </span>
-            <span>
-              PGN <b className="mono">{j1939.pgn}</b>{' '}
-              <span className="mono muted">
-                (0x{j1939.pgn.toString(16).toUpperCase()})
-              </span>
-              {PGN_NAMES[j1939.pgn] && <> — <b>{PGN_NAMES[j1939.pgn]}</b></>}
-            </span>
-            {j1939.pduType === 'PDU1' ? (
-              <span>
-                {t('destination')} <b className="mono">{hexByte(j1939.destinationAddress!)}</b>
-                {ADDRESS_NAMES[j1939.destinationAddress!] && (
-                  <> ({ADDRESS_NAMES[j1939.destinationAddress!]})</>
-                )}
-              </span>
-            ) : (
-              <span>
-                PDU2 <span className="muted">{t('broadcast')}</span>
-              </span>
-            )}
-            <span>
-              {t('source')} <b className="mono">{hexByte(j1939.sourceAddress)}</b>
-              {ADDRESS_NAMES[j1939.sourceAddress] && <> ({ADDRESS_NAMES[j1939.sourceAddress]})</>}
-            </span>
-            {j1939.dataPage > 0 && (
-              <span>
-                {t('dataPage')} <b>{j1939.dataPage}</b>
-              </span>
-            )}
+            {message.isExtended && <span className="assist-chip">{t('pillExtended')}</span>}
+            {isCanFd(db, message) && <span className="assist-chip">CAN FD</span>}
+            {isJ1939Pg(db, message) && <span className="assist-chip">J1939 PG</span>}
           </div>
-        )}
-        {warnings.map((warning) => (
-          <div key={warning} className="comment-box" style={{ borderLeftColor: 'var(--danger)' }}>
-            ⚠ {warning}
+        </div>
+        <button className="btn outlined with-icon state" onClick={onCopyLink}>
+          <Icon name="link" size={18} />
+          {t('copyLink')}
+        </button>
+      </header>
+
+      <div className="facts">
+        {facts.map(([k, v]) => (
+          <div className="fact" key={k}>
+            <div className="k">{k}</div>
+            <div className="v" title={v}>
+              {v}
+            </div>
           </div>
         ))}
-        {sizeNotes.map((note) => (
-          <div key={note} className="comment-box" style={{ borderLeftColor: '#f59e0b' }}>
-            ⚠ {note}
-          </div>
-        ))}
-        {message.comment && <div className="comment-box">{message.comment}</div>}
       </div>
 
-      <div className="card">
-        <h2>{t('signalsTitle')}</h2>
-        <div style={{ overflowX: 'auto' }}>
-          <table className="grid">
-            <thead>
-              <tr>
-                <th>{t('thName')}</th>
-                <th>{t('thMux')}</th>
-                <th className="num">{t('thStart')}</th>
-                <th className="num">{t('thLength')}</th>
-                <th>{t('thByteOrder')}</th>
-                <th>{t('thType')}</th>
-                <th className="num">{t('thFactor')}</th>
-                <th className="num">{t('thOffset')}</th>
-                <th className="num">Min</th>
-                <th className="num">Max</th>
-                <th>{t('thUnit')}</th>
-                <th>{t('thReceivers')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {message.signals.map((signal, index) => (
-                <tr
-                  key={signal.name + index}
-                  className={`clickable ${selectedSignal === signal.name ? 'selected' : ''}`}
-                  onClick={() =>
-                    onSelectSignal(selectedSignal === signal.name ? undefined : signal.name)
-                  }
-                >
-                  <td>
-                    <span className="sig-name">
-                      <span className={`color-dot dot-${paletteIndex(index)}`} />
-                      {signal.name}
-                    </span>
-                  </td>
-                  <td>
-                    {signal.multiplex.role !== 'none' && (
-                      <span className="pill mux">{muxLabel(signal.multiplex)}</span>
-                    )}
-                  </td>
-                  <td className="num">{signal.startBit}</td>
-                  <td className="num">{signal.length}</td>
-                  <td>{signal.byteOrder === 'intel' ? 'Intel' : 'Motorola'}</td>
-                  <td>{signal.valueType}</td>
-                  <td className="num">{fmtNum(signal.factor)}</td>
-                  <td className="num">{fmtNum(signal.offset)}</td>
-                  <td className="num">{fmtNum(signal.min)}</td>
-                  <td className="num">{fmtNum(signal.max)}</td>
-                  <td>{signal.unit}</td>
-                  <td className="muted">{signal.receivers.join(', ')}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {j1939 && (
+        <div className="strip">
+          <span className="strip-label">J1939</span>
+          <span>
+            {t('priority')} <b>{j1939.priority}</b>
+          </span>
+          <span>
+            PGN <b>{j1939.pgn}</b>{' '}
+            <span className="muted mono">(0x{j1939.pgn.toString(16).toUpperCase()})</span>
+            {PGN_NAMES[j1939.pgn] && <> {PGN_NAMES[j1939.pgn]}</>}
+          </span>
+          {j1939.pduType === 'PDU1' ? (
+            <span>
+              PDU1 · {t('destination')} <b>{hexByte(j1939.destinationAddress!)}</b>
+              {ADDRESS_NAMES[j1939.destinationAddress!] && <> {ADDRESS_NAMES[j1939.destinationAddress!]}</>}
+            </span>
+          ) : (
+            <span>
+              PDU2 <span className="muted">{t('broadcast')}</span>
+            </span>
+          )}
+          <span>
+            {t('source')} <b>{hexByte(j1939.sourceAddress)}</b>
+            {ADDRESS_NAMES[j1939.sourceAddress] && <> {ADDRESS_NAMES[j1939.sourceAddress]}</>}
+          </span>
+          {j1939.dataPage > 0 && (
+            <span>
+              {t('dataPage')} <b>{j1939.dataPage}</b>
+            </span>
+          )}
         </div>
-      </div>
+      )}
 
-      <div className="detail-grid">
-        <div className="card">
-          <h2>{t('bitLayout')}</h2>
-          <BitMatrix
-            message={message}
-            selectedSignal={selectedSignal}
-            onSelectSignal={onSelectSignal}
-          />
+      {(warnings.length > 0 || sizeNotes.length > 0) && (
+        <div className="banner-stack">
+          {warnings.map((warning) => (
+            <div key={warning} className="banner error">
+              <Icon name="error" size={20} />
+              <span>{warning}</span>
+            </div>
+          ))}
+          {sizeNotes.map((note) => (
+            <div key={note} className="banner warn">
+              <Icon name="warning" size={20} />
+              <span>{note}</span>
+            </div>
+          ))}
         </div>
-        <div>
-          {selected ? (
-            <SignalDetails signal={selected} />
+      )}
+
+      {message.comment && (
+        <p className="lead" style={{ margin: '0 0 16px' }}>
+          {message.comment}
+        </p>
+      )}
+
+      <div className="row">
+        <BitMatrix message={message} selectedSignal={selectedSignal} onSelectSignal={onSelectSignal} />
+        <div className="col" style={{ flex: '1 1 320px' }}>
+          {selectedIndex >= 0 ? (
+            <SignalCard
+              message={message}
+              signal={message.signals[selectedIndex]}
+              index={selectedIndex}
+              decoded={decoded?.[selectedIndex]}
+            />
           ) : (
             <div className="card muted">{t('selectSignalHint')}</div>
           )}
-          <DecodePanel message={message} />
+          <DecodeCard
+            message={message}
+            input={hexInput}
+            onInput={setHexInput}
+            bytes={bytes}
+            decoded={decoded}
+            selectedSignal={selectedSignal}
+            onSelectSignal={toggle}
+          />
         </div>
+      </div>
+
+      <div className="card table-card">
+        <h2>{t('signalsTitle')}</h2>
+        <table className="m3">
+          <thead>
+            <tr>
+              <th>{t('thName')}</th>
+              <th>{t('thMux')}</th>
+              <th className="num">{t('thStart')}</th>
+              <th className="num">{t('thLength')}</th>
+              <th>{t('thByteOrder')}</th>
+              <th>{t('thType')}</th>
+              <th className="num">{t('thFactor')}</th>
+              <th className="num">{t('thOffset')}</th>
+              <th className="num">Min</th>
+              <th className="num">Max</th>
+              <th>{t('thUnit')}</th>
+              <th>{t('thReceivers')}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {message.signals.map((signal, index) => (
+              <tr
+                key={signal.name + index}
+                className={`clickable ${selectedSignal === signal.name ? 'selected' : ''}`}
+                onClick={() => toggle(signal.name)}
+              >
+                <td>
+                  <span className="sig-name">
+                    <span className={`sig-chip tone-${signalTone(index)}`}>{signalNumber(index)}</span>
+                    {signal.name}
+                  </span>
+                </td>
+                <td className="mono">{signal.multiplex.role !== 'none' ? muxLabel(signal.multiplex) : ''}</td>
+                <td className="num">{signal.startBit}</td>
+                <td className="num">{signal.length}</td>
+                <td>{signal.byteOrder === 'intel' ? 'Intel' : 'Motorola'}</td>
+                <td>{signal.valueType}</td>
+                <td className="num">{fmtNum(signal.factor)}</td>
+                <td className="num">{fmtNum(signal.offset)}</td>
+                <td className="num">{fmtNum(signal.min)}</td>
+                <td className="num">{fmtNum(signal.max)}</td>
+                <td>{signal.unit}</td>
+                <td className="comment">{signal.receivers.join(', ')}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
 
       <AttributesCard title={t('messageAttributes')} attributes={message.attributes} />
@@ -238,146 +262,166 @@ export function MessageDetail({
   );
 }
 
-function SignalDetails({ signal }: { signal: DbcSignal }) {
+function SignalCard({
+  message,
+  signal,
+  index,
+  decoded,
+}: {
+  message: DbcMessage;
+  signal: DbcSignal;
+  index: number;
+  decoded?: DecodedSignal;
+}) {
   const { t } = useI18n();
-  const valueEntries = Object.entries(signal.values ?? {});
+  const valueEntries = Object.entries(signal.values ?? {}).sort(([a], [b]) => Number(a) - Number(b));
+  const attributes = Object.entries(signal.attributes);
+  // Simple m<N> signals always switch on the root multiplexor (M), never on
+  // an m<N>M sub-multiplexor (same rule as decodeFrame).
+  const multiplexor = message.signals.find((s) => s.multiplex.role === 'multiplexor');
+  const ranges = (r: Array<[number, number]>) => r.map(([lo, hi]) => (lo === hi ? String(lo) : `${lo}–${hi}`)).join(', ');
+
+  // When it is active: extended mux names its switch and ranges, simple mux
+  // switches on the message's multiplexor signal.
+  const when = signal.multiplex.extended
+    ? `${signal.multiplex.extended.switchName} ∈ ${ranges(signal.multiplex.extended.ranges)}`
+    : signal.multiplex.switchValue !== undefined
+      ? t('muxEquals', { name: multiplexor && multiplexor !== signal ? multiplexor.name : 'M', n: signal.multiplex.switchValue })
+      : '';
+  const mux =
+    signal.multiplex.role === 'multiplexor'
+      ? t('muxRoleMultiplexor')
+      : signal.multiplex.role === 'both'
+        ? t('muxRoleBoth', { when })
+        : signal.multiplex.role === 'multiplexed'
+          ? when
+          : '';
+
   return (
-    <div className="card">
-      <h2>
-        Signal: <span className="mono">{signal.name}</span>
-      </h2>
-      <div className="meta-row">
-        <span>
-          {t('physicalEquals')}{' '}
-          <b className="mono">
+    <div className="card signal-card">
+      <div className="card-overline">{t('signalOverline', { n: signalNumber(index) })}</div>
+      <h2 className="signal-title">{signal.name}</h2>
+      <div className="kv-grid">
+        <div className="kv">
+          <div className="k">{t('kvPhysical')}</div>
+          <div className="v mono">
             {t('rawWord')} × {fmtNum(signal.factor)} + {fmtNum(signal.offset)}
-          </b>
-        </span>
-        {signal.unit && (
-          <span>
-            {t('unitLabel')} <b>{signal.unit}</b>
-          </span>
+          </div>
+        </div>
+        <div className="kv">
+          <div className="k">{t('kvRange')}</div>
+          <div className="v mono">
+            {fmtNum(signal.min)} … {fmtNum(signal.max)} {signal.unit}
+          </div>
+        </div>
+        <div className="kv">
+          <div className="k">{t('kvBits')}</div>
+          <div className="v mono">
+            {signal.startBit} · {signal.length} · {signal.byteOrder === 'intel' ? 'Intel' : 'Motorola'}
+          </div>
+        </div>
+        <div className="kv">
+          <div className="k">{t('thReceivers')}</div>
+          <div className="v">{signal.receivers.filter((r) => r !== 'Vector__XXX').join(', ') || '—'}</div>
+        </div>
+        <div className="kv">
+          <div className="k">{t('thType')}</div>
+          <div className="v mono">{signal.valueType}</div>
+        </div>
+        {mux && (
+          <div className="kv">
+            <div className="k">{signal.multiplex.role === 'multiplexor' ? t('kvMux') : t('activeWhen')}</div>
+            <div className="v mono">{mux}</div>
+          </div>
         )}
       </div>
-      {signal.multiplex.extended && (
-        <div className="meta-row">
-          <span>
-            {t('activeWhen')} <b>{signal.multiplex.extended.switchName}</b> ∈{' '}
-            <b className="mono">
-              {signal.multiplex.extended.ranges
-                .map(([lo, hi]) => (lo === hi ? String(lo) : `${lo}–${hi}`))
-                .join(', ')}
-            </b>
-          </span>
+      {signal.comment && <p className="comment">{signal.comment}</p>}
+      {valueEntries.length > 0 && (
+        <div className="value-chips" aria-label={t('valueDescriptions')}>
+          {valueEntries.map(([raw, label]) => (
+            <span
+              key={raw}
+              className={`value-chip ${decoded && decoded.active && decoded.raw === Number(raw) ? 'current' : ''}`}
+            >
+              {raw} · {label}
+            </span>
+          ))}
         </div>
       )}
-      {signal.comment && <div className="comment-box">{signal.comment}</div>}
-
-      {valueEntries.length > 0 && (
-        <>
-          <h3 style={{ marginTop: 14 }}>{t('valueDescriptions')}</h3>
-          <table className="grid">
-            <thead>
-              <tr>
-                <th className="num">{t('thRaw')}</th>
-                <th>{t('thMeaning')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {valueEntries
-                .sort(([a], [b]) => Number(a) - Number(b))
-                .map(([raw, label]) => (
-                  <tr key={raw}>
-                    <td className="num" style={{ width: 70 }}>
-                      {raw}
-                    </td>
-                    <td>{label}</td>
-                  </tr>
-                ))}
-            </tbody>
-          </table>
-        </>
-      )}
-
-      {Object.keys(signal.attributes).length > 0 && (
-        <>
-          <h3 style={{ marginTop: 14 }}>{t('attributes')}</h3>
-          <table className="grid">
-            <tbody>
-              {Object.entries(signal.attributes).map(([name, value]) => (
-                <tr key={name}>
-                  <td style={{ width: '50%' }}>{name}</td>
-                  <td className="mono">{String(value)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </>
+      {attributes.length > 0 && (
+        <dl className="mini-kv" aria-label={t('attributes')}>
+          {attributes.map(([name, value]) => [<dt key={`k${name}`}>{name}</dt>, <dd key={`v${name}`}>{String(value)}</dd>])}
+        </dl>
       )}
     </div>
   );
 }
 
-function DecodePanel({ message }: { message: DbcMessage }) {
+function DecodeCard({
+  message,
+  input,
+  onInput,
+  bytes,
+  decoded,
+  selectedSignal,
+  onSelectSignal,
+}: {
+  message: DbcMessage;
+  input: string;
+  onInput: (value: string) => void;
+  bytes: Uint8Array | null;
+  decoded: DecodedSignal[] | null;
+  selectedSignal?: string;
+  onSelectSignal: (name: string) => void;
+}) {
   const { t } = useI18n();
-  const [input, setInput] = useState('');
-  // Clear the entered bytes when switching messages — stale bytes would
-  // silently decode misleading values for the newly selected message.
-  useEffect(() => setInput(''), [message]);
-  const bytes = useMemo(() => parseHexBytes(input, message.dlc), [input, message.dlc]);
-  const decoded = useMemo(
-    () => (bytes ? decodeFrame(message.signals, bytes) : []),
-    [bytes, message],
-  );
+  // Long FD frames: a short placeholder, the explanation goes below the field.
+  const placeholder = Array.from({ length: Math.min(message.dlc, 8) }, () => '00').join(' ') + (message.dlc > 8 ? ' …' : '');
+  const entered = input.replace(/0x/gi, '').replace(/[\s,;.-]+/g, '').length / 2;
 
   return (
     <div className="card">
-      <h2>{t('decodeFrame')}</h2>
-      <input
-        className={`decode-input ${bytes === null ? 'invalid' : ''}`}
-        placeholder={
-          message.dlc <= 8
-            ? t('decodePlaceholderShort', {
-                ex: Array.from({ length: message.dlc }, () => '00').join(' '),
-              })
-            : t('decodePlaceholderLong', { n: message.dlc })
-        }
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        spellCheck={false}
-      />
+      <h2 style={{ marginBottom: 16 }}>{t('decodeFrame')}</h2>
+      <label className={`text-field ${bytes === null ? 'invalid' : ''}`}>
+        <span className="field-label">{t('hexPayload')}</span>
+        <input
+          value={input}
+          onChange={(e) => onInput(e.target.value)}
+          placeholder={placeholder}
+          spellCheck={false}
+          autoComplete="off"
+        />
+        {input !== '' && (
+          <button className="clear state" title={t('clearPayload')} aria-label={t('clearPayload')} onClick={() => onInput('')}>
+            <Icon name="close" size={20} />
+          </button>
+        )}
+      </label>
       {bytes === null ? (
-        <div className="muted">{t('decodeInvalid')}</div>
+        <div className="field-help error">{t('decodeInvalid')}</div>
+      ) : input.trim() !== '' && entered !== message.dlc ? (
+        // Shorter input is zero-padded, longer input cut to the DLC: show what is decoded.
+        <div className="field-help mono">
+          [{[...bytes].map((b) => b.toString(16).toUpperCase().padStart(2, '0')).join(' ')}]
+        </div>
       ) : (
-        <>
-          <div className="mono muted" style={{ marginBottom: 8 }}>
-            [{[...bytes].map((b) => b.toString(16).toUpperCase().padStart(2, '0')).join(' ')}]
-          </div>
-          <table className="grid">
-            <thead>
-              <tr>
-                <th>{t('thSignal')}</th>
-                <th className="num">{t('thRaw')}</th>
-                <th className="num">{t('thPhysical')}</th>
-                <th>{t('thUnit')}</th>
-                <th>{t('thMeaning')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {decoded.map(({ signal, raw, physical, label, active }, i) => (
-                <tr key={`${signal.name}#${i}`} className={active ? '' : 'inactive'}>
-                  <td>{signal.name}</td>
-                  <td className="num">{fmtNum(raw)}</td>
-                  <td className="num">
-                    <b>{fmtNum(physical)}</b>
-                  </td>
-                  <td>{signal.unit}</td>
-                  <td>{active ? label ?? '' : <span className="muted">{t('muxInactive')}</span>}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </>
+        message.dlc > 8 && <div className="field-help">{t('decodePlaceholderLong', { n: message.dlc })}</div>
+      )}
+      {decoded && (
+        <div className="decoded">
+          {decoded.map(({ signal, raw, physical, label, active }, i) => (
+            <div
+              key={`${signal.name}#${i}`}
+              className={`decoded-row ${active ? '' : 'inactive'} ${selectedSignal === signal.name ? 'selected' : ''}`}
+              title={`${t('thRaw')} ${fmtNum(raw)}`}
+              onClick={() => onSelectSignal(signal.name)}
+            >
+              <span className="name">{signal.name}</span>
+              <span className="value">{active ? `${fmtNum(physical)}${signal.unit ? ` ${signal.unit}` : ''}` : '—'}</span>
+              <span className="extra">{active ? label ?? '' : t('muxInactive')}</span>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );
