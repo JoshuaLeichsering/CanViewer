@@ -147,9 +147,11 @@ stays as it was until it is edited, and *Save as DBC* reports it.
 ### In the desktop app
 
 *Save as DBC* hands the text to the webview as a `blob:` download through an
-`<a download>` link. A browser saves it at once; the desktop app's webviews (WebView2,
-WKWebView, WebKitGTK) save it only through a download handler in the shell, which
-`desktop/src/main.rs` must install (saving `blob:` downloads to the Downloads folder).
+`<a download>` link, with the export menu's helper (`app/src/lib/export/download.ts`). A
+browser saves it at once; the desktop app's webviews (WebView2, WKWebView, WebKitGTK)
+save it only through a download handler in the shell, which `desktop/src/main.rs`
+installs for the export menu as well: it saves the page's own `blob:` downloads to the
+Downloads folder and refuses any other.
 The question before another file replaces unsaved edits is the app's own dialog, not
 `window.confirm`, because a webview shows `confirm()` only if its host implements it.
 The `beforeunload` guard against closing the page with unsaved edits is the browser's;
@@ -181,6 +183,7 @@ desktop smoke test of the final CI run.
   CanViewer does not model and the lines it could not use. *Save as DBC* names the last
   two before it saves; users who need them should keep the original file.
 - After a save, a reload of the page restores the saved text under the saved name, not
-  the file as it was before the edits.
+  the file as it was before the edits, also when that file was imported through
+  canmatrix (the loader in `app/src/lib/import/loader.ts` stores it as a DBC).
 - When the model grows (a new statement is modeled), the writer must grow with it. The
   round-trip suite fails for every corpus file that uses the new statement until it does.

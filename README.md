@@ -43,7 +43,7 @@ No data leaves your machine — files are parsed locally.
 |---|---|
 | `app/` | The web app, and Vite's root: `index.html` and `src/` (the views, the DBC parser in `src/lib/dbc/`, the canmatrix import in `src/lib/canmatrix/`, each with its tests next to it) |
 | `desktop/` | The Tauri desktop shell, which packages the build in `dist/` |
-| `e2e/` | Checks that drive a browser or the packaged app: `network-check.mjs`, the Playwright flows in `flows/` (`npm run e2e`, configured in `playwright.config.ts`), the UI checks (`ui-checks.mjs`), the import UI's checks (`import-ui.test.mjs`), the signal table and large database checks (`signal-table.mjs`, `large-database.mjs`), the export check (`export-check.mjs`), the diff mode check (`diff-check.mjs`, with its pinned ARXML comparison `diff-check-arxml.txt`), the Traces and encoder check (`trc-traces-encoder.mjs`), the desktop smoke test over CDP with its build config (`desktop-cdp-smoke.mjs`, `desktop-cdp.conf.json`), and the check of the file the desktop self-test exports (`desktop-download-check.mjs`) |
+| `e2e/` | Checks that drive a browser or the packaged app: `network-check.mjs`, the Playwright flows in `flows/` (`npm run e2e`, configured in `playwright.config.ts`), the UI checks (`ui-checks.mjs`), the import UI's checks (`import-ui.test.mjs`), the signal table and large database checks (`signal-table.mjs`, `large-database.mjs`), the export check (`export-check.mjs`), the diff mode check (`diff-check.mjs`, with its pinned ARXML comparison `diff-check-arxml.txt`), the Traces and encoder check (`trc-traces-encoder.mjs`), the editing check (`editing.mjs`), the desktop smoke test over CDP with its build config (`desktop-cdp-smoke.mjs`, `desktop-cdp.conf.json`), and the check of the file the desktop self-test exports (`desktop-download-check.mjs`) |
 | `scripts/` | Build and maintenance scripts: `fetch-wheels.mjs`, the Vite plugins, the CI check of the test report, the coverage summary, the license and identifying-information checks, the generator of `THIRD_PARTY_NOTICES.md` |
 | `examples/` | Sample files: `demo.dbc`, its later version `demo-v2.dbc`, and the logs `demo.asc` and `demo-candump.log` |
 | `docs/` | Handover notes, spike reports, design notes and [decision records](docs/decisions/) |
@@ -78,8 +78,8 @@ suite ran over the expected number of files with nothing skipped
 ([check-test-report.mjs](scripts/check-test-report.mjs)), the production build, the
 network check, which fails on any request outside the app's origin, the end-to-end
 flows, the UI checks, the import UI's checks, the signal table and large database
-checks, the export check, the diff mode check and the Traces and encoder check. A second
-job checks licenses, notices and identifying information
+checks, the export check, the diff mode check, the Traces and encoder check and the
+editing check. A second job checks licenses, notices and identifying information
 ([CONTRIBUTING.md](CONTRIBUTING.md#the-local-check) lists every step).
 
 `dev`, `test` and `build` run `fetch-wheels` first. It downloads the wheels listed in

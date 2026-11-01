@@ -20,3 +20,5 @@ diff-check/
 vite-preview-diff.log
 trc-traces-encoder/
 vite-preview-trc.log
+editing-check/
+vite-preview-editing.log

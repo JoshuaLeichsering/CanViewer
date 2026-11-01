@@ -73,6 +73,9 @@ npx vite preview --port 4178 --strictPort &
 node e2e/diff-check.mjs http://localhost:4178/ diff-check   # the Compare page, DBC and ARXML
 npx vite preview --port 4179 --strictPort &
 node e2e/trc-traces-encoder.mjs http://localhost:4179/ trc-traces-encoder   # Traces view, encoder
+npx vite preview --port 4180 --strictPort &
+node e2e/editing.mjs http://localhost:4180/ editing-check examples/demo.dbc \
+  third_party/cantools/tests/files/dbc/foobar.dbc                           # editing, Save as DBC
 ```
 
 The network check must end with `requests outside http://localhost:4173: 0`. Stop the
@@ -92,14 +95,16 @@ page, opened and dropped, a DBC file with an ARXML file read through canmatrix
 (pinned in `e2e/diff-check-arxml.txt`), and fails on any request outside the origin.
 `e2e/trc-traces-encoder.mjs` replays the sample logs in `examples/` through the Traces
 view, filters a large generated log, and encodes frames with the encoder card, all without
-a request outside the origin. Stop the preview servers afterwards.
+a request outside the origin. `e2e/editing.mjs` edits a message and a signal, saves as
+DBC, reloads and opens the saved file again, and checks the prompts that guard unsaved
+edits and the list of what a saved file lacks. Stop the preview servers afterwards.
 
 If you change a dependency, also run `npm run notices` (it needs Rust's `cargo` and
 `rustc`, for the desktop crates and the Rust standard library) and commit the regenerated
 `THIRD_PARTY_NOTICES.md`. CI checks that it is up to date, and checks the crates' licenses
 with `cargo deny --manifest-path desktop/Cargo.toml check licenses`. The outputs of the
 check above (`test-report.json`, `network-check/`, `coverage/`, `test-results/`,
-`import-ui/`, `tbl-checks/`, `export-check/`, `diff-check/`, `trc-traces-encoder/`) are ignored by git, so the sweep for identifying information does not read them.
+`import-ui/`, `tbl-checks/`, `export-check/`, `diff-check/`, `trc-traces-encoder/`, `editing-check/`) are ignored by git, so the sweep for identifying information does not read them.
 
 ## Conventions
 

@@ -10,9 +10,10 @@
 // model), and that no request left the origin. Screenshots of the dialogs go
 // to <out-dir>.
 //
-// Usage (Playwright must be installed; it is not a dependency of the app):
-//   npm run build && npx vite preview --port 4174 --strictPort &
-//   node e2e/editing.mjs http://localhost:4174/ <out-dir> examples/demo.dbc \
+// Usage (Playwright is a dev dependency; `npx playwright install chromium`
+// fetches its browser):
+//   npm run build && npx vite preview --port 4180 --strictPort &
+//   node e2e/editing.mjs http://localhost:4180/ <out-dir> examples/demo.dbc \
 //     third_party/cantools/tests/files/dbc/foobar.dbc
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
