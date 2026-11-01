@@ -60,7 +60,11 @@ git submodule update --init
 
 `npm test` then runs the corpus suite ([corpus.test.ts](src/lib/dbc/corpus.test.ts)):
 every file must parse with zero problems except for a pinned allowlist of genuine
-upstream inconsistencies (stale comments referencing renamed signals). Without the
+upstream inconsistencies (stale comments referencing renamed signals). Each file's
+parse result is also pinned in [corpus-baseline.json](src/lib/dbc/corpus-baseline.json)
+(counts plus a SHA-256 of the whole parsed model), so any change to how a corpus file
+parses fails the suite; regenerate it after an intended change with
+`UPDATE_CORPUS_BASELINE=1 npx vitest run src/lib/dbc/corpus.test.ts`. Without the
 submodules the corpus suite is skipped automatically.
 
 ## Supported DBC statements
