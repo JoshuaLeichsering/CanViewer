@@ -6,8 +6,10 @@ import { isCanFd } from '../lib/dbc/canfd';
 import { isJ1939Database } from '../lib/dbc/j1939';
 import { useI18n } from '../lib/i18n';
 import { hexId } from '../lib/format';
+import { shouldVirtualize } from '../lib/virtual-window';
 import { Icon } from './Icon';
 import { messageTag, MessageTag } from './MessageTag';
+import { VirtualList } from './VirtualList';
 
 export type MessageFilter = 'all' | 'ext' | 'fd';
 
@@ -65,6 +67,10 @@ function MessageList({
         (query === '' || messageMatches(m, query)),
     );
   }, [db, query, filter]);
+  const activeIndex =
+    selection.kind === 'message'
+      ? messages.findIndex((m) => m.rawId === selection.rawId && occurrenceOf(db, m) === selection.occ)
+      : -1;
 
   const filters: Array<[MessageFilter, string]> = [
     ['all', t('filterAll')],
@@ -109,8 +115,14 @@ function MessageList({
           n: query !== '' || filter !== 'all' ? `${messages.length} / ${db.messages.length}` : messages.length,
         })}
       </div>
-      <div className="list-scroll">
-        {messages.map((m) => {
+      <VirtualList
+        className="list-scroll"
+        items={messages}
+        virtual={shouldVirtualize(db.messages.length)}
+        estimatedRowHeight={60}
+        activeKey={selection.kind === 'message' ? `${selection.rawId}.${selection.occ}` : undefined}
+        activeIndex={activeIndex}
+        renderItem={(m) => {
           const occ = occurrenceOf(db, m);
           const active = selection.kind === 'message' && selection.rawId === m.rawId && selection.occ === occ;
           const cycle = m.attributes.GenMsgCycleTime;
@@ -136,13 +148,14 @@ function MessageList({
               <MessageTag tag={messageTag(db, m, j1939Db)} />
             </button>
           );
-        })}
+        }}
+      >
         {messages.length === 0 && (
           <div className="list-empty">
             {query !== '' ? t('noMessagesMatch', { q: query }) : t('noMessagesFilter')}
           </div>
         )}
-      </div>
+      </VirtualList>
     </>
   );
 }
