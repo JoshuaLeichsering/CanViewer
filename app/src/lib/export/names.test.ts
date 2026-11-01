@@ -64,4 +64,11 @@ describe('messageIdentifier', () => {
     expect(messageIdentifier({ name: 'uint8' })).toBe('uint8_');
     expect(messageIdentifier({ name: 'int_fast16' })).toBe('int_fast16_');
   });
+
+  it('never starts with an underscore, which file scope reserves', () => {
+    expect(messageIdentifier({ name: '_engine' })).toBe('x_engine');
+    expect(messageIdentifier({ name: 'Öldruck' })).toBe('x_ldruck');
+    expect(messageIdentifier({ name: '_Engine' })).toBe('x_Engine');
+    expect(messageIdentifier({ name: '__engine' })).toBe('x__engine');
+  });
 });

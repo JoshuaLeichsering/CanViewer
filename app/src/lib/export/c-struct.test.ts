@@ -129,6 +129,8 @@ describe.skipIf(!runCompile)(`C struct compiles with ${CC} ${FLAGS.join(' ')}`, 
         'BO_ 2 uint8: 8 A',
         ' SG_ uint8_t : 0|8@1+ (1,0) [0|0] "" A',
         'BO_ 3 Empty: 0 A',
+        'BO_ 4 _engine: 8 A',
+        ' SG_ _speed : 0|8@1+ (1,0) [0|0] "" A',
         // The parser reads \" as an escaped quote, so a space follows the backslash; comments drop it.
         'CM_ BO_ 1 "Ends with a backslash \\ ";',
         'CM_ SG_ 1 default "Line one',
@@ -137,7 +139,7 @@ describe.skipIf(!runCompile)(`C struct compiles with ${CC} ${FLAGS.join(' ')}`, 
       ].join('\n'),
     );
     expect(db.problems).toEqual([]);
-    expect(db.messages.map((m) => m.signals.length)).toEqual([8, 1, 0]);
+    expect(db.messages.map((m) => m.signals.length)).toEqual([8, 1, 0, 1]);
     expect(db.messages[0].comment).toMatch(/\\ $/);
     expect(db.messages[0].signals[0].comment).toMatch(/\?\?\/$/);
     const files = writeAll(db, 'odd */ name.dbc', 'odd');
@@ -154,6 +156,14 @@ describe.skipIf(!runCompile)(`C struct compiles with ${CC} ${FLAGS.join(' ')}`, 
     expect(text).toContain('} int__t;');
     expect(cStruct(db, db.messages[1], 'odd.dbc')).toContain('} uint8__t;');
     expect(cStruct(db, db.messages[2], 'odd.dbc')).toContain('/* Empty has no signals, so there is no struct. */');
+    // A file-scope name must not start with an underscore (C99 7.1.3); a member may, before a lower-case letter.
+    const underscored = cStruct(db, db.messages[3], 'odd.dbc');
+    expect(underscored).toContain('#define X_ENGINE_ID 0x004u');
+    expect(underscored).toContain('#define X_ENGINE_IS_EXTENDED 0');
+    expect(underscored).toContain('#define X_ENGINE_LENGTH 8u');
+    expect(underscored).toContain('uint8_t _speed;');
+    expect(underscored).toContain('} x_engine_t;');
+    expect(underscored).not.toMatch(/^#define _|^} _/m);
   }, CORPUS_TIMEOUT);
 
   describe.skipIf(corpusFiles().length === 0)('corpus', () => {

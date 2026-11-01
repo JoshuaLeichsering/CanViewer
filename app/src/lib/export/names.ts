@@ -61,6 +61,10 @@ export function signalIdentifiers(signals: DbcSignal[], avoid: ReadonlySet<strin
 /** Identifier for the message itself: the struct is `<id>_t`, the macros `<ID>_…`. */
 export function messageIdentifier(message: Pick<DbcMessage, 'name'>): string {
   let id = cIdentifier(message.name);
+  // The struct type and the macros are file-scope names, and there every name
+  // that starts with an underscore is reserved (C99 7.1.3); the upper-cased
+  // macros would also start with `_X`, which is reserved everywhere.
+  if (id.startsWith('_')) id = 'x' + id;
   // `<id>_t` must not redefine a <stdint.h> type (a message named `uint8`).
   while (RESERVED.some((r) => r.test(`${id}_t`))) id += '_';
   return id;
