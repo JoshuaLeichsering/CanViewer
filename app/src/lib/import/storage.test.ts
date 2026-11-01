@@ -142,6 +142,31 @@ describe('the stored DBC (localStorage, unchanged)', () => {
     expect(parseStoredDbc('null')).toBeUndefined();
     expect(parseStoredDbc('{"name":"a.dbc"}')).toBeUndefined();
     expect(parseStoredDbc('{"name":"a.dbc","text":"x","extra":1}')).toEqual({ name: 'a.dbc', text: 'x' });
+    // From W6's stored-file tests, which this module took over.
+    expect(parseStoredDbc('"demo.dbc"')).toBeUndefined();
+    expect(parseStoredDbc('["demo.dbc", "VERSION"]')).toBeUndefined();
+    expect(parseStoredDbc(JSON.stringify({ name: { not: 'a string' }, text: 'VERSION ""' }))).toBeUndefined();
+    expect(parseStoredDbc(JSON.stringify({ name: 'demo.dbc', text: 42 }))).toBeUndefined();
+  });
+
+  it('clears the stored DBC and nothing else, so the settings stay', () => {
+    const storage = memoryStorage();
+    storage.data.set(DBC_STORAGE_KEY, JSON.stringify({ name: 'demo.dbc', text: '' }));
+    storage.data.set('canviewer.lang', 'de');
+    storage.data.set('canviewer.theme', 'dark');
+    vi.stubGlobal('localStorage', storage);
+    clearDbcText();
+    expect([...storage.data.keys()].sort()).toEqual(['canviewer.lang', 'canviewer.theme']);
+  });
+
+  it('works when the browser blocks site data, and every access throws', () => {
+    const blocked = () => {
+      throw new DOMException('denied', 'SecurityError');
+    };
+    vi.stubGlobal('localStorage', { getItem: blocked, setItem: blocked, removeItem: blocked });
+    expect(loadDbcText()).toBeUndefined();
+    expect(saveDbcText('a.dbc', 'x')).toBe(false);
+    expect(() => clearDbcText()).not.toThrow();
   });
 
   it('reports a file too large to store, and never throws', () => {

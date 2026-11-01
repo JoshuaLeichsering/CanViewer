@@ -17,6 +17,10 @@
  * Nothing here throws or rejects: storage can be unavailable (a private
  * window, blocked site data, a full quota), and the app then works as before,
  * without restoring.
+ *
+ * The recovery screen (components/ErrorBoundary.tsx) clears both, so that a
+ * file that crashes a view is not restored again. Settings (language, theme)
+ * are stored under their own keys and stay.
  */
 
 export const DBC_STORAGE_KEY = 'canviewer.file';

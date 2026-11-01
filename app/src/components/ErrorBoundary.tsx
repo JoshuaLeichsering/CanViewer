@@ -1,14 +1,15 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 import { Component, useEffect, useRef, type ErrorInfo, type ReactNode } from 'react';
 import { useI18n } from '../lib/i18n';
-import { clearStoredFile } from '../lib/stored-file';
+import { clearDbcText, clearImportedFile } from '../lib/import/storage';
 import { Icon } from './Icon';
 
 /**
  * Catches a crash anywhere in the app and shows a recovery screen instead of a
- * blank page. The last opened file is restored on every start, so a file that
- * makes a view throw would crash the app again on each reload: the screen's
- * "Reset stored file" forgets it and starts empty.
+ * blank page. The last opened file is restored on every start (a DBC from
+ * localStorage, an imported file from IndexedDB; lib/import/storage.ts), so a
+ * file that makes a view throw would crash the app again on each reload: the
+ * screen's "Reset stored file" forgets it and starts empty.
  */
 export class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
   state: { error: Error | null } = { error: null };
@@ -32,8 +33,11 @@ function CrashScreen({ error }: { error: Error }) {
   // heading, so that keyboard and screen reader users start on this screen.
   const heading = useRef<HTMLHeadingElement>(null);
   useEffect(() => heading.current?.focus(), []);
-  const reset = () => {
-    clearStoredFile();
+  const reset = async () => {
+    clearDbcText();
+    // IndexedDB deletes asynchronously: reloading before it has would restore
+    // the imported file again. clearImportedFile never rejects.
+    await clearImportedFile();
     // A deep link points into the file that is gone now.
     history.replaceState(null, '', location.pathname + location.search);
     location.reload();
