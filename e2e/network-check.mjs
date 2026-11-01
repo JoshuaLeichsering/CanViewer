@@ -16,7 +16,8 @@
 //                    and opens an ARXML file: the runtime was never cached, so
 //                    this must fail with a message and leave the app usable
 //
-// Usage (Playwright must be installed; it is not a dependency of the app):
+// Usage (Playwright is a dev dependency; `npx playwright install chromium`
+// fetches its browser):
 //   npm run build && npx vite preview --port 4173 --strictPort &
 //   PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS=1 \
 //     node e2e/network-check.mjs \
