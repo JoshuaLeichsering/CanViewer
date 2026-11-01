@@ -1,0 +1,969 @@
+{
+  "ESR.dbc": {
+    "differences": [],
+    "problems": []
+  },
+  "FORD_CADS.dbc": {
+    "differences": [
+      "definition SG_ GenSigSendType: enumValues \"No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,...\" -> \"No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,...\"",
+      "definition SG_ WakeupSignal: enumValues \"No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,...\" -> \"No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,...\"",
+      "definition BO_ GenMsgILSupport: enumValues \"No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,...\" -> \"No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,...\"",
+      "definition BO_ NetworkInitializationCommand: enumValues \"No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,...\" -> \"No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,...\"",
+      "definition BO_ GenMsgSendType: enumValues \"No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,...\" -> \"No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,...\"",
+      "definition BO_ NetworkInitialization: enumValues \"No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,...\" -> \"No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,...\"",
+      "definition BO_ MessageGateway: enumValues \"No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,...\" -> \"No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,...\"",
+      "definition BU_ ILUsed: enumValues \"No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,...\" -> \"No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,...\"",
+      "definition BU_ NetworkInitializationUsed: enumValues \"No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,...\" -> \"No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,...\"",
+      "definition BU_ PowerType: enumValues \"No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,...\" -> \"No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,...\"",
+      "node External_Tool: not in the DBC twin",
+      "node IFV_Host: not in the DBC twin",
+      "node IFV_VFP: not in the DBC twin",
+      "0x40000000 VECTOR__INDEPENDENT_SIG_MSG: message missing",
+      "0x0 VECTOR__INDEPENDENT_SIG_MSG: message not in the DBC twin"
+    ],
+    "problems": []
+  },
+  "FORD_CADS_64.dbc": {
+    "differences": [
+      "definition SG_ GenSigSendType: enumValues \"No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,...\" -> \"No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,...\"",
+      "definition SG_ WakeupSignal: enumValues \"No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,...\" -> \"No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,...\"",
+      "definition BO_ GenMsgILSupport: enumValues \"No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,...\" -> \"No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,...\"",
+      "definition BO_ NetworkInitializationCommand: enumValues \"No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,...\" -> \"No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,...\"",
+      "definition BO_ GenMsgSendType: enumValues \"No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,...\" -> \"No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,...\"",
+      "definition BO_ NetworkInitialization: enumValues \"No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,...\" -> \"No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,...\"",
+      "definition BO_ MessageGateway: enumValues \"No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,...\" -> \"No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,...\"",
+      "definition BU_ ILUsed: enumValues \"No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,...\" -> \"No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,...\"",
+      "definition BU_ NetworkInitializationUsed: enumValues \"No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,...\" -> \"No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,...\"",
+      "definition BU_ PowerType: enumValues \"No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,...\" -> \"No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,Yes,No,...\"",
+      "node External_Tool: not in the DBC twin",
+      "node IFV_Host: not in the DBC twin",
+      "node IFV_VFP: not in the DBC twin",
+      "0x40000000 VECTOR__INDEPENDENT_SIG_MSG: message missing",
+      "0x0 VECTOR__INDEPENDENT_SIG_MSG: message not in the DBC twin"
+    ],
+    "problems": []
+  },
+  "acura_ilx_2016_nidec.dbc": {
+    "differences": [],
+    "problems": []
+  },
+  "bmw_e9x_e8x.dbc": {
+    "differences": [
+      "node ASCM: not in the DBC twin"
+    ],
+    "problems": []
+  },
+  "cadillac_ct6_chassis.dbc": {
+    "differences": [],
+    "problems": []
+  },
+  "cadillac_ct6_object.dbc": {
+    "differences": [],
+    "problems": []
+  },
+  "cadillac_ct6_powertrain.dbc": {
+    "differences": [
+      "node XXX: not in the DBC twin"
+    ],
+    "problems": []
+  },
+  "chrysler_cusw.dbc": {
+    "differences": [
+      "0x1F0 CLUSTER_1 / LEFT_DETECTED: signal not in the DBC twin",
+      "0x1F0 CLUSTER_1 / RIGHT_DETECTED: signal not in the DBC twin",
+      "0x62CC033 BSM_LEFT: message missing",
+      "0x62CC034 BSM_RIGHT: message missing"
+    ],
+    "problems": [
+      "182: canmatrix could not read this line: BO_ 103596083 BSM_LEFT: 8 XXX",
+      "185: canmatrix could not read this line: BO_ 103596084 BSM_RIGHT: 7 XXX",
+      "199: canmatrix could not read this line: CM_ SG_ 1492 LEAD_CAR \"lead car present = 4, no car = 2 \";",
+      "200: canmatrix could not read this line: CM_ SG_ 498 ACC_STATUS_2 \"1 no ACC, 3 icpno \";",
+      "201: canmatrix could not read this line: CM_ SG_ 498 ACC_STATUS_1 \"0x00 = acc off, 0x03 = acc on, green, 0x02 acc on, whi"
+    ]
+  },
+  "chrysler_pacifica_2017_hybrid_private_fusion.dbc": {
+    "differences": [],
+    "problems": []
+  },
+  "comma_body.dbc": {
+    "differences": [
+      "node XXX: not in the DBC twin"
+    ],
+    "problems": []
+  },
+  "fca_giorgio.dbc": {
+    "differences": [
+      "node XXX: not in the DBC twin",
+      "node EPS: not in the DBC twin",
+      "node ABS: not in the DBC twin",
+      "node ENGINE: not in the DBC twin",
+      "node CAMERA: not in the DBC twin",
+      "node RADAR: not in the DBC twin",
+      "node BCM: not in the DBC twin",
+      "0x1E36001E CAM_UNKNOWN_6: message missing"
+    ],
+    "problems": [
+      "228: canmatrix could not read this line: BO_ 506855454 CAM_UNKNOWN_6: 1 CAMERA"
+    ]
+  },
+  "ford_cgea1_2_bodycan_2011.dbc": {
+    "differences": [],
+    "problems": []
+  },
+  "ford_cgea1_2_ptcan_2011.dbc": {
+    "differences": [],
+    "problems": []
+  },
+  "ford_fusion_2018_adas.dbc": {
+    "differences": [],
+    "problems": []
+  },
+  "ford_fusion_2018_pt.dbc": {
+    "differences": [],
+    "problems": []
+  },
+  "ford_lincoln_base_pt.dbc": {
+    "differences": [
+      "definition SG_ GenSigSendType: enumValues \"Cyclic,OnWrite,vector_leerstring,OnChange,vec...\" -> \"Cyclic,OnWrite,,OnChange,,IfActive,,NoSigSend...\"",
+      "definition BU_ PowerType: enumValues \"Switched,Latched,Sleep,vector_leerstring,vect...\" -> \"Switched,Latched,Sleep,,\"",
+      "definition BU_ EOL_SB_Flash: enumValues \"GGDS,GDS,NONE,vector_leerstring\" -> \"GGDS,GDS,NONE,\"",
+      "node XXX: not in the DBC twin",
+      "node IPMA: not in the DBC twin"
+    ],
+    "problems": []
+  },
+  "gm_global_a_chassis.dbc": {
+    "differences": [],
+    "problems": []
+  },
+  "gm_global_a_high_voltage_management.dbc": {
+    "differences": [],
+    "problems": []
+  },
+  "gm_global_a_lowspeed.dbc": {
+    "differences": [
+      "0x10630000 DriverDoorStatus: message missing",
+      "0x10400000 Chime: message missing",
+      "0x1020C000 BlinkerStatus: message missing",
+      "0x10240000 SteeringWheelAngle: message missing",
+      "0x102CC000 GearShifter: message missing",
+      "0x102CA000 GasPedalRegenCruise: message missing",
+      "0x10250000 BrakePedal: message missing",
+      "0x106B8000 WheelSpeed: message missing",
+      "0x10210000 VehicleSpeed: message missing",
+      "0x10758000 CruiseButtons: message missing",
+      "0x10756000 CruiseButtons2: message missing",
+      "0x1072C0B9 LeftRadar: message missing",
+      "0x1073205B RightRadar: message missing"
+    ],
+    "problems": [
+      "45: canmatrix could not read this line: BO_ 274923520 DriverDoorStatus: 1 GMLAN",
+      "46: canmatrix could not read this line: SG_ DriverDoorOpened : 0|1@0+ (1,0) [0|0] \"\"  NEO",
+      "48: canmatrix could not read this line: BO_ 272629760 Chime: 5 NEO",
+      "49: canmatrix could not read this line: SG_ ChimeType : 7|8@0+ (1,0) [0|0] \"\"  GMLAN",
+      "50: canmatrix could not read this line: SG_ ChimeRepeat : 23|8@0+ (1,0) [0|0] \"\"  GMLAN",
+      "51: canmatrix could not read this line: SG_ ChimeDuration : 15|8@0+ (1,0) [0|0] \"\"  GMLAN",
+      "52: canmatrix could not read this line: SG_ ChimeByte5 : 39|8@0+ (1,0) [0|0] \"\"  GMLAN",
+      "53: canmatrix could not read this line: SG_ ChimeByte4 : 31|8@0+ (1,0) [0|0] \"\"  GMLAN",
+      "55: canmatrix could not read this line: BO_ 270581760 BlinkerStatus: 5 GMLAN",
+      "56: canmatrix could not read this line: SG_ RightBlinker : 6|1@0+ (1,0) [0|0] \"\"  NEO",
+      "57: canmatrix could not read this line: SG_ LeftBlinker : 7|1@0+ (1,0) [0|0] \"\"  NEO",
+      "58: canmatrix could not read this line: SG_ BlinkerLight : 25|1@0+ (1,0) [0|0] \"\"  NEO",
+      "60: canmatrix could not read this line: BO_ 270794752 SteeringWheelAngle: 8 GMLAN",
+      "61: canmatrix could not read this line: SG_ SteeringWheelAngle : 39|16@0- (0.0625,0) [-540|540] \"deg\"  NEO",
+      "63: canmatrix could not read this line: BO_ 271368192 GearShifter: 8 GMLAN",
+      "64: canmatrix could not read this line: SG_ GearShifter : 17|2@0+ (1,0) [0|3] \"\"  NEO",
+      "66: canmatrix could not read this line: BO_ 271360000 GasPedalRegenCruise: 8 GMLAN",
+      "67: canmatrix could not read this line: SG_ CruiseControlActive : 56|1@0+ (1,0) [0|0] \"\"  GMLAN",
+      "68: canmatrix could not read this line: SG_ MaxRegen : 12|1@0+ (1,0) [0|1] \"\"  GMLAN,NEO",
+      "69: canmatrix could not read this line: SG_ GasPedal : 47|8@0+ (1,0) [0|254] \"\"  GMLAN,NEO",
+      "70: canmatrix could not read this line: SG_ GearShifter2NotUsed : 55|8@0+ (1,0) [0|255] \"\"  GMLAN,NEO",
+      "72: canmatrix could not read this line: BO_ 270860288 BrakePedal: 2 GMLAN",
+      "73: canmatrix could not read this line: SG_ BrakeLevel : 2|2@0+ (1,0) [0|3] \"\"  NEO",
+      "74: canmatrix could not read this line: SG_ BrakeSensor : 15|8@0+ (1,0) [0|255] \"\"  NEO",
+      "76: canmatrix could not read this line: BO_ 275480576 WheelSpeed: 8 GMLAN",
+      "77: canmatrix could not read this line: SG_ WheelSpeedFL : 7|16@0+ (0.01,0) [0|70] \"yd/s\"  NEO",
+      "78: canmatrix could not read this line: SG_ WheelSpeedFR : 39|16@0+ (0.01,0) [0|70] \"yd/s\"  NEO",
+      "79: canmatrix could not read this line: SG_ WheelSpeedRL : 23|16@0+ (0.01,0) [0|70] \"yd/s\"  NEO",
+      "80: canmatrix could not read this line: SG_ WheelSpeedRR : 55|16@0+ (0.01,0) [0|70] \"yd/s\"  NEO",
+      "82: canmatrix could not read this line: BO_ 270598144 VehicleSpeed: 8 GMLAN",
+      "83: canmatrix could not read this line: SG_ VehicleSpeed1 : 7|16@0+ (0.01,0) [0|100] \"mph\"  NEO",
+      "84: canmatrix could not read this line: SG_ VehicleSpeed2 : 39|16@0+ (0.01,0) [0|100] \"mph\"  NEO",
+      "86: canmatrix could not read this line: BO_ 276135936 CruiseButtons: 3 GMLAN",
+      "87: canmatrix could not read this line: SG_ CruiseButtons : 3|3@0+ (1,0) [0|12] \"\"  NEO",
+      "89: canmatrix could not read this line: BO_ 276127744 CruiseButtons2: 1 GMLAN",
+      "90: canmatrix could not read this line: SG_ LKAGapButton : 1|2@0+ (1,0) [0|2] \"\"  NEO",
+      "92: canmatrix could not read this line: BO_ 275955897 LeftRadar: 2 GMLAN",
+      "93: canmatrix could not read this line: SG_ BSM_Indicator_Light : 4|1@0+ (1,0) [0|1] \"\" XXX",
+      "95: canmatrix could not read this line: BO_ 275980379 RightRadar: 2 GMLAN",
+      "96: canmatrix could not read this line: SG_ BSM_Indicator_Light : 0|1@0+ (1,0) [0|1] \"\" XXX",
+      "0: canmatrix error: ERROR canmatrix.formats.dbc: Error with Line: ['1 ', 'Opened', ' 0 ', 'Closed', ",
+      "0: canmatrix error: ERROR canmatrix.formats.dbc: Error with Line: ['1 ', 'Active', ' 0 ', 'Inactive'",
+      "0: canmatrix error: ERROR canmatrix.formats.dbc: Error with Line: ['1 ', 'Active', ' 0 ', 'Inactive'",
+      "0: canmatrix error: ERROR canmatrix.formats.dbc: Error with Line: ['1 ', 'Active', ' 0 ', 'Inactive'",
+      "0: canmatrix error: ERROR canmatrix.formats.dbc: Error with Line: ['3 ', 'Park', ' 0 ', 'Drive/Low',",
+      "0: canmatrix error: ERROR canmatrix.formats.dbc: Error with Line: ['1 ', 'Active', ' 0 ', 'Inactive'",
+      "0: canmatrix error: ERROR canmatrix.formats.dbc: Error with Line: ['6 ', 'Cancel', ' 5 ', 'Main', ' ",
+      "0: canmatrix error: ERROR canmatrix.formats.dbc: Error with Line: ['2 ', '???', ' 1 ', '??', ' 0 ', ",
+      "0: canmatrix error: ERROR canmatrix.formats.dbc: Error with Line: ['0 ', 'Disabled', ' 1 ', 'Enabled",
+      "0: canmatrix error: ERROR canmatrix.formats.dbc: Error with Line: ['0 ', 'Disabled', ' 1 ', 'Enabled"
+    ]
+  },
+  "gm_global_a_lowspeed_1818125.dbc": {
+    "differences": [],
+    "problems": []
+  },
+  "gm_global_a_object.dbc": {
+    "differences": [
+      "node LRR_FO: not in the DBC twin",
+      "x0x40000000 VECTOR__INDEPENDENT_SIG_MSG: message missing",
+      "x0x0 VECTOR__INDEPENDENT_SIG_MSG: message not in the DBC twin"
+    ],
+    "problems": []
+  },
+  "gm_global_a_powertrain_expansion.dbc": {
+    "differences": [],
+    "problems": []
+  },
+  "gwm_haval_h6_phev_2024.dbc": {
+    "differences": [
+      "node XXX: not in the DBC twin"
+    ],
+    "problems": []
+  },
+  "hongqi_hs5.dbc": {
+    "differences": [],
+    "problems": []
+  },
+  "hyundai_2015_ccan.dbc": {
+    "differences": [],
+    "problems": []
+  },
+  "hyundai_2015_mcan.dbc": {
+    "differences": [
+      "x0x40000000 VECTOR__INDEPENDENT_SIG_MSG: message missing",
+      "x0x0 VECTOR__INDEPENDENT_SIG_MSG: message not in the DBC twin"
+    ],
+    "problems": []
+  },
+  "hyundai_i30_2014.dbc": {
+    "differences": [],
+    "problems": []
+  },
+  "hyundai_santafe_2007.dbc": {
+    "differences": [],
+    "problems": []
+  },
+  "luxgen_s5_2015.dbc": {
+    "differences": [],
+    "problems": []
+  },
+  "mazda_2017.dbc": {
+    "differences": [
+      "0x477 BSM / LEFT_BS_STATUS: values 3 entries -> 0 entries",
+      "0x477 BSM / RIGHT_BS_STATUS: values 3 entries -> 0 entries"
+    ],
+    "problems": [
+      "0: canmatrix warning: WARNING canmatrix.Signal: Signal STEER_ANGLE: Value 500 is not valid for STEER_A"
+    ]
+  },
+  "mazda_3_2019.dbc": {
+    "differences": [],
+    "problems": []
+  },
+  "mazda_radar.dbc": {
+    "differences": [],
+    "problems": []
+  },
+  "mazda_rx8.dbc": {
+    "differences": [],
+    "problems": []
+  },
+  "mercedes_benz_e350_2010.dbc": {
+    "differences": [],
+    "problems": []
+  },
+  "nissan_xterra_2011.dbc": {
+    "differences": [],
+    "problems": []
+  },
+  "opel_omega_2001.dbc": {
+    "differences": [],
+    "problems": []
+  },
+  "psa_aee2010_r3.dbc": {
+    "differences": [
+      "node XXX: not in the DBC twin",
+      "node ARTIV: not in the DBC twin",
+      "node CMM: not in the DBC twin",
+      "node UC_FREIN: not in the DBC twin",
+      "node BSI: not in the DBC twin",
+      "node PASS_HCU2: not in the DBC twin",
+      "node CMF: not in the DBC twin",
+      "node BV: not in the DBC twin",
+      "node BVN: not in the DBC twin",
+      "node HCU1: not in the DBC twin",
+      "node AVAS: not in the DBC twin",
+      "node PSCM: not in the DBC twin",
+      "node Tester: not in the DBC twin",
+      "node RITCS: not in the DBC twin",
+      "0x108 Vers_CMM: comment \"ID 108:  ECM Version Frame - Vers_CMM (Period...\" -> \"ID 108:  ECM Version Frame - Vers_CMM (Period...\"",
+      "0x208 Dyn_CMM / P042_Inm_bCanMon: comment \"P042  CAN-Fehlerbehandlung im Startfall mit H...\" -> \"P042  CAN-Fehlerbehandlung im Startfall mit H...\"",
+      "0x552 DAT4_BSI_AEE2010: comment \"Trame utilisable uniquement sur véhicules en ...\" -> \"Trame utilisable uniquement sur véhicules en ...\"",
+      "0x772 FaultLog_Ack: comment \"Le mécanisme d'émission utilisé est événement...\" -> \"Le mécanisme d'émission utilisé est événement...\"",
+      "0x7DF Req_EOBD_On_Can_7DF: comment \"Le mécanisme d'émission utilisé est événement...\" -> \"Le mécanisme d'émission utilisé est événement...\"",
+      "0x7E0 Req_Diag_INJ_T: comment \"Le mécanisme d'émission utilisé est événement...\" -> \"Le mécanisme d'émission utilisé est événement...\"",
+      "0x7E8 Rep_Diag_INJ_T: comment \"Le mécanisme d'émission utilisé est événement...\" -> \"Le mécanisme d'émission utilisé est événement...\"",
+      "x0x40000000 VECTOR__INDEPENDENT_SIG_MSG: message missing",
+      "x0x0 VECTOR__INDEPENDENT_SIG_MSG: message not in the DBC twin"
+    ],
+    "problems": []
+  },
+  "rivian_park_assist_can.dbc": {
+    "differences": [
+      "node XXX: not in the DBC twin"
+    ],
+    "problems": []
+  },
+  "rivian_primary_actuator.dbc": {
+    "differences": [
+      "node XXX: not in the DBC twin",
+      "node ACMB: not in the DBC twin",
+      "node SCCM: not in the DBC twin",
+      "0x102 ESP_AebFb / iB_BrakePedalApplied: comment \"Description: Indicates whether the driver ope...\" -> \"Description: Indicates whether the driver ope...\"",
+      "0x38B ESPiB1 / ESPiB1_IgnitionOn: comment \"Description: Indicates whether the key is tur...\" -> \"Description: Indicates whether the key is tur...\"",
+      "0x38B ESPiB1 / ESPiB1_VehicleSpeed_Q: comment \"Description: Qualifier of the signal : ESPiB1...\" -> \"Description: Qualifier of the signal : ESPiB1...\"",
+      "0x38B ESPiB1 / ESPiB1_VehicleSpeed: comment \"Description: Averaged wheel speed (signal in ...\" -> \"Description: Averaged wheel speed (signal in ...\"",
+      "0x38C ESPiB2 / ESPiB2_qTargetExternal_Q: comment \"Description: Qualifier for the volume flow in...\" -> \"Description: Qualifier for the volume flow in...\"",
+      "0x38C ESPiB2 / ESPiB2_qTargetExternal: comment \"Description: Target flow of the brake system ...\" -> \"Description: Target flow of the brake system ...\"",
+      "0x38D ESPiB3 / ESPiB3_ABSActive: comment \"Description: Indicates that at least one whee...\" -> \"Description: Indicates that at least one whee...\"",
+      "0x38D ESPiB3 / ESPiB3_ForceBlendingActive: comment \"Description: Control state of force-blending ...\" -> \"Description: Control state of force-blending ...\"",
+      "0x38D ESPiB3 / ESPiB3_pMcVirtual: comment \"Description: Virtual master cylinder pressure...\" -> \"Description: Virtual master cylinder pressure...\"",
+      "0x38D ESPiB3 / ESPiB3_pForceBlendingMC: comment \"Description : Master Cylinder pressure used b...\" -> \"Description : Master Cylinder pressure used b...\"",
+      "0x38D ESPiB3 / ESPiB3_pMC1: comment \"Description: Current pressure of the master c...\" -> \"Description: Current pressure of the master c...\"",
+      "0x38F iBESP2 / iBESP2_BrakePedalApplied: comment \"Description: Indicates whether the driver ope...\" -> \"Description: Indicates whether the driver ope...\"",
+      "0x38F iBESP2 / iBESP2_pRunout: comment \"Description: In driver braking: maximum achie...\" -> \"Description: In driver braking: maximum achie...\""
+    ],
+    "problems": [
+      "0: canmatrix warning: WARNING canmatrix.Signal: Signal VDM_AdasDecelLimit: Value 0 is not valid for VD"
+    ]
+  },
+  "tesla_can.dbc": {
+    "differences": [
+      "node SBW: missing",
+      "node EPB: not in the DBC twin",
+      "node APS: not in the DBC twin",
+      "node PARK: not in the DBC twin",
+      "node IC: not in the DBC twin"
+    ],
+    "problems": [
+      "0: canmatrix warning: WARNING canmatrix.Signal: Signal UI_autopilotControlRequest: Value 1 is not vali",
+      "0: canmatrix warning: WARNING canmatrix.Signal: Signal UI_ulcStalkConfirm: Value 1 is not valid for UI"
+    ]
+  },
+  "tesla_model3_party.dbc": {
+    "differences": [
+      "node aps: not in the DBC twin",
+      "node epas3s: not in the DBC twin",
+      "node X: not in the DBC twin",
+      "node park: not in the DBC twin",
+      "node app: not in the DBC twin",
+      "node das: not in the DBC twin",
+      "node gtw: not in the DBC twin",
+      "node ibst: not in the DBC twin",
+      "node rcm: not in the DBC twin",
+      "node tpms: not in the DBC twin",
+      "node XXX: not in the DBC twin"
+    ],
+    "problems": []
+  },
+  "tesla_model3_vehicle.dbc": {
+    "differences": [
+      "node gtw: not in the DBC twin",
+      "node vcright: not in the DBC twin",
+      "node das: not in the DBC twin",
+      "node di: not in the DBC twin",
+      "node app: not in the DBC twin",
+      "node X: not in the DBC twin",
+      "node aps: not in the DBC twin",
+      "node epbl: not in the DBC twin",
+      "node bms: not in the DBC twin",
+      "node vcfront: not in the DBC twin",
+      "node vcleft: not in the DBC twin",
+      "node STW: not in the DBC twin",
+      "node NEO: not in the DBC twin",
+      "node XXX: not in the DBC twin",
+      "node Receiver: not in the DBC twin"
+    ],
+    "problems": []
+  },
+  "tesla_powertrain.dbc": {
+    "differences": [
+      "node MCU: missing",
+      "node EPAS: missing",
+      "node ESP: missing",
+      "node SBW: missing",
+      "node APP: missing",
+      "node DAS: missing",
+      "node PM: not in the DBC twin",
+      "node APS: not in the DBC twin"
+    ],
+    "problems": []
+  },
+  "toyota_2017_ref_pt.dbc": {
+    "differences": [
+      "0x413 AVN1S31 / BDBF01ID: signal not in the DBC twin",
+      "0x413 AVN1S31 / BDBF01IF: signal not in the DBC twin",
+      "0x413 AVN1S31 / SALR: signal not in the DBC twin",
+      "0x413 AVN1S31 / HDCY_BDB: signal not in the DBC twin",
+      "0x413 AVN1S31 / AARE_B: signal not in the DBC twin",
+      "0x413 AVN1S31 / I_SEN_B: signal not in the DBC twin",
+      "0x413 AVN1S31 / INTSET_B: signal not in the DBC twin",
+      "0x413 AVN1S31 / INCSET_B: signal not in the DBC twin",
+      "0x413 AVN1S31 / ISSD_BDB: signal not in the DBC twin",
+      "0x413 AVN1S31 / SEID: signal not in the DBC twin",
+      "0x413 AVN1S31 / WS_ID: signal not in the DBC twin",
+      "0x413 AVN1S31 / WS_SWON: signal not in the DBC twin",
+      "0x413 AVN1S31 / WS_DATA: signal not in the DBC twin",
+      "0x413 AVN1S31 / BDBF03ID: signal not in the DBC twin",
+      "0x413 AVN1S31 / BDBF03IF: signal not in the DBC twin",
+      "0x413 AVN1S31 / TRIP_CNT: signal not in the DBC twin",
+      "0x413 AVN1S31 / TIME_CNT: signal not in the DBC twin",
+      "0x413 AVN1S31 / BDB01_ID: signal not in the DBC twin",
+      "0x413 AVN1S31 / BDB01_IF: signal not in the DBC twin",
+      "0x413 AVN1S31 / LX: signal not in the DBC twin",
+      "0x413 AVN1S31 / ADIM: signal not in the DBC twin",
+      "0x413 AVN1S31 / IG_BDB: signal not in the DBC twin",
+      "0x413 AVN1S31 / ACC_BDB: signal not in the DBC twin",
+      "0x413 AVN1S31 / SKSW: signal not in the DBC twin",
+      "0x413 AVN1S31 / DCTY: signal not in the DBC twin",
+      "0x413 AVN1S31 / PCTY: signal not in the DBC twin",
+      "0x413 AVN1S31 / RRCY: signal not in the DBC twin",
+      "0x413 AVN1S31 / RLCY: signal not in the DBC twin",
+      "0x413 AVN1S31 / BCTY: signal not in the DBC twin",
+      "0x413 AVN1S31 / PSW: signal not in the DBC twin",
+      "0x413 AVN1S31 / SRBZ: signal not in the DBC twin",
+      "0x413 AVN1S31 / DBKL: signal not in the DBC twin",
+      "0x413 AVN1S31 / PKB_BDB: signal not in the DBC twin",
+      "0x413 AVN1S31 / SREXIST: signal not in the DBC twin",
+      "0x413 AVN1S31 / SRPOS: signal not in the DBC twin",
+      "0x413 AVN1S31 / BDB02_ID: signal not in the DBC twin",
+      "0x413 AVN1S31 / BDB02_IF: signal not in the DBC twin",
+      "0x413 AVN1S31 / LUD: signal not in the DBC twin",
+      "0x413 AVN1S31 / TRNKOPN: signal not in the DBC twin",
+      "0x413 AVN1S31 / BDB03_ID: signal not in the DBC twin",
+      "0x413 AVN1S31 / BDB03_IF: signal not in the DBC twin",
+      "0x413 AVN1S31 / LTS: signal not in the DBC twin",
+      "0x413 AVN1S31 / PANL: signal not in the DBC twin",
+      "0x413 AVN1S31 / UDRL: signal not in the DBC twin",
+      "0x413 AVN1S31 / HEDH: signal not in the DBC twin",
+      "0x413 AVN1S31 / HEDL: signal not in the DBC twin",
+      "0x413 AVN1S31 / TAIL: signal not in the DBC twin",
+      "0x413 AVN1S31 / FFOG: signal not in the DBC twin",
+      "0x413 AVN1S31 / RFOG: signal not in the DBC twin",
+      "0x413 AVN1S31 / SB_IND: signal not in the DBC twin",
+      "0x413 AVN1S31 / SB_OK: signal not in the DBC twin",
+      "0x413 AVN1S31 / RTRRQ: signal not in the DBC twin",
+      "0x413 AVN1S31 / SRWARN: signal not in the DBC twin",
+      "0x413 AVN1S31 / PWWARN: signal not in the DBC twin",
+      "0x413 AVN1S31 / WEL_REQ: signal not in the DBC twin",
+      "0x413 AVN1S31 / DRPBZ_R: signal not in the DBC twin",
+      "0x413 AVN1S31 / BDB04_ID: signal not in the DBC twin",
+      "0x413 AVN1S31 / BDB04_IF: signal not in the DBC twin",
+      "0x413 AVN1S31 / MRMV_R: signal not in the DBC twin",
+      "0x413 AVN1S31 / RSEL: signal not in the DBC twin",
+      "0x413 AVN1S31 / LSEL: signal not in the DBC twin",
+      "0x413 AVN1S31 / MHR: signal not in the DBC twin",
+      "0x413 AVN1S31 / MHL: signal not in the DBC twin",
+      "0x413 AVN1S31 / MVU: signal not in the DBC twin",
+      "0x413 AVN1S31 / MVD: signal not in the DBC twin",
+      "0x413 AVN1S31 / GHSW: signal not in the DBC twin",
+      "0x413 AVN1S31 / GCTY: signal not in the DBC twin",
+      "0x413 AVN1S31 / GHOPN: signal not in the DBC twin",
+      "0x413 AVN1S31 / ABIF: signal not in the DBC twin",
+      "0x413 AVN1S31 / FLSHRQ: signal not in the DBC twin",
+      "0x413 AVN1S31 / SB_ADV: signal not in the DBC twin",
+      "0x413 AVN1S31 / BDB05_ID: signal not in the DBC twin",
+      "0x413 AVN1S31 / BDB05_IF: signal not in the DBC twin",
+      "0x413 AVN1S31 / PARK: signal not in the DBC twin",
+      "0x413 AVN1S31 / TSWB: signal not in the DBC twin",
+      "0x413 AVN1S31 / LSWD: signal not in the DBC twin",
+      "0x413 AVN1S31 / LSWP: signal not in the DBC twin",
+      "0x413 AVN1S31 / LSWR: signal not in the DBC twin",
+      "0x413 AVN1S31 / LSWL: signal not in the DBC twin",
+      "0x413 AVN1S31 / LSWB: signal not in the DBC twin",
+      "0x413 AVN1S31 / DRVKS_R: signal not in the DBC twin",
+      "0x413 AVN1S31 / PWDRD: signal not in the DBC twin",
+      "0x413 AVN1S31 / PWDRP: signal not in the DBC twin",
+      "0x413 AVN1S31 / PWDRR: signal not in the DBC twin",
+      "0x413 AVN1S31 / PWDRL: signal not in the DBC twin",
+      "0x413 AVN1S31 / DKLS: signal not in the DBC twin",
+      "0x413 AVN1S31 / BKLS: signal not in the DBC twin",
+      "0x413 AVN1S31 / KIDSCN_R: signal not in the DBC twin",
+      "0x413 AVN1S31 / BDB06_ID: signal not in the DBC twin",
+      "0x413 AVN1S31 / BDB06_IF: signal not in the DBC twin",
+      "0x413 AVN1S31 / TBSW: signal not in the DBC twin",
+      "0x413 AVN1S31 / WBZF: signal not in the DBC twin",
+      "0x413 AVN1S31 / WVOL: signal not in the DBC twin",
+      "0x413 AVN1S31 / BDB07_ID: signal not in the DBC twin",
+      "0x413 AVN1S31 / BDB07_IF: signal not in the DBC twin",
+      "0x413 AVN1S31 / WCD: signal not in the DBC twin",
+      "0x413 AVN1S31 / W1D: signal not in the DBC twin",
+      "0x413 AVN1S31 / W2D: signal not in the DBC twin",
+      "0x413 AVN1S31 / W3D: signal not in the DBC twin",
+      "0x413 AVN1S31 / BDB7SUM1: signal not in the DBC twin",
+      "0x413 AVN1S31 / BDB7SUM2: signal not in the DBC twin",
+      "0x413 AVN1S31 / BDB08_ID: signal not in the DBC twin",
+      "0x413 AVN1S31 / BDB08_IF: signal not in the DBC twin",
+      "0x413 AVN1S31 / DEST_BDB: signal not in the DBC twin",
+      "0x413 AVN1S31 / DS_PACK1: signal not in the DBC twin",
+      "0x413 AVN1S31 / DS_PACK2: signal not in the DBC twin",
+      "0x413 AVN1S31 / STRG_WHL: signal not in the DBC twin",
+      "0x413 AVN1S31 / DEICER: signal not in the DBC twin",
+      "0x413 AVN1S31 / KEYPLATE: signal not in the DBC twin",
+      "0x413 AVN1S31 / DBLLCK: signal not in the DBC twin",
+      "0x413 AVN1S31 / U2OP_CST: signal not in the DBC twin",
+      "0x413 AVN1S31 / U2OP_DFT: signal not in the DBC twin",
+      "0x413 AVN1S31 / BDB11_ID: signal not in the DBC twin",
+      "0x413 AVN1S31 / BDB11_IF: signal not in the DBC twin",
+      "0x413 AVN1S31 / BDBREQ11: signal not in the DBC twin",
+      "0x413 AVN1S31 / BDBREQ12: signal not in the DBC twin",
+      "0x413 AVN1S31 / BDB17_ID: signal not in the DBC twin",
+      "0x413 AVN1S31 / BDB17_IF: signal not in the DBC twin",
+      "0x413 AVN1S31 / CHABASE1: signal not in the DBC twin",
+      "0x413 AVN1S31 / CHABASE2: signal not in the DBC twin",
+      "0x413 AVN1S31 / CHABASE3: signal not in the DBC twin",
+      "0x413 AVN1S31 / CHA_NO1: signal not in the DBC twin",
+      "0x413 AVN1S31 / CHA_NO2: signal not in the DBC twin",
+      "0x413 AVN1S31 / CHA_NO3: signal not in the DBC twin",
+      "0x413 AVN1S31 / SP_BODY: signal not in the DBC twin",
+      "0x413 AVN1S31 / BDB18_ID: signal not in the DBC twin",
+      "0x413 AVN1S31 / BDB18_IF: signal not in the DBC twin",
+      "0x413 AVN1S31 / POP_NAME: signal not in the DBC twin",
+      "0x413 AVN1S31 / BODY: signal not in the DBC twin",
+      "0x413 AVN1S31 / GEAR: signal not in the DBC twin",
+      "0x413 AVN1S31 / GRADE: signal not in the DBC twin",
+      "0x413 AVN1S31 / ENGINE: signal not in the DBC twin",
+      "0x40140639 BDB1F01_14: message missing",
+      "0x4016063B BDB1F03_16: message missing",
+      "0x40100620 BDB1S01_10: message missing",
+      "0x40110621 BDB1S02_11: message missing",
+      "0x40120622 BDB1S03_12: message missing",
+      "0x40190623 BDB1S04_19: message missing",
+      "0x40130638 BDB1S05_13: message missing",
+      "0x40170630 BDB1S06_17: message missing",
+      "0x40180631 BDB1S07_18: message missing",
+      "0x401A0624 BDB1S08_1A: message missing",
+      "0x401D0627 BDB1S11_1D: message missing",
+      "0x4098063C BDB1S17_98: message missing",
+      "0x4099063D BDB1S18_99: message missing",
+      "0x3FC BDB1S19 / BDB20_ID: signal not in the DBC twin",
+      "0x3FC BDB1S19 / BDB20_IF: signal not in the DBC twin",
+      "0x3FC BDB1S19 / RNBDYC: signal not in the DBC twin",
+      "0x3FC BDB1S19 / RNBDYD: signal not in the DBC twin",
+      "0x3FC BDB1S19 / BDB21_ID: signal not in the DBC twin",
+      "0x3FC BDB1S19 / BDB21_IF: signal not in the DBC twin",
+      "0x3FC BDB1S19 / RFOG_SW: signal not in the DBC twin",
+      "0x3FC BDB1S19 / FFOG_SW: signal not in the DBC twin",
+      "0x3FC BDB1S19 / HF_SW: signal not in the DBC twin",
+      "0x3FC BDB1S19 / HU_SW: signal not in the DBC twin",
+      "0x3FC BDB1S19 / AUTO_SW: signal not in the DBC twin",
+      "0x3FC BDB1S19 / HEAD_SW: signal not in the DBC twin",
+      "0x3FC BDB1S19 / TAIL_SW: signal not in the DBC twin",
+      "0x3FC BDB1S19 / DRL_OFF: signal not in the DBC twin",
+      "0x409A063E BDB1S20_9A: message missing",
+      "0x409B063F BDB1S21_9B: message missing",
+      "0x396 CSR1S01 / SS_MODE: signal not in the DBC twin",
+      "0x40D606D1 DMS1S02_D6: message missing",
+      "0x2E1 FWM1S01 / IDT03_ID: signal not in the DBC twin",
+      "0x2E1 FWM1S01 / IDT03_IF: signal not in the DBC twin",
+      "0x2E1 FWM1S01 / CO_IDT: signal not in the DBC twin",
+      "0x2E1 FWM1S01 / UACK: signal not in the DBC twin",
+      "0x2E1 FWM1S01 / WRT: signal not in the DBC twin",
+      "0x2E1 FWM1S01 / RSTP: signal not in the DBC twin",
+      "0x2E1 FWM1S01 / IDT04_ID: signal not in the DBC twin",
+      "0x2E1 FWM1S01 / IDT04_IF: signal not in the DBC twin",
+      "0x2E1 FWM1S01 / OSID: signal not in the DBC twin",
+      "0x40820634 IDT1S03_82: message missing",
+      "0x40830635 IDT1S04_83: message missing",
+      "0x4EF MAV1N01 / MET01_ID: signal not in the DBC twin",
+      "0x4EF MAV1N01 / MET01_IF: signal not in the DBC twin",
+      "0x4EF MAV1N01 / MET_SPD: signal not in the DBC twin",
+      "0x4EF MAV1N01 / RHEOSTAT: signal not in the DBC twin",
+      "0x4EF MAV1N01 / TAIL_CN: signal not in the DBC twin",
+      "0x4EF MAV1N01 / ILL_OF: signal not in the DBC twin",
+      "0x4EF MAV1N01 / UNIT_TMP: signal not in the DBC twin",
+      "0x4EF MAV1N01 / IN_FC: signal not in the DBC twin",
+      "0x4EF MAV1N01 / UNIT_0: signal not in the DBC twin",
+      "0x4EF MAV1N01 / SP_TL: signal not in the DBC twin",
+      "0x4EF MAV1N01 / MET_TC: signal not in the DBC twin",
+      "0x4EF MAV1N01 / MET02_ID: signal not in the DBC twin",
+      "0x4EF MAV1N01 / MET02_IF: signal not in the DBC twin",
+      "0x4EF MAV1N01 / MET_DEST: signal not in the DBC twin",
+      "0x4EF MAV1N01 / ODO_UNIT: signal not in the DBC twin",
+      "0x4EF MAV1N01 / OMRS: signal not in the DBC twin",
+      "0x4EF MAV1N01 / UNIT_CH: signal not in the DBC twin",
+      "0x4EF MAV1N01 / ODO: signal not in the DBC twin",
+      "0x4EF MAV1N01 / MET04_ID: signal not in the DBC twin",
+      "0x4EF MAV1N01 / MET04_IF: signal not in the DBC twin",
+      "0x4EF MAV1N01 / AF_FC: signal not in the DBC twin",
+      "0x4EF MAV1N01 / UNIT_3: signal not in the DBC twin",
+      "0x4EF MAV1N01 / RANGE: signal not in the DBC twin",
+      "0x4EF MAV1N01 / UNIT_4: signal not in the DBC twin",
+      "0x4EF MAV1N01 / MET05_ID: signal not in the DBC twin",
+      "0x4EF MAV1N01 / MET05_IF: signal not in the DBC twin",
+      "0x4EF MAV1N01 / TO_SP: signal not in the DBC twin",
+      "0x4EF MAV1N01 / UNIT_5: signal not in the DBC twin",
+      "0x4EF MAV1N01 / TO_FC: signal not in the DBC twin",
+      "0x4EF MAV1N01 / UNIT_6: signal not in the DBC twin",
+      "0x4EF MAV1N01 / MET08_ID: signal not in the DBC twin",
+      "0x4EF MAV1N01 / MET08_IF: signal not in the DBC twin",
+      "0x4EF MAV1N01 / TO_DT: signal not in the DBC twin",
+      "0x4EF MAV1N01 / UNIT_10: signal not in the DBC twin",
+      "0x4EF MAV1N01 / MET09_ID: signal not in the DBC twin",
+      "0x4EF MAV1N01 / MET09_IF: signal not in the DBC twin",
+      "0x4EF MAV1N01 / WASH: signal not in the DBC twin",
+      "0x4EF MAV1N01 / BLVW: signal not in the DBC twin",
+      "0x4EF MAV1N01 / C_CW: signal not in the DBC twin",
+      "0x4EF MAV1N01 / ENGW: signal not in the DBC twin",
+      "0x4EF MAV1N01 / ABSW: signal not in the DBC twin",
+      "0x4EF MAV1N01 / VSCW: signal not in the DBC twin",
+      "0x4EF MAV1N01 / OPW: signal not in the DBC twin",
+      "0x4EF MAV1N01 / OLW: signal not in the DBC twin",
+      "0x4EF MAV1N01 / LW: signal not in the DBC twin",
+      "0x4EF MAV1N01 / FSRS: signal not in the DBC twin",
+      "0x4EF MAV1N01 / HALW: signal not in the DBC twin",
+      "0x4EF MAV1N01 / BRW: signal not in the DBC twin",
+      "0x4EF MAV1N01 / TIRW: signal not in the DBC twin",
+      "0x4EF MAV1N01 / FWW: signal not in the DBC twin",
+      "0x4EF MAV1N01 / SUSW: signal not in the DBC twin",
+      "0x4EF MAV1N01 / LKAW: signal not in the DBC twin",
+      "0x4EF MAV1N01 / MET_PCSW: signal not in the DBC twin",
+      "0x4EF MAV1N01 / WTPW: signal not in the DBC twin",
+      "0x4EF MAV1N01 / MET10_ID: signal not in the DBC twin",
+      "0x4EF MAV1N01 / MET10_IF: signal not in the DBC twin",
+      "0x4EF MAV1N01 / OM_MLG: signal not in the DBC twin",
+      "0x4EF MAV1N01 / PR_OM_FL: signal not in the DBC twin",
+      "0x4EF MAV1N01 / TNS: signal not in the DBC twin",
+      "0x4EF MAV1N01 / HZS: signal not in the DBC twin",
+      "0x4EF MAV1N01 / MET11_ID: signal not in the DBC twin",
+      "0x4EF MAV1N01 / MET11_IF: signal not in the DBC twin",
+      "0x4EF MAV1N01 / UNIT_CH2: signal not in the DBC twin",
+      "0x4EF MAV1N01 / TOLER_A: signal not in the DBC twin",
+      "0x4EF MAV1N01 / CDISP_EX: signal not in the DBC twin",
+      "0x4EF MAV1N01 / TOLER_B: signal not in the DBC twin",
+      "0x4EF MAV1N01 / TRIP_B: signal not in the DBC twin",
+      "0x4EF MAV1N01 / MET12_ID: signal not in the DBC twin",
+      "0x4EF MAV1N01 / MET12_IF: signal not in the DBC twin",
+      "0x4EF MAV1N01 / ESLW: signal not in the DBC twin",
+      "0x4EF MAV1N01 / CSOW: signal not in the DBC twin",
+      "0x4EF MAV1N01 / LHLW: signal not in the DBC twin",
+      "0x4EF MAV1N01 / SMBW: signal not in the DBC twin",
+      "0x4EF MAV1N01 / KDSW: signal not in the DBC twin",
+      "0x4EF MAV1N01 / OMRW: signal not in the DBC twin",
+      "0x4EF MAV1N01 / BSDW: signal not in the DBC twin",
+      "0x4EF MAV1N01 / MTSW: signal not in the DBC twin",
+      "0x4EF MAV1N01 / ATSW: signal not in the DBC twin",
+      "0x40200610 MET1S01_20: message missing",
+      "0x40210611 MET1S02_21: message missing",
+      "0x40230619 MET1S04_23: message missing",
+      "0x4024061A MET1S05_24: message missing",
+      "0x40270612 MET1S08_27: message missing",
+      "0x40280613 MET1S09_28: message missing",
+      "0x40290614 MET1S10_29: message missing",
+      "0x402A0615 MET1S11_2A: message missing",
+      "0x402B0616 MET1S12_2B: message missing",
+      "0x3E0 MET1S18 / ID6F320: signal not in the DBC twin",
+      "0x3E0 MET1S18 / IF6F320: signal not in the DBC twin",
+      "0x3E0 MET1S18 / TSR_OSM: signal not in the DBC twin",
+      "0x3E0 MET1S18 / TSR_OSL: signal not in the DBC twin",
+      "0x3E0 MET1S18 / TSR_SNM: signal not in the DBC twin",
+      "0x3E0 MET1S18 / TSR_MAIN: signal not in the DBC twin",
+      "0x3E0 MET1S18 / LDAMCUS: signal not in the DBC twin",
+      "0x3E0 MET1S18 / LDAMSW: signal not in the DBC twin",
+      "0x3E0 MET1S18 / FCMUSER: signal not in the DBC twin",
+      "0x3E0 MET1S18 / FCMMCUS: signal not in the DBC twin",
+      "0x3E0 MET1S18 / FCMMSW: signal not in the DBC twin",
+      "0x3E0 MET1S18 / BSMMSW: signal not in the DBC twin",
+      "0x3E0 MET1S18 / CSRMSW: signal not in the DBC twin",
+      "0x3E0 MET1S18 / PCSMCUS: signal not in the DBC twin",
+      "0x3E0 MET1S18 / PCSMSW: signal not in the DBC twin",
+      "0x3E0 MET1S18 / LKACTCSW: signal not in the DBC twin",
+      "0x3E0 MET1S18 / LDA_SFB: signal not in the DBC twin",
+      "0x3E0 MET1S18 / PMNF03ID: signal not in the DBC twin",
+      "0x3E0 MET1S18 / PMNF03IF: signal not in the DBC twin",
+      "0x3E0 MET1S18 / PSSW_PMN: signal not in the DBC twin",
+      "0x3E0 MET1S18 / PSW_PMN: signal not in the DBC twin",
+      "0x3E0 MET1S18 / KCC_PMN: signal not in the DBC twin",
+      "0x3E0 MET1S18 / PMOD_PMN: signal not in the DBC twin",
+      "0x3E0 MET1S18 / MOD_EIG: signal not in the DBC twin",
+      "0x3E0 MET1S18 / SWBZ_EIG: signal not in the DBC twin",
+      "0x402006F3 MET1S22_20: message missing",
+      "0x40E406C0 PMN1F03_E4: message missing",
+      "0x40000682 YGW1S01_0: message missing",
+      "0x40000683 YGW1S02_0: message missing",
+      "0x40000686 YGW1S05_0: message missing",
+      "0x682 YGW1S01_0: message not in the DBC twin",
+      "0x683 YGW1S02_0: message not in the DBC twin",
+      "0x686 YGW1S05_0: message not in the DBC twin"
+    ],
+    "problems": [
+      "387: canmatrix could not read this line: BO_ 1075054137 BDB1F01_14: 8 CGW",
+      "402: canmatrix could not read this line: BO_ 1075185211 BDB1F03_16: 8 CGW",
+      "408: canmatrix could not read this line: BO_ 1074791968 BDB1S01_10: 8 CGW",
+      "428: canmatrix could not read this line: BO_ 1074857505 BDB1S02_11: 8 CGW",
+      "434: canmatrix could not read this line: BO_ 1074923042 BDB1S03_12: 8 CGW",
+      "453: canmatrix could not read this line: BO_ 1075381795 BDB1S04_19: 8 CGW",
+      "470: canmatrix could not read this line: BO_ 1074988600 BDB1S05_13: 8 CGW",
+      "489: canmatrix could not read this line: BO_ 1075250736 BDB1S06_17: 8 CGW",
+      "496: canmatrix could not read this line: BO_ 1075316273 BDB1S07_18: 8 CGW",
+      "506: canmatrix could not read this line: BO_ 1075447332 BDB1S08_1A: 8 CGW",
+      "519: canmatrix could not read this line: BO_ 1075643943 BDB1S11_1D: 8 CGW",
+      "525: canmatrix could not read this line: BO_ 1083704892 BDB1S17_98: 8 CGW",
+      "536: canmatrix could not read this line: BO_ 1083770429 BDB1S18_99: 8 CGW",
+      "550: canmatrix could not read this line: BO_ 1083835966 BDB1S20_9A: 8 CGW",
+      "556: canmatrix could not read this line: BO_ 1083901503 BDB1S21_9B: 8 CGW",
+      "617: canmatrix could not read this line: BO_ 1087768273 DMS1S02_D6: 8 CGW",
+      "1221: canmatrix could not read this line: BO_ 1082263092 IDT1S03_82: 8 CGW",
+      "1229: canmatrix could not read this line: BO_ 1082328629 IDT1S04_83: 8 CGW",
+      "1248: canmatrix could not read this line: BO_ 1075840528 MET1S01_20: 8 CGW",
+      "1261: canmatrix could not read this line: BO_ 1075906065 MET1S02_21: 8 CGW",
+      "1270: canmatrix could not read this line: BO_ 1076037145 MET1S04_23: 8 CGW",
+      "1278: canmatrix could not read this line: BO_ 1076102682 MET1S05_24: 8 CGW",
+      "1286: canmatrix could not read this line: BO_ 1076299282 MET1S08_27: 8 CGW",
+      "1292: canmatrix could not read this line: BO_ 1076364819 MET1S09_28: 8 CGW",
+      "1314: canmatrix could not read this line: BO_ 1076430356 MET1S10_29: 8 CGW",
+      "1322: canmatrix could not read this line: BO_ 1076495893 MET1S11_2A: 8 CGW",
+      "1331: canmatrix could not read this line: BO_ 1076561430 MET1S12_2B: 8 CGW",
+      "1355: canmatrix could not read this line: BO_ 1075840755 MET1S22_20: 8 CGW",
+      "1374: canmatrix could not read this line: BO_ 1088685760 PMN1F03_E4: 8 CGW"
+    ]
+  },
+  "toyota_adas.dbc": {
+    "differences": [],
+    "problems": []
+  },
+  "toyota_iQ_2009_can.dbc": {
+    "differences": [],
+    "problems": []
+  },
+  "toyota_prius_2010_pt.dbc": {
+    "differences": [
+      "node ESP: not in the DBC twin"
+    ],
+    "problems": []
+  },
+  "toyota_radar_dsu_tssp.dbc": {
+    "differences": [],
+    "problems": []
+  },
+  "toyota_tss2_adas.dbc": {
+    "differences": [],
+    "problems": []
+  },
+  "volvo_v40_2017_pt.dbc": {
+    "differences": [
+      "node ECM1: not in the DBC twin",
+      "node XX: not in the DBC twin"
+    ],
+    "problems": [
+      "353: canmatrix could not read this line: CM_ SG_ 437 Counter0 \"Related to braking? Maybe one per wheel?\";",
+      "354: canmatrix could not read this line: CM_ SG_ 437 Counter1 \"Related to braking? Maybe one per wheel?\";",
+      "355: canmatrix could not read this line: CM_ SG_ 437 Counter2 \"Related to braking? Maybe one per wheel?\";",
+      "356: canmatrix could not read this line: CM_ SG_ 437 Counter3 \"Related to braking? Maybe one per wheel?\";"
+    ]
+  },
+  "volvo_v60_2015_pt.dbc": {
+    "differences": [],
+    "problems": []
+  },
+  "vw_meb.dbc": {
+    "differences": [
+      "node AWC: not in the DBC twin",
+      "node BMC_MLBevo: not in the DBC twin",
+      "node BMS_NV: not in the DBC twin",
+      "node DCDC_800V_PAG: not in the DBC twin",
+      "node DCDC_HV: not in the DBC twin",
+      "node DCDC_HV_02: not in the DBC twin",
+      "node DCDC_IHEV: not in the DBC twin",
+      "node FCU_MLBevo_FCEV: not in the DBC twin",
+      "node Ladegeraet_2: not in the DBC twin",
+      "node Ladegeraet_Konzern: not in the DBC twin",
+      "node Sub_Gateway: not in the DBC twin",
+      "node TME: not in the DBC twin",
+      "node XXX: not in the DBC twin",
+      "node Motor_Diesel_MQB: not in the DBC twin",
+      "node Gateway_MQB: not in the DBC twin",
+      "node Getriebe_DQ_Hybrid_MQB: not in the DBC twin",
+      "node Getriebe_DQ_MQB: not in the DBC twin",
+      "node SAK_MQB: not in the DBC twin",
+      "node LEH_MQB: not in the DBC twin",
+      "node BMS_MQB: not in the DBC twin",
+      "node Airbag_MQB: not in the DBC twin",
+      "node Motor_Hybrid_MQB: not in the DBC twin",
+      "node Motor_Otto_MQB: not in the DBC twin",
+      "node Gateway_D4C7: not in the DBC twin",
+      "node SCU_D4: not in the DBC twin",
+      "node Frontsensorik: not in the DBC twin",
+      "node Frontradar: not in the DBC twin",
+      "node NightVision: not in the DBC twin",
+      "node LE_MLBevo: not in the DBC twin",
+      "node LE1: not in the DBC twin",
+      "node LE2: not in the DBC twin",
+      "node LE2_3_MLBevo_LB: not in the DBC twin",
+      "0x6B4 VIN_01 / CRC: signal not in the DBC twin",
+      "0x6B4 VIN_01 / CNT: signal not in the DBC twin",
+      "0x6B4 VIN_01 / Brake_Unknown: signal not in the DBC twin",
+      "0x6B4 VIN_01 / Brake_Light_01: signal not in the DBC twin",
+      "0x6B4 VIN_01 / NEW_SIGNAL_2: signal not in the DBC twin",
+      "0x6B4 VIN_01 / Right_Blinker: signal not in the DBC twin",
+      "0x6B4 VIN_01 / Left_Blinker: signal not in the DBC twin",
+      "0x6B4 VIN_01 / Reverse_Light: signal not in the DBC twin",
+      "0x6B4 VIN_01 / Brake_Light_02: signal not in the DBC twin",
+      "0x6B4 VIN_01 / Right_Blinker_02: signal not in the DBC twin",
+      "0x6B4 VIN_01 / Left_Blinker_02: signal not in the DBC twin",
+      "0x6B4 VIN_01 / NEW_SIGNAL_3: signal not in the DBC twin",
+      "0x6B4 VIN_01 / NEW_SIGNAL_4: signal not in the DBC twin",
+      "0x6B4 VIN_01 / CHK: signal not in the DBC twin",
+      "0x12DD54A7 MEB_Camera_04: message missing",
+      "0x12DD54C9 SAL_01: message missing",
+      "0x12DD54E9 MEB_Camera_05: message missing",
+      "0x12DD5502 AAA_01: message missing",
+      "0x12DD5524 MEB_Camera_06: message missing",
+      "0x12DD553D HVL_01: message missing",
+      "0x16A9545F IPA_02: message missing",
+      "0x16A954B3 MEB_Camera_07: message missing",
+      "0x16A954C4 MEB_Camera_08: message missing",
+      "0x17335B10 MEB_Camera_09: message missing",
+      "0x17335B11 MEB_Camera_10: message missing",
+      "0x17F0004F MEB_Camera_11: message missing",
+      "0x17FE034F MEB_Camera_14: message missing",
+      "0x1A555541 EML_02: message missing",
+      "0x1A555592 MEB_Camera_12: message missing",
+      "0x1B00004F MEB_Camera_13: message missing"
+    ],
+    "problems": [
+      "2075: canmatrix could not read this line: BO_ 316495015 MEB_Camera_04: 32 XXX",
+      "2077: canmatrix could not read this line: BO_ 316495049 SAL_01: 8 XXX",
+      "2092: canmatrix could not read this line: BO_ 316495081 MEB_Camera_05: 8 XXX",
+      "2094: canmatrix could not read this line: BO_ 316495106 AAA_01: 8 XXX",
+      "2098: canmatrix could not read this line: BO_ 316495140 MEB_Camera_06: 64 XXX",
+      "2100: canmatrix could not read this line: BO_ 316495165 HVL_01: 8 XXX",
+      "2104: canmatrix could not read this line: BO_ 380195935 IPA_02: 8 XXX",
+      "2106: canmatrix could not read this line: BO_ 380196019 MEB_Camera_07: 16 XXX",
+      "2108: canmatrix could not read this line: BO_ 380196036 MEB_Camera_08: 8 XXX",
+      "2110: canmatrix could not read this line: BO_ 389241616 MEB_Camera_09: 8 XXX",
+      "2112: canmatrix could not read this line: BO_ 389241617 MEB_Camera_10: 8 XXX",
+      "2114: canmatrix could not read this line: BO_ 401604687 MEB_Camera_11: 8 XXX",
+      "2116: canmatrix could not read this line: BO_ 402522959 MEB_Camera_14: 8 XXX",
+      "2118: canmatrix could not read this line: BO_ 441800001 EML_02: 8 XXX",
+      "2122: canmatrix could not read this line: BO_ 441800082 MEB_Camera_12: 8 XXX",
+      "2124: canmatrix could not read this line: BO_ 452984911 MEB_Camera_13: 8 XXX",
+      "2132: canmatrix could not read this line: CM_ BO_ 316495165 \"Steuerger\\xc3\\xa4t ICAS1\";",
+      "2133: canmatrix could not read this line: CM_ BO_ 441800001 \"Steuerger\\xc3\\xa4t f\\xc3\\xbcr Fahrzeugbewegung\";"
+    ]
+  },
+  "vw_mlb.dbc": {
+    "differences": [
+      "node Gateway_B8: not in the DBC twin",
+      "node Magnetic_Ride_LB: not in the DBC twin",
+      "node Motor_MLB_AU48_AU416_Diesel: not in the DBC twin",
+      "node Motor_MLB_B8_Q5_Otto: not in the DBC twin",
+      "node Motor_MLB_Q5_Hybrid: not in the DBC twin",
+      "node XXX: not in the DBC twin",
+      "node HUD_C7: not in the DBC twin",
+      "node Kombi_D4: not in the DBC twin",
+      "node APS_D4: not in the DBC twin",
+      "node Frontsensorik: not in the DBC twin",
+      "node Frontradar: not in the DBC twin",
+      "node SMLS_D4: not in the DBC twin",
+      "node Klima_D4_C7: not in the DBC twin"
+    ],
+    "problems": []
+  },
+  "vw_mqb.dbc": {
+    "differences": [
+      "node l: missing",
+      "node c: missing",
+      "node i: missing",
+      "node BMS: not in the DBC twin",
+      "node Getriebe_AQ: not in the DBC twin",
+      "node Frontradar: not in the DBC twin",
+      "node Frontsensorik: not in the DBC twin",
+      "node Motor_MQB_BEV: not in the DBC twin",
+      "0x6B8 Kombi_03 / KBI_Reifenumfang_Sekundaer: comment \"Fahrzeuge mit unterschiedlichen Reifenumfänge...\" -> \"Fahrzeuge mit unterschiedlichen Reifenumfänge...\""
+    ],
+    "problems": []
+  },
+  "vw_mqbevo.dbc": {
+    "differences": [
+      "node Airbag_MQB: not in the DBC twin",
+      "node BMS_MQB: not in the DBC twin",
+      "node Gateway_MQB: not in the DBC twin",
+      "node LEH_MQB: not in the DBC twin",
+      "node Motor_Diesel_MQB: not in the DBC twin",
+      "node Motor_Hybrid_MQB: not in the DBC twin",
+      "node Motor_Otto_MQB: not in the DBC twin",
+      "node Getriebe_DQ_Hybrid_MQB: not in the DBC twin",
+      "node Getriebe_DQ_MQB: not in the DBC twin",
+      "node XXX: not in the DBC twin",
+      "node SAK_MQB: not in the DBC twin",
+      "node Waehlhebel_MQB: not in the DBC twin",
+      "node Frontsensorik: not in the DBC twin",
+      "node Frontradar: not in the DBC twin",
+      "node Kombi_D4: not in the DBC twin",
+      "0x6B8 Kombi_03 / KBI_Reifenumfang_Sekundaer: comment \"Fahrzeuge mit unterschiedlichen Reifenumfänge...\" -> \"Fahrzeuge mit unterschiedlichen Reifenumfänge...\"",
+      "0x12DD54A7 CAMERA_NEW_6: message missing",
+      "0x16A954B3 CAMERA_NEW_16: message missing",
+      "0x16A954C4 CAMERA_NEW_18: message missing",
+      "0x17331910 CAMERA_NEW_13: message missing",
+      "0x17332110 CAMERA_NEW_12: message missing",
+      "0x17335B10 CAMERA_NEW_14: message missing",
+      "0x17F0004F CAMERA_NEW_9: message missing",
+      "0x1A555592 CAMERA_NEW_15: message missing",
+      "0x1A5555A4 CAMERA_NEW_8: message missing",
+      "0x1A5555A5 CAMERA_NEW_7: message missing"
+    ],
+    "problems": [
+      "1333: canmatrix could not read this line: BO_ 316495015 CAMERA_NEW_6: 32 XXX",
+      "1335: canmatrix could not read this line: BO_ 380196019 CAMERA_NEW_16: 16 XXX",
+      "1337: canmatrix could not read this line: BO_ 380196036 CAMERA_NEW_18: 8 XXX",
+      "1339: canmatrix could not read this line: BO_ 389224720 CAMERA_NEW_13: 3 XXX",
+      "1341: canmatrix could not read this line: BO_ 389226768 CAMERA_NEW_12: 2 XXX",
+      "1343: canmatrix could not read this line: BO_ 389241616 CAMERA_NEW_14: 5 XXX",
+      "1345: canmatrix could not read this line: BO_ 401604687 CAMERA_NEW_9: 8 XXX",
+      "1347: canmatrix could not read this line: BO_ 441800082 CAMERA_NEW_15: 8 XXX",
+      "1349: canmatrix could not read this line: BO_ 441800100 CAMERA_NEW_8: 64 XXX",
+      "1351: canmatrix could not read this line: BO_ 441800101 CAMERA_NEW_7: 64 XXX"
+    ]
+  },
+  "vw_pq.dbc": {
+    "differences": [
+      "node Motor: not in the DBC twin",
+      "node Gateway: not in the DBC twin",
+      "node KOMBI: not in the DBC twin",
+      "node Transmission: not in the DBC twin",
+      "node ESP: not in the DBC twin",
+      "node ACC: not in the DBC twin",
+      "node GRA: not in the DBC twin",
+      "node ABS: not in the DBC twin",
+      "node BCM_Gateway: not in the DBC twin",
+      "node Bremse_MK25AESP: not in the DBC twin",
+      "node Gateway_separat: not in the DBC twin",
+      "node Getriebe_DQ: not in the DBC twin",
+      "node SWA: not in the DBC twin",
+      "0x288 Motor_2 / MO2_Mp_Code: signal missing"
+    ],
+    "problems": [
+      "394: canmatrix could not read this line: SG_ MO2_Mp_Code m : 6|2@1+ (1,0) [0|3] \"\" Gateway"
+    ]
+  },
+  "Model3CAN.dbc": {
+    "differences": [
+      "0x201 ID201VCFRONT_loggingAndVitals10H: name \"ID201VCFRONT_loggingAndVitals10H\" -> \"ID201VCFRONT_loggingAndVitals10Hz\"",
+      "0x201 ID201VCFRONT_loggingAndVitals10H: attr[SystemMessageLongSymbol] \"ID201VCFRONT_loggingAndVitals10Hz\" -> undefined"
+    ],
+    "problems": []
+  }
+}
