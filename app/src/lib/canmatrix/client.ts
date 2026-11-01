@@ -3,6 +3,9 @@ import { canmatrixFormatFor } from './formats';
 import { ImportFailure, noDatabase } from './import-failure';
 import type { CanmatrixReadResult, ImportedCluster } from './types';
 import type { ImportStage, ImportTimings, WorkerReply, WorkerRequest } from './worker-protocol';
+import { inDesktopApp } from '../desktop';
+import { startImportWorker } from './start-worker';
+import workerUrl from './worker.ts?worker&url';
 
 export type { ImportStage, ImportTimings } from './worker-protocol';
 
@@ -19,7 +22,8 @@ const pending = new Map<number, Pending>();
 /** The worker, created on first use so that DBC-only sessions never load Pyodide. */
 function getWorker(): Worker {
   if (worker) return worker;
-  worker = new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' });
+  // In the desktop app from a blob: URL, so that it runs under the page's CSP.
+  worker = startImportWorker(workerUrl, inDesktopApp());
   worker.onmessage = (e: MessageEvent<WorkerReply>) => {
     const reply = e.data;
     const p = pending.get(reply.id);

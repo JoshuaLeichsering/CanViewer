@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom/client';
 import { App } from './App';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { I18nProvider } from './lib/i18n';
+import { inDesktopApp } from './lib/desktop';
 import { applyInitialTheme, ThemeProvider } from './lib/theme';
 import './fonts.css';
 import './styles.css';
@@ -15,8 +16,7 @@ applyInitialTheme();
 // and the Pyodide files once a non-DBC import has fetched them.
 // The desktop app (Tauri) serves the build from inside the binary, so it is
 // offline already and must not keep a second, possibly stale, copy.
-const desktop = '__TAURI_INTERNALS__' in window;
-if (import.meta.env.PROD && !desktop && 'serviceWorker' in navigator) {
+if (import.meta.env.PROD && !inDesktopApp() && 'serviceWorker' in navigator) {
   void navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).catch(() => {
     // Not available (e.g. file:// or a private window): the app works without it.
   });

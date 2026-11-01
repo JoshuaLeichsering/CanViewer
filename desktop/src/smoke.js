@@ -76,6 +76,35 @@
     return result;
   }
 
+  // Whether a worker the page starts from a blob: URL, as the app starts its
+  // import worker (app/src/lib/canmatrix/start-worker.ts), is held to the
+  // page's Content Security Policy: it fetches a data: URL, which
+  // connect-src 'self' forbids. The fetch needs no network, so only the policy
+  // can make it fail. The same probe as e2e/desktop-csp-check.mjs.
+  function workerPolicy() {
+    const source = [
+      "let directive = '';",
+      "self.addEventListener('securitypolicyviolation', (e) => (directive = e.effectiveDirective));",
+      "fetch('data:text/plain,csp-probe').then(",
+      "  (r) => r.text().then((t) => postMessage('not blocked (read ' + t + ')')),",
+      "  (e) => setTimeout(() => postMessage('blocked' + (directive ? ' by ' + directive : '') + ' (' + e + ')'), 200),",
+      ');',
+    ].join('\n');
+    return new Promise((resolve) => {
+      const worker = new Worker(URL.createObjectURL(new Blob([source], { type: 'text/javascript' })), { type: 'module' });
+      const timer = setTimeout(() => resolve('no answer from the probe worker within 10 s'), 10_000);
+      worker.onmessage = (e) => {
+        clearTimeout(timer);
+        worker.terminate();
+        resolve(String(e.data));
+      };
+      worker.onerror = (e) => {
+        clearTimeout(timer);
+        resolve(`the probe worker did not start: ${e.message || 'error'}`);
+      };
+    });
+  }
+
   async function run() {
     const ready = await until(() => document.querySelector('.welcome') && document.querySelector('input[type=file]'), 60_000);
     if (ready) {
@@ -85,8 +114,17 @@
       }
     } else report.errors.push('the app did not render its welcome screen within 60 s');
     report.resources = performance.getEntriesByType('resource').map((e) => e.name);
+    // Taken before the probe, whose blocked fetch is a violation on purpose.
+    const violations = report.cspViolations.length;
+    report.blobWorkerPolicy = await workerPolicy();
+    report.cspViolations = report.cspViolations.slice(0, violations);
     // smoke.rs also requires the exported file to be saved.
-    report.passed = report.files.length === files.length && report.files.every((f) => f.opened) && Boolean(report.export?.clicked);
+    report.passed =
+      report.files.length === files.length &&
+      report.files.every((f) => f.opened) &&
+      Boolean(report.export?.clicked) &&
+      report.cspViolations.length === 0 &&
+      report.blobWorkerPolicy.startsWith('blocked');
     await window.__TAURI_INTERNALS__.invoke('smoke_report', { report: JSON.stringify(report, null, 2), passed: report.passed });
   }
 

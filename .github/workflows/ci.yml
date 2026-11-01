@@ -5,8 +5,9 @@
 # checks in a browser (e2e/ui-checks.mjs), the import UI's end-to-end checks
 # (e2e/import-ui.test.mjs), the browser checks of the signal table and of a
 # 5000-message database, the export check, and the end-to-end checks of diff
-# mode, of the Traces view with the frame encoder, and of editing and Save as
-# DBC.
+# mode, of the Traces view with the frame encoder, of editing and Save as
+# DBC, and the desktop CSP check (the import worker under the desktop app's
+# Content Security Policy).
 name: CI
 
 on:
@@ -147,6 +148,11 @@ jobs:
             http://localhost:4180/ editing-check examples/demo.dbc \
             third_party/cantools/tests/files/dbc/foobar.dbc
 
+      - name: Desktop CSP check (the import worker under the desktop app's policy, in Chromium)
+        run: |
+          node e2e/desktop-csp-check.mjs dist desktop-csp \
+            examples/demo.dbc third_party/canmatrix/tests/files/arxml/test.arxml
+
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -154,6 +160,7 @@ jobs:
           path: |
             test-report.json
             network-check/
+            desktop-csp/
             vite-preview.log
             playwright-report/
             test-results/
@@ -201,7 +208,7 @@ jobs:
       - name: No identifying information in the working tree
         run: node scripts/check-identifying-info.mjs
 
-      - name: Tests of the scripts
+      - name: Tests of the scripts (licenses, notices, release tooling, the install runbook)
         run: npm run test:scripts
 
       - name: SPDX headers, npm and wheel licenses

@@ -14,9 +14,14 @@
 // DBC and an ARXML file through the app's file input, and records:
 //   - every request of the page and its worker (URL, type, status);
 //   - CSP violations (securitypolicyviolation events) and console errors;
-//   - what the app shows for each file (title and the overview's facts).
+//   - what the app shows for each file (title and the overview's facts);
+//   - the import worker's URL, and whether the page's CSP holds it: in the
+//     desktop app it starts from a blob: URL so that it inherits the policy
+//     (app/src/lib/canmatrix/start-worker.ts), and a fetch of a data: URL,
+//     which connect-src 'self' forbids, must fail in it.
 // It fails unless both files open, the ARXML import went through canmatrix
-// (the Pyodide worker), and no request left the app's origin.
+// (the Pyodide worker), the worker is held to the policy (in the desktop app),
+// and no request left the app's origin.
 //
 // Usage:
 //   node e2e/desktop-cdp-smoke.mjs --cdp http://127.0.0.1:9222 --out DIR --dbc FILE --arxml FILE
@@ -159,6 +164,26 @@ report.arxml = await open(args.arxml, 'arxml.png');
 const pyodide = report.requests.slice(before).filter((r) => r.url.includes('/pyodide/'));
 say(`ARXML import fetched ${pyodide.length} runtime files from ${origin}/pyodide/`);
 if (!report.arxml.failed && pyodide.length === 0) fail('the ARXML import did not load the Pyodide runtime');
+
+// The same probe as e2e/desktop-csp-check.mjs and desktop/src/smoke.js.
+const worker = page.workers()[0];
+report.workerUrl = worker?.url() ?? null;
+report.workerPolicy = worker
+  ? await worker.evaluate(
+      () =>
+        new Promise((done) => {
+          let directive = '';
+          self.addEventListener('securitypolicyviolation', (e) => (directive = e.effectiveDirective));
+          fetch('data:text/plain,csp-probe').then(
+            (r) => r.text().then((t) => done(`not blocked (read "${t}")`)),
+            (e) => setTimeout(() => done(`blocked${directive ? ` by ${directive}` : ''} (${e.message})`), 200),
+          );
+        }),
+    )
+  : 'no worker visible';
+say(`import worker: ${report.workerUrl}; fetch of a data: URL in it: ${report.workerPolicy}`);
+if (env.tauri && !report.workerUrl?.startsWith('blob:')) fail('the import worker does not run from a blob: URL');
+if (env.tauri && !report.workerPolicy.startsWith('blocked')) fail('the import worker is not held to the page CSP');
 
 report.cspViolations = await page.evaluate(() => window.__cspViolations ?? []);
 const foreign = report.requests.filter((r) => {

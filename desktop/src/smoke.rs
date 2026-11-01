@@ -9,10 +9,11 @@
 //! `smoke_report` with what it showed. The report, with the check of the
 //! saved file (smoke/download.rs) added, goes to the file named by
 //! CANVIEWER_SMOKE_OUT, and to stdout, and the app exits with 0 if every
-//! file opened and the export was saved, 1 if not, or 2 if no report came
-//! within five minutes. Without the variable no script is injected, no
-//! command is registered and no download is recorded, so the app behaves
-//! exactly as it does otherwise.
+//! file opened, the export was saved and the page's Content Security Policy
+//! held (no violation, and a blob: worker under it, see smoke.js), 1 if not,
+//! or 2 if no report came within five minutes. Without the variable no
+//! script is injected, no command is registered and no download is recorded,
+//! so the app behaves exactly as it does otherwise.
 
 mod download;
 

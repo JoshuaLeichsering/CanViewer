@@ -172,6 +172,8 @@ artifact (`cdp-windows/report.json`).
   - What keeps the worker local is the app's own code, which the network checks verify.
     Creating the worker from a `blob:` URL would make it inherit the page's policy, at
     the price of `worker-src blob:`.
+  - Since resolved: the desktop app now starts the worker that way
+    ([decision 0002](../../decisions/0002-desktop-shell.md)).
 - **The missing favicon shows up here too**: the page requests
   `http://tauri.localhost/favicon.ico`. That is W6 in the goal.
 - **Size.** LTO and single-unit codegen were turned off to speed up CI. With them
@@ -188,8 +190,10 @@ artifact (`cdp-windows/report.json`).
 ## Run it again
 
 The workflow ([desktop.yml](../../../.github/workflows/desktop.yml)) runs on pull requests
-that change `desktop/`, `e2e/desktop-*` or the workflow itself, on `v*` tags, and on demand
-(`workflow_dispatch`). To try the self-test locally with any installed build:
+that change the desktop shell, its checks, its runbook or the workflow itself, on `v*` tags
+through the release workflow ([release.yml](../../../.github/workflows/release.yml)), and
+on demand (`workflow_dispatch`). It now follows the install runbook,
+[docs/guide/install.md](../../guide/install.md). To try the self-test locally with any installed build:
 
 ```sh
 CANVIEWER_SMOKE_FILES="$PWD/examples/demo.dbc:$PWD/third_party/canmatrix/tests/files/arxml/test.arxml" \
