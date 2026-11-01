@@ -19,13 +19,15 @@ import { Icon } from './components/Icon';
 import { BackToList, type ListKind } from './components/BackToList';
 import { ImportProgress } from './components/ImportProgress';
 import { ImportFormatsNote, ImportSourceContext } from './components/ImportSource';
+import { DiffView, type Comparison, type DiffViewHandle } from './components/DiffView';
 
 export type Selection =
   | { kind: 'overview' }
   | { kind: 'graph' }
   | { kind: 'message'; rawId: number; occ: number; signal?: string }
   | { kind: 'node'; name: string }
-  | { kind: 'valueTable'; name: string };
+  | { kind: 'valueTable'; name: string }
+  | { kind: 'diff' };
 
 /** Serialize the selection into the URL hash so views are deep-linkable. */
 function selectionToHash(sel: Selection): string {
@@ -41,6 +43,8 @@ function selectionToHash(sel: Selection): string {
       return `#vt=${encodeURIComponent(sel.name)}`;
     case 'graph':
       return '#graph';
+    case 'diff':
+      return '#diff';
     default:
       return '';
   }
@@ -70,6 +74,7 @@ function parseHash(hash: string): Selection {
   const vt = hash.match(/^#vt=(.+)$/);
   if (vt) return { kind: 'valueTable', name: decodeURIComponent(vt[1]) };
   if (hash === '#graph') return { kind: 'graph' };
+  if (hash === '#diff') return { kind: 'diff' };
   return { kind: 'overview' };
 }
 
@@ -79,6 +84,7 @@ const DESTINATION_OF: Record<Selection['kind'], Destination> = {
   graph: 'network',
   node: 'nodes',
   valueTable: 'tables',
+  diff: 'compare',
 };
 
 type Snack = { kind: 'error'; text: string } | { kind: 'info'; text: string };
@@ -93,6 +99,9 @@ export function App() {
   // On narrow screens the list pane and the detail take turns (see narrow.css).
   const [pane, setPane] = useState<'list' | 'detail'>('detail');
   const [searchFocus, setSearchFocus] = useState(0);
+  // Diff mode: the other version the open file is compared with.
+  const [comparison, setComparison] = useState<Comparison | null>(null);
+  const diffRef = useRef<DiffViewHandle>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dragDepth = useRef(0);
   const initialHash = useRef(window.location.hash);
@@ -104,6 +113,8 @@ export function App() {
     setSearch('');
     setFilter('all');
     lastShown.current = {};
+    // A comparison belongs to the file it was made with.
+    setComparison(null);
   }, []);
 
   // Opening, importing and restoring files (lib/import/loader.ts). A restored
@@ -182,6 +193,9 @@ export function App() {
         case 'tables':
           if (db.valueTables[0]) setSelection({ kind: 'valueTable', name: db.valueTables[0].name });
           break;
+        case 'compare':
+          setSelection({ kind: 'diff' });
+          break;
       }
     },
     [db],
@@ -246,7 +260,10 @@ export function App() {
       dragDepth.current = 0;
       setDragging(false);
       const file = e.dataTransfer.files[0];
-      if (file) loadFile(file);
+      if (!file) return;
+      // On the Compare page a dropped file is the other version, not a new open file.
+      if (diffRef.current) diffRef.current.openOther(file);
+      else loadFile(file);
     },
     [loadFile],
   );
@@ -261,6 +278,7 @@ export function App() {
       network: !!db,
       nodes: !!db && db.nodes.length > 0,
       tables: !!db && db.valueTables.length > 0,
+      compare: !!db,
     }),
     [db],
   );
@@ -287,7 +305,11 @@ export function App() {
       }}
       onDrop={onDrop}
     >
-      {dragging && <div className="drop-overlay">{t('dropOverlay')}</div>}
+      {dragging && (
+        <div className="drop-overlay">
+          {db && selection.kind === 'diff' ? t('difDropOverlay', { file: fileName }) : t('dropOverlay')}
+        </div>
+      )}
       <input
         ref={fileInputRef}
         type="file"
@@ -325,7 +347,16 @@ export function App() {
       )}
 
       <main className="main">
-        {db ? (
+        {db && selection.kind === 'diff' ? (
+          <DiffView
+            ref={diffRef}
+            db={db}
+            fileName={fileName}
+            comparison={comparison}
+            onComparison={setComparison}
+            onSelect={show}
+          />
+        ) : db ? (
           <ImportSourceContext.Provider value={importSource}>
             {listKind && <BackToList kind={listKind} onBack={() => setPane('list')} />}
             <MainView db={db} fileName={fileName} selection={selection} onSelect={show} onCopyLink={copyLink} />

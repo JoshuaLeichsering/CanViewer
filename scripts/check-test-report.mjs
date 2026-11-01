@@ -43,6 +43,8 @@ const EXPECTED = [
   { file: 'pseudo-code.test.ts', pattern: /: every signal decodes as CanViewer decodes it$/, count: 149, what: 'corpus DBC files decoded by the generated pseudo-code' },
   { file: 'c-struct.test.ts', pattern: /^every pinned C struct$/, count: 1, what: 'run of cc over the pinned C structs' },
   { file: 'c-struct.test.ts', pattern: /: every message's C struct compiles$/, count: 149, what: 'corpus DBC files whose C structs compiled with cc' },
+  { file: 'diff-corpus.test.ts', pattern: / has no differences with itself$/, count: 58, what: 'OEM DBC files diffed with themselves' },
+  { file: 'diff-corpus.test.ts', pattern: / gives the pinned diff$/, count: 2, what: 'opendbc version pairs diffed as pinned' },
 ];
 
 const problems = [];

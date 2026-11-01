@@ -4,7 +4,8 @@
 # build makes no request outside its own origin, the end-to-end flows, the UI
 # checks in a browser (e2e/ui-checks.mjs), the import UI's end-to-end checks
 # (e2e/import-ui.test.mjs), the browser checks of the signal table and of a
-# 5000-message database, and the export check.
+# 5000-message database, the export check, and the end-to-end check of diff
+# mode.
 name: CI
 
 on:
@@ -125,6 +126,12 @@ jobs:
           for i in $(seq 1 30); do curl -sf http://localhost:4177/ > /dev/null && break; sleep 1; done
           node e2e/export-check.mjs http://localhost:4177/ export-check examples/demo.dbc
 
+      - name: Diff mode end to end (the Compare page, DBC and ARXML)
+        run: |
+          npx vite preview --port 4178 --strictPort > vite-preview-diff.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:4178/ > /dev/null && break; sleep 1; done
+          node e2e/diff-check.mjs http://localhost:4178/ diff-check
+
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -141,6 +148,8 @@ jobs:
             vite-preview-tbl.log
             export-check/
             vite-preview-export.log
+            diff-check/
+            vite-preview-diff.log
           if-no-files-found: ignore
 
   licenses:
