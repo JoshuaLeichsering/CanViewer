@@ -35,7 +35,7 @@ CI runs the same steps on every pull request. Run them before you push:
 
 ```sh
 npx tsc --noEmit
-npx vitest run --reporter=verbose --reporter=json --outputFile.json=test-report.json
+npx vitest run --coverage --reporter=verbose --reporter=json --outputFile.json=test-report.json
 node scripts/check-test-report.mjs test-report.json   # every corpus suite ran in full
 npm run test:scripts                                  # tests of the scripts themselves
 npm run build
@@ -43,30 +43,34 @@ npm run check:identifying-info                        # no personal data in the 
 npm run check:licenses                                # SPDX headers, npm and wheel licenses
 ```
 
-And the network check, which proves the build makes no request outside its own origin.
-It needs Playwright and its Chromium, which are not dependencies of the project; CI
-installs them outside the checkout, as below:
+The vitest run enforces the coverage thresholds in `vite.config.ts` (`npm run
+test:coverage` runs the same without the report) and writes the HTML report to
+`coverage/`.
+
+Then the network check, which proves the build makes no request outside its own origin,
+and the end-to-end flows. Playwright is a dev dependency; fetch its Chromium once with
+`npx playwright install chromium`:
 
 ```sh
-npm install --no-save --no-package-lock --prefix ../pw playwright@1.63.0
-../pw/node_modules/.bin/playwright install chromium
 npx vite preview --port 4173 --strictPort &
-PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS=1 NODE_PATH=../pw/node_modules \
+PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS=1 \
 node e2e/network-check.mjs http://localhost:4173/ network-check \
   third_party/canmatrix/tests/files/arxml/test.arxml \
   third_party/canmatrix/tests/files/arxml/ARXMLContainerTest.arxml \
   examples/demo.dbc dist
+E2E_PORT=4174 npm run e2e                             # the Playwright flows in e2e/flows/
 ```
 
-It must end with `requests outside http://localhost:4173: 0`. Stop the preview server
-afterwards.
+The network check must end with `requests outside http://localhost:4173: 0`. Stop the
+preview server afterwards. `npm run e2e` starts its own server on `E2E_PORT` (default
+4180), and every flow fails if the page requests anything outside the app's origin.
 
 If you change a dependency, also run `npm run notices` (it needs Rust's `cargo` and
 `rustc`, for the desktop crates and the Rust standard library) and commit the regenerated
 `THIRD_PARTY_NOTICES.md`. CI checks that it is up to date, and checks the crates' licenses
 with `cargo deny --manifest-path desktop/Cargo.toml check licenses`. The outputs of the
-check above (`test-report.json`, `network-check/`) are ignored by git, so the sweep for
-identifying information does not read them.
+check above (`test-report.json`, `network-check/`, `coverage/`, `test-results/`) are
+ignored by git, so the sweep for identifying information does not read them.
 
 ## Conventions
 

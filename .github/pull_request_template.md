@@ -7,10 +7,11 @@
 <!-- Quote the commands you ran and the lines of their output that matter. -->
 
 - [ ] `npx tsc --noEmit`
-- [ ] `npx vitest run`, and `node scripts/check-test-report.mjs` ends with "every corpus suite ran in full"
+- [ ] `npx vitest run --coverage` within the thresholds, and `node scripts/check-test-report.mjs` ends with "every corpus suite ran in full"
 - [ ] `npm run test:scripts`
 - [ ] `npm run build`
 - [ ] the network check reports `requests outside …: 0`
+- [ ] `npm run e2e`
 - [ ] `npm run check:identifying-info` and `npm run check:licenses`
 
 ## Checklist
