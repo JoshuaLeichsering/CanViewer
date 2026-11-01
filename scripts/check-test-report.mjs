@@ -35,6 +35,8 @@ const EXPECTED = [
   { file: 'import-corpus.test.ts', pattern: / reads as pinned$/, count: 114, what: 'non-DBC corpus files read through canmatrix' },
   { file: 'import-corpus.test.ts', pattern: / matches its DBC twin .* as pinned$/, count: 70, what: 'non-DBC files compared with their DBC twin' },
   { file: 'mapper.test.ts', pattern: / differs from CanViewer’s parser only as pinned$/, count: 58, what: 'OEM DBC files through the canmatrix mapper', when: 'app/src/lib/canmatrix/mapper.test.ts' },
+  { file: 'encode.corpus.test.ts', pattern: /: every signal round-trips through the encoder$/, count: 58, what: 'OEM DBC files with every signal round-tripped through the frame encoder', when: 'app/src/lib/dbc/encode.corpus.test.ts' },
+  { file: 'encode.corpus.test.ts', pattern: /: its sampled messages round-trip as whole frames$/, count: 58, what: 'OEM DBC files with sampled whole frames round-tripped through the encoder', when: 'app/src/lib/dbc/encode.corpus.test.ts' },
 ];
 
 const problems = [];
