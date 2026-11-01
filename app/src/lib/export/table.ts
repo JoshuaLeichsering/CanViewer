@@ -14,6 +14,7 @@ import { j1939Of, num } from './layout';
  * Messages come in identifier order, as every message list in the app shows
  * them; signals keep their order in the file. Column names are fixed English
  * identifiers (they equal the JSON keys), whatever the interface language.
+ * The CSV guards text that a spreadsheet would run as a formula (see `csv`).
  */
 
 /** The messages in the order the app lists them (stable for duplicate identifiers). */
@@ -132,13 +133,26 @@ export function signalsCsv(db: DbcDatabase): string {
 }
 
 /**
+ * Text that a spreadsheet would run as a formula: it starts with `=`, `+`,
+ * `-`, `@`, a tab or a carriage return (the OWASP list). A file from anywhere
+ * could otherwise put `=WEBSERVICE(…)` into a comment and have the
+ * spreadsheet that opens the export fetch it. A single character cannot hold
+ * a formula, so the common unit `-` stays as it is.
+ */
+const FORMULA_START = /^[=+\-@\t\r]/;
+
+/**
  * RFC 4180: comma-separated, CRLF after every record, and a field in double
  * quotes when it holds a comma, a quote or a line break (quotes doubled).
- * Values are written as they are; nothing is rewritten for spreadsheets.
+ * Values are written as they are, with one exception: text that would start
+ * a formula gets a leading apostrophe, which spreadsheets read as "this is
+ * text". Numbers (such as -40) never do; the JSON export keeps every value
+ * exactly.
  */
 export function csv(header: readonly string[], rows: Cell[][]): string {
   const field = (cell: Cell) => {
-    const text = cell === undefined ? '' : typeof cell === 'number' ? num(cell) : String(cell);
+    let text = cell === undefined ? '' : typeof cell === 'number' ? num(cell) : String(cell);
+    if (typeof cell === 'string' && text.length > 1 && FORMULA_START.test(text)) text = `'${text}`;
     return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
   };
   return [header, ...rows].map((row) => row.map(field).join(',') + '\r\n').join('');

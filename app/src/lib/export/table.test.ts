@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { isCanFd } from '../dbc/canfd';
+import { parseDbc } from '../dbc/parser';
 import type { DbcDatabase } from '../dbc/types';
 import { hexId } from '../format';
 import { exportFile } from './download';
@@ -38,7 +39,13 @@ function readCsv(text: string): string[][] {
   return rows;
 }
 
-const text = (v: string | number | boolean | undefined) => (v === undefined ? '' : typeof v === 'number' ? num(v) : String(v));
+/**
+ * What a CSV field holds for a model value: numbers as `num` writes them, and
+ * text as it is, except text of two or more characters that starts with = + - @
+ * tab or CR, which gets an apostrophe in front so that spreadsheets do not run it.
+ */
+const text = (v: string | number | boolean | undefined) =>
+  v === undefined ? '' : typeof v === 'number' ? num(v) : typeof v === 'string' && v.length > 1 && '=+-@\t\r'.includes(v[0]) ? `'${v}` : String(v);
 const sorted = (db: DbcDatabase) => [...db.messages].sort((a, b) => a.id - b.id);
 
 /** Every row and column of both CSV files holds exactly the model's value. */
@@ -51,11 +58,11 @@ function expectCsvMatchesModel(db: DbcDatabase) {
     const row = Object.fromEntries(mHeader.map((h, j) => [h, mRows[i][j]]));
     expect(row.id).toBe(String(m.id));
     expect(row.idHex).toBe(hexId(m.id, m.isExtended));
-    expect(row.name).toBe(m.name);
+    expect(row.name).toBe(text(m.name));
     expect(row.dlc).toBe(String(m.dlc));
     expect(row.canFd).toBe(String(isCanFd(db, m)));
     expect(row.j1939Pgn).toBe(text(j1939Of(db, m)?.pgn));
-    expect(row.sender).toBe(m.sender);
+    expect(row.sender).toBe(text(m.sender));
     expect(row.comment).toBe(text(m.comment));
     for (const h of mHeader.filter((h) => h.startsWith('attr.'))) expect(row[h]).toBe(text(m.attributes[h.slice(5)]));
   });
@@ -66,13 +73,13 @@ function expectCsvMatchesModel(db: DbcDatabase) {
   expect(sRows).toHaveLength(signals.length);
   signals.forEach(({ m, s }, i) => {
     const row = Object.fromEntries(sHeader.map((h, j) => [h, sRows[i][j]]));
-    expect(row.messageName).toBe(m.name);
-    expect(row.name).toBe(s.name);
+    expect(row.messageName).toBe(text(m.name));
+    expect(row.name).toBe(text(s.name));
     for (const key of ['startBit', 'length', 'factor', 'offset', 'min', 'max'] as const) expect(row[key]).toBe(num(s[key]));
     expect(row.byteOrder).toBe(s.byteOrder);
     expect(row.valueType).toBe(s.valueType);
-    expect(row.unit).toBe(s.unit);
-    expect(row.receivers).toBe(s.receivers.join(', '));
+    expect(row.unit).toBe(text(s.unit));
+    expect(row.receivers).toBe(text(s.receivers.join(', ')));
     expect(row.multiplex).toBe(muxNotation(s.multiplex));
     expect(row.comment).toBe(text(s.comment));
     for (const h of sHeader.filter((h) => h.startsWith('attr.'))) expect(row[h]).toBe(text(s.attributes[h.slice(5)]));
@@ -108,8 +115,50 @@ describe('csv', () => {
     );
   });
 
-  it('writes values that start like formulas as they are', () => {
-    expect(csv(['c'], [['=1+1'], ['-3']])).toBe('c\r\n=1+1\r\n-3\r\n');
+  it('puts an apostrophe before text that a spreadsheet would run as a formula', () => {
+    expect(
+      csv(['c'], [['=1+1'], ['+49 30'], ['-3'], ['@SUM(A1)'], ['\tx'], ['\rx'], ['=HYPERLINK("http://example.invalid/")']]),
+    ).toBe(
+      'c\r\n\'=1+1\r\n\'+49 30\r\n\'-3\r\n\'@SUM(A1)\r\n\'\tx\r\n"\'\rx"\r\n"\'=HYPERLINK(""http://example.invalid/"")"\r\n',
+    );
+  });
+
+  it('leaves numbers, single characters and text that only contains formula characters as they are', () => {
+    expect(csv(['c'], [[-40], [-0.5], ['-'], ['='], ['a=b'], [' =1'], ['0x1F'], ["'quoted'"]])).toBe(
+      "c\r\n-40\r\n-0.5\r\n-\r\n=\r\na=b\r\n =1\r\n0x1F\r\n'quoted'\r\n",
+    );
+  });
+
+  it('guards formulas that a file puts into comments, units, names and attributes', () => {
+    const db = parseDbc(
+      [
+        'VERSION ""',
+        'BU_: A',
+        'BO_ 1 Engine: 8 A',
+        ' SG_ Speed : 0|8@1- (1,-40) [-40|215] "=1+2" A',
+        'CM_ BO_ 1 "=WEBSERVICE(\\"http://example.invalid/\\")";',
+        'CM_ SG_ 1 Speed "-1 means not available";',
+        'BA_DEF_ BO_ "Note" STRING;',
+        'BA_ "Note" BO_ 1 "@risk";',
+        'VAL_ 1 Speed -1 "Not available" 0 "Stopped";',
+        '',
+      ].join('\n'),
+    );
+    expect(db.problems).toEqual([]);
+    const [, message] = readCsv(messagesCsv(db));
+    expect(message[MESSAGE_COLUMNS.indexOf('comment')]).toBe('\'=WEBSERVICE("http://example.invalid/")');
+    expect(message[MESSAGE_COLUMNS.length]).toBe("'@risk");
+    const [, signal] = readCsv(signalsCsv(db));
+    const cell = (column: (typeof SIGNAL_COLUMNS)[number]) => signal[SIGNAL_COLUMNS.indexOf(column)];
+    expect(cell('unit')).toBe("'=1+2");
+    expect(cell('comment')).toBe("'-1 means not available");
+    expect(cell('values')).toBe('\'-1 "Not available" 0 "Stopped"');
+    // Numbers stay numbers.
+    expect([cell('offset'), cell('min'), cell('max')]).toEqual(['-40', '-40', '215']);
+    // The JSON keeps every value exactly.
+    const json = JSON.parse(messagesJson(db, 'x.dbc'));
+    expect(json.messages[0].comment).toBe('=WEBSERVICE("http://example.invalid/")');
+    expect(json.messages[0].signals[0].unit).toBe('=1+2');
   });
 });
 
