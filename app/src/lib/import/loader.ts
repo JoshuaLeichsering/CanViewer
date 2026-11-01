@@ -16,6 +16,8 @@
  * - The last file shown is stored (storage.ts) and shown again by `restore()`
  *   on startup; an imported file is read through canmatrix again, with the
  *   cluster picked before.
+ * - Edits made in the app (`edit()`) replace the database shown, and are kept
+ *   only once saved as DBC (`savedAsDbc()`), which a reload then restores.
  */
 import { decodeDbc } from '../dbc/decode';
 import { parseDbc } from '../dbc/parser';
@@ -136,6 +138,23 @@ export class DatabaseLoader {
     const stored = await storage.loadImportedFile();
     if (!stored || generation !== this.generation) return;
     await this.runImport(generation, stored.name, stored.bytes, true, stored.cluster);
+  };
+
+  /** Show an edited version of the database shown; the file name and its source stay. */
+  edit = (db: DbcDatabase): void => {
+    if (this.state.db) this.set({ db });
+  };
+
+  /**
+   * The database shown was saved as the DBC file `name`: a reload restores
+   * that text, not the file as it was opened (or imported) before the edits.
+   * When the text is too large to store, a reload restores nothing rather
+   * than the file before the edits.
+   */
+  savedAsDbc = (name: string, text: string): void => {
+    const { storage } = this.deps;
+    if (!storage.saveDbcText(name, text)) storage.clearDbcText();
+    void storage.clearImportedFile();
   };
 
   /** Show another cluster of the imported file. */

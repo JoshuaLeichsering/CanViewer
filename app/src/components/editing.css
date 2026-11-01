@@ -1,0 +1,214 @@
+/*
+ * Editing and Save as DBC: the dialog, its form fields and the rail button.
+ * Material 3 basic dialog on surface-container-high, built from the tokens in
+ * styles.css, so both themes apply.
+ */
+
+.edt-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: var(--scrim);
+}
+.edt-dialog {
+  display: flex;
+  flex-direction: column;
+  width: min(600px, 100%);
+  max-height: 100%;
+  padding: 24px 0;
+  border-radius: 28px;
+  background: var(--sc-high);
+  color: var(--on-surface);
+  box-shadow: 0 4px 8px 3px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+.edt-dialog-title {
+  margin: 0 0 16px;
+  padding: 0 24px;
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 32px;
+  overflow-wrap: anywhere;
+}
+.edt-dialog-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  /* Room for the floating field labels and the focus outline. */
+  padding: 10px 24px 4px;
+}
+.edt-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 20px 24px 0;
+}
+
+.edt-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px 16px;
+}
+.edt-wide {
+  grid-column: 1 / -1;
+}
+@media (max-width: 560px) {
+  .edt-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Form fields: the outlined text field of the decode card, on the dialog surface. */
+.edt-dialog .text-field .field-label {
+  background: var(--sc-high);
+}
+.edt-text-field select,
+.edt-text-field textarea {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: inherit;
+  font-size: 15px;
+}
+.edt-text-field select {
+  height: 100%;
+  cursor: pointer;
+}
+.edt-text-field select option {
+  background: var(--sc-high);
+  color: var(--on-surface);
+}
+.edt-text-field:not(.edt-mono) input,
+.edt-text-field textarea {
+  font-family: var(--font);
+}
+.edt-text-field.edt-multiline {
+  height: auto;
+  align-items: stretch;
+  padding-top: 14px;
+  padding-bottom: 10px;
+}
+.edt-text-field.edt-multiline:focus-within,
+.edt-text-field.edt-multiline.invalid {
+  padding-top: 13px;
+  padding-bottom: 9px;
+}
+.edt-text-field textarea {
+  min-height: 66px;
+  line-height: 22px;
+  resize: vertical;
+}
+
+/* The extended-ID checkbox, beside the ID field: centered on the 52 px field height. */
+.edt-check-cell {
+  display: flex;
+  align-items: flex-start;
+  padding-top: 6px;
+}
+.edt-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 40px;
+  cursor: pointer;
+}
+.edt-check input,
+.edt-chip input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+
+.edt-receivers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+.edt-receivers legend {
+  margin-bottom: 8px;
+  padding: 0;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--on-surface-var);
+}
+.edt-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 12px 0 8px;
+  border-radius: 8px;
+  border: 1px solid var(--outline-var);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.edt-chip.on {
+  border-color: transparent;
+  background: var(--sec-c);
+  color: var(--on-sec-c);
+}
+.edt-chip:focus-within {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Save as DBC: the issue list. */
+.edt-hint {
+  margin: 0 0 12px;
+  color: var(--on-surface-var);
+}
+.edt-issues {
+  margin: 0 0 12px;
+  padding-left: 20px;
+  font-size: 13px;
+}
+.edt-issues li + li {
+  margin-top: 4px;
+}
+.edt-issues code {
+  padding: 0 4px;
+  border-radius: 4px;
+  background: var(--sc-highest);
+  font-family: var(--mono);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.edt-issues .edt-issue-field {
+  color: var(--on-surface-var);
+}
+
+/* Where the editors sit on the message page. */
+.edt-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.edt-card-actions {
+  margin: -4px 0 12px;
+}
+
+/* The rail button, with a small badge while there are unsaved edits. */
+.edt-save {
+  position: relative;
+}
+.edt-save-dot {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--error);
+}

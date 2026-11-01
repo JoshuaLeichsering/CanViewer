@@ -22,6 +22,9 @@ import { ImportFormatsNote, ImportSourceContext } from './components/ImportSourc
 import { DiffView, type Comparison, type DiffViewHandle } from './components/DiffView';
 import { TraceView } from './components/TraceView';
 import { isTraceFileName, openTraceFile, type LoadedTrace } from './lib/trace';
+import { SaveAsDbcButton } from './components/SaveAsDbc';
+import { DiscardEditsDialog } from './components/DiscardEditsDialog';
+import { messageEditActions, type OnEdit } from './components/editActions';
 
 export type Selection =
   | { kind: 'overview' }
@@ -110,6 +113,11 @@ export function App() {
   const [comparison, setComparison] = useState<Comparison | null>(null);
   const diffRef = useRef<DiffViewHandle>(null);
   const [trace, setTrace] = useState<LoadedTrace | null>(null);
+  // Edits made in the app and not yet saved as DBC.
+  const [edited, setEdited] = useState(false);
+  // What waits for the answer to "discard the unsaved edits?": opening another
+  // file, or showing another cluster of the imported one.
+  const [discardFor, setDiscardFor] = useState<{ name: string; proceed: () => void } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dragDepth = useRef(0);
   const initialHash = useRef(window.location.hash);
@@ -140,11 +148,22 @@ export function App() {
         return;
       }
       resetView();
+      // Another database (a new file, another cluster, the restored file) has no edits.
+      setEdited(false);
       if (event.restored && initialHash.current) setSelection(hashToSelection(initialHash.current));
     },
     [resetView, t],
   );
-  const { db, fileName, source, progress, loadFile: openFile, selectCluster } = useDatabaseLoader(onLoaderEvent);
+  const {
+    db,
+    fileName,
+    source,
+    progress,
+    loadFile: openFile,
+    selectCluster,
+    edit: editDatabase,
+    savedAsDbc,
+  } = useDatabaseLoader(onLoaderEvent);
 
   // Logs (.asc, .log) open in the Traces view and leave the database as it is.
   const openTrace = useCallback(
@@ -165,15 +184,34 @@ export function App() {
     [db, t],
   );
 
+  // A database replaces unsaved edits only once the person agrees (W11); a
+  // log leaves the database as it is and opens without asking.
   const loadFile = useCallback(
     (file: File) => {
-      setSnack(null);
-      if (isTraceFileName(file.name)) void openTrace(file);
-      else void openFile(file);
+      if (isTraceFileName(file.name)) {
+        setSnack(null);
+        void openTrace(file);
+        return;
+      }
+      const open = () => {
+        setSnack(null);
+        void openFile(file);
+      };
+      if (edited) setDiscardFor({ name: file.name, proceed: open });
+      else open();
     },
-    [openFile, openTrace],
+    [openFile, openTrace, edited],
   );
-  const importSource = useMemo(() => ({ source, onSelectCluster: selectCluster }), [source, selectCluster]);
+  const onSelectCluster = useCallback(
+    (index: number) => {
+      const cluster = source?.clusters[index];
+      if (!cluster) return;
+      if (edited) setDiscardFor({ name: cluster.name || t('impClusterUnnamed'), proceed: () => selectCluster(index) });
+      else selectCluster(index);
+    },
+    [source, selectCluster, edited, t],
+  );
+  const importSource = useMemo(() => ({ source, onSelectCluster }), [source, onSelectCluster]);
 
   // Keep the URL hash in sync with the current selection (deep links). Only
   // active once a file is loaded, so the initial hash is never clobbered.
@@ -187,6 +225,27 @@ export function App() {
   useEffect(() => {
     document.title = db ? `${fileName} — CanViewer` : 'CanViewer — CAN Database Viewer';
   }, [db, fileName]);
+
+  // Unsaved edits live only in this page: ask before it is closed or reloaded.
+  useEffect(() => {
+    if (!edited) return;
+    const warn = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', warn);
+    return () => window.removeEventListener('beforeunload', warn);
+  }, [edited]);
+
+  const applyEdit = useCallback<OnEdit>(
+    (next, nextSelection) => {
+      editDatabase(next);
+      setSelection(nextSelection);
+      setEdited(true);
+      setSnack({ kind: 'info', text: t('edtApplied') });
+    },
+    [editDatabase, t],
+  );
 
   // Informational snackbars go away by themselves; errors stay until dismissed.
   useEffect(() => {
@@ -364,7 +423,33 @@ export function App() {
         badges={db ? { overview: db.problems.length } : {}}
         onNavigate={navigate}
         onOpenFile={openFileDialog}
+        actions={
+          db && (
+            <SaveAsDbcButton
+              db={db}
+              fileName={fileName}
+              edited={edited}
+              onSaved={(name, text) => {
+                setEdited(false);
+                setSnack({ kind: 'info', text: t('edtSaved', { name }) });
+                // A reload restores what was saved, not the file as it was before the edits.
+                savedAsDbc(name, text);
+              }}
+            />
+          )
+        }
       />
+      {discardFor && (
+        <DiscardEditsDialog
+          fileName={fileName}
+          nextName={discardFor.name}
+          onDiscard={() => {
+            setDiscardFor(null);
+            discardFor.proceed();
+          }}
+          onCancel={() => setDiscardFor(null)}
+        />
+      )}
 
       {db && listKind && (
         <ListPane
@@ -400,6 +485,7 @@ export function App() {
               selection={selection}
               onSelect={show}
               onCopyLink={copyLink}
+              onEdit={applyEdit}
               trace={trace}
               onTrace={setTrace}
             />
@@ -448,6 +534,7 @@ function MainView({
   selection,
   onSelect,
   onCopyLink,
+  onEdit,
   trace,
   onTrace,
 }: {
@@ -456,6 +543,7 @@ function MainView({
   selection: Selection;
   onSelect: (s: Selection) => void;
   onCopyLink: () => void;
+  onEdit: OnEdit;
   trace: LoadedTrace | null;
   onTrace: (trace: LoadedTrace | null) => void;
 }) {
@@ -473,6 +561,7 @@ function MainView({
             onSelect({ kind: 'message', rawId: selection.rawId, occ: selection.occ, signal })
           }
           onCopyLink={onCopyLink}
+          {...messageEditActions(db, message, selection.signal, onEdit)}
         />
       );
     }

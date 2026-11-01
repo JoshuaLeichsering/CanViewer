@@ -22,6 +22,8 @@ export function MessageDetail({
   selectedSignal,
   onSelectSignal,
   onCopyLink,
+  headerActions,
+  signalActions,
 }: {
   db: DbcDatabase;
   fileName: string;
@@ -29,6 +31,10 @@ export function MessageDetail({
   selectedSignal?: string;
   onSelectSignal: (name: string | undefined) => void;
   onCopyLink: () => void;
+  /** More buttons for the page header, next to Copy link (the message editor). */
+  headerActions?: React.ReactNode;
+  /** Buttons for the selected signal's card (the signal editor). */
+  signalActions?: (signal: DbcSignal) => React.ReactNode;
 }) {
   const { t } = useI18n();
   const selectedIndex = message.signals.findIndex((s) => s.name === selectedSignal);
@@ -114,11 +120,14 @@ export function MessageDetail({
             {isJ1939Pg(db, message) && <span className="assist-chip">J1939 PG</span>}
           </div>
         </div>
-        <CopyCodeMenu db={db} message={message} fileName={fileName} />
-        <button className="btn outlined with-icon state" onClick={onCopyLink}>
-          <Icon name="link" size={18} />
-          {t('copyLink')}
-        </button>
+        <div className="edt-header-actions">
+          {headerActions}
+          <CopyCodeMenu db={db} message={message} fileName={fileName} />
+          <button className="btn outlined with-icon state" onClick={onCopyLink}>
+            <Icon name="link" size={18} />
+            {t('copyLink')}
+          </button>
+        </div>
       </header>
 
       <div className="facts">
@@ -197,6 +206,7 @@ export function MessageDetail({
               signal={message.signals[selectedIndex]}
               index={selectedIndex}
               decoded={decoded?.[selectedIndex]}
+              actions={signalActions?.(message.signals[selectedIndex])}
             />
           ) : (
             <div className="card muted">{t('selectSignalHint')}</div>
@@ -233,11 +243,13 @@ function SignalCard({
   signal,
   index,
   decoded,
+  actions,
 }: {
   message: DbcMessage;
   signal: DbcSignal;
   index: number;
   decoded?: DecodedSignal;
+  actions?: React.ReactNode;
 }) {
   const { t } = useI18n();
   const valueEntries = Object.entries(signal.values ?? {}).sort(([a], [b]) => Number(a) - Number(b));
@@ -267,6 +279,7 @@ function SignalCard({
     <div className="card signal-card">
       <div className="card-overline">{t('signalOverline', { n: signalNumber(index) })}</div>
       <h2 className="signal-title">{signal.name}</h2>
+      {actions && <div className="edt-card-actions">{actions}</div>}
       <div className="kv-grid">
         <div className="kv">
           <div className="k">{t('kvPhysical')}</div>
