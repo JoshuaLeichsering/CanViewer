@@ -10,6 +10,9 @@
 //     text and number filters combine, an unreadable number filter is marked
 //     invalid and ignored, Escape clears a filter, and "Clear filters" and
 //     closing the row bring every signal back;
+//   - number fields show a range such as 16..32 whole, a longer filter grows its
+//     field while focused without widening the table, and a focused invalid
+//     field shows a focus ring;
 //   - the sort stays when another message is shown;
 //   - the German UI labels the controls in German;
 //   - when the table is wider than its card, it scrolls sideways on its own and
@@ -173,11 +176,46 @@ await step('text and number filters combine, and the count says how many are sho
   assert.deepEqual(await names(), ['ThrottlePosition', 'EngineTorque']);
 });
 
+await step('number fields show a range such as 16..32 whole; a longer filter grows its field while focused, without widening the table', async () => {
+  /** Width of a filter field, whether its whole text shows, and its tooltip. */
+  const field = (label) =>
+    filter(label).evaluate((f) => ({ width: f.getBoundingClientRect().width, fits: f.scrollWidth <= f.clientWidth, title: f.title }));
+  const tableWidth = () => table().evaluate((t) => t.closest('.tbl-scroll').scrollWidth);
+  for (const label of ['Filter Start', 'Filter Length', 'Filter Factor', 'Filter Offset', 'Filter Min', 'Filter Max']) {
+    assert.ok((await field(label)).width >= 64, `${label} is at least 64 px wide`);
+  }
+  await filter('Filter Name').focus();
+  const start = await field('Filter Start');
+  assert.deepEqual([start.fits, start.title], [true, '16..32'], JSON.stringify(start));
+  const width = await tableWidth();
+  // Factor 0.4 and 0.5 both pass, so the rows stay as they are.
+  await filter('Filter Factor').fill('>=0.125');
+  const focused = await field('Filter Factor');
+  assert.ok(focused.fits && focused.width > 64, JSON.stringify(focused));
+  assert.equal(await tableWidth(), width);
+  await filter('Filter Name').focus();
+  // Unfocused, the field is back to its column's width; the tooltip holds the whole filter.
+  const blurred = await field('Filter Factor');
+  assert.deepEqual([blurred.width < focused.width, blurred.title], [true, '>=0.125'], JSON.stringify(blurred));
+  assert.deepEqual(await names(), ['ThrottlePosition', 'EngineTorque']);
+  await filter('Filter Factor').fill('');
+});
+
 await step('an unreadable number filter is marked invalid and ignored; Escape clears it', async () => {
   await filter('Filter Length').fill('abc');
   assert.equal(await filter('Filter Length').getAttribute('aria-invalid'), 'true');
   assert.equal(await page.getByText('The Length filter cannot be read and is ignored.').isVisible(), true);
   assert.deepEqual(await names(), ['ThrottlePosition', 'EngineTorque']);
+  // The invalid field's thick red border is there with or without focus, so focus adds a red ring.
+  const ring = () =>
+    filter('Filter Length').evaluate((f) => {
+      const s = getComputedStyle(f);
+      return { outline: `${s.outlineStyle} ${s.outlineWidth}`, matchesBorder: s.outlineColor === s.borderTopColor, border: s.borderTopWidth };
+    });
+  assert.deepEqual(await ring(), { outline: 'solid 2px', matchesBorder: true, border: '2px' });
+  await filter('Filter Name').focus();
+  assert.equal((await ring()).outline.split(' ')[0], 'none');
+  assert.equal((await ring()).border, '2px');
   await filter('Filter Length').press('Escape');
   assert.equal(await filter('Filter Length').inputValue(), '');
   assert.equal(await filter('Filter Length').getAttribute('aria-invalid'), null);

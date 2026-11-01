@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState, type CSSProperties } from 'react';
 import type { DbcMessage } from '../lib/dbc/types';
 import { useI18n, type MsgKey } from '../lib/i18n';
 import { fmtNum, muxLabel } from '../lib/format';
@@ -182,26 +182,33 @@ export function SignalTable({
             <tr className="tbl-filter-row" id={`${id}filters`} hidden={!filtersOpen}>
               {SIGNAL_COLUMNS.map(({ key, numeric }, i) => {
                 const bad = invalid.includes(key);
+                const text = filters[key] ?? '';
                 return (
                   <td key={key} className={numeric ? 'num' : undefined}>
-                    <input
-                      ref={i === 0 ? firstFilter : undefined}
-                      className="tbl-filter"
-                      size={1}
-                      value={filters[key] ?? ''}
-                      aria-label={t('tblFilterColumn', { col: label(key) })}
-                      aria-describedby={bad ? `${id}help ${id}err-${key}` : `${id}help`}
-                      aria-invalid={bad || undefined}
-                      spellCheck={false}
-                      autoComplete="off"
-                      onChange={(e) => setFilter(key, e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Escape' && (filters[key] ?? '') !== '') {
-                          e.preventDefault();
-                          setFilter(key, '');
-                        }
-                      }}
-                    />
+                    {/* The box holds the field's place in the column; the field
+                        itself grows over its neighbours while focused. */}
+                    <div className="tbl-filter-box">
+                      <input
+                        ref={i === 0 ? firstFilter : undefined}
+                        className="tbl-filter"
+                        size={1}
+                        value={text}
+                        title={text || undefined}
+                        style={{ '--tbl-chars': Math.min(text.length + 2, 24) } as CSSProperties}
+                        aria-label={t('tblFilterColumn', { col: label(key) })}
+                        aria-describedby={bad ? `${id}help ${id}err-${key}` : `${id}help`}
+                        aria-invalid={bad || undefined}
+                        spellCheck={false}
+                        autoComplete="off"
+                        onChange={(e) => setFilter(key, e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Escape' && text !== '') {
+                            e.preventDefault();
+                            setFilter(key, '');
+                          }
+                        }}
+                      />
+                    </div>
                   </td>
                 );
               })}

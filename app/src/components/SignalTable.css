@@ -99,11 +99,25 @@ table.m3 tr.tbl-filter-row td {
 table.m3 tr.tbl-filter-row[hidden] {
   display: none;
 }
-.tbl-filter {
-  width: 100%;
-  min-width: 40px;
+/* The box takes the column's width and reaches 8 px into the gutter on each
+   side, so a field is 16 px wider than its column's content. A number field is
+   at least 64 px wide, room for six characters such as 16..32 or 0..255. */
+.tbl-filter-box {
+  position: relative;
+  min-width: 48px;
   height: 32px;
-  padding: 0 8px;
+  margin: 0 -8px;
+}
+table.m3 td.num .tbl-filter-box {
+  min-width: 64px;
+}
+.tbl-filter {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0 6px;
   border: 1px solid var(--outline-var);
   border-radius: 8px;
   outline: none;
@@ -111,17 +125,32 @@ table.m3 tr.tbl-filter-row[hidden] {
   color: var(--on-surface);
   font-size: 13px;
 }
+/* Number fields and the last column's field grow to the left, the others to the right. */
+table.m3 td.num .tbl-filter,
+table.m3 td:last-child .tbl-filter {
+  right: 0;
+  left: auto;
+}
 /* The thicker border is the focus indicator, as in the app's other text
-   fields; :focus-visible keeps the global outline from doubling it. */
+   fields; :focus-visible keeps the global outline from doubling it. While
+   focused, a field grows over its neighbours to show the whole filter
+   (--tbl-chars is its length plus two), without changing the table's layout. */
 .tbl-filter:focus,
 .tbl-filter:focus-visible {
+  z-index: 1;
+  width: max(100%, calc(var(--tbl-chars, 0) * 1ch + 14px));
   outline: none;
   border: 2px solid var(--primary);
-  padding: 0 7px;
+  padding: 0 5px;
 }
 .tbl-filter[aria-invalid='true'] {
   border: 2px solid var(--error);
-  padding: 0 7px;
+  padding: 0 5px;
+}
+/* An invalid field already has the thick border, so focus adds a ring. */
+.tbl-filter[aria-invalid='true']:focus {
+  outline: 2px solid var(--error);
+  outline-offset: 1px;
 }
 table.m3 td.num .tbl-filter {
   text-align: right;
