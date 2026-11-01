@@ -113,6 +113,8 @@ interface ReadSummary {
   error: string | null;
   clusters: Array<{ name: string; messages: number; signals: number }>;
   log: string[];
+  /** What the mapper made of the log: "line: reason: text". */
+  problems: string[];
 }
 interface TwinSummary {
   dbc: string;
@@ -199,6 +201,7 @@ describe.skipIf(corpus.length === 0)('non-DBC corpus (canmatrix and cantools sub
         signals: countSignals(c),
       })),
       log: result.log,
+      problems: (result.clusters[0]?.db.problems ?? []).map((p) => `${p.line}: ${p.reason}: ${p.text.slice(0, 100)}`),
     };
     if (UPDATE) recorded.reads[file] = summary;
     else expect(summary).toEqual(baseline.reads[file]);

@@ -50,9 +50,8 @@ export interface ImportedDatabase {
 }
 
 /**
- * Read a non-DBC file through canmatrix in the worker. Spike scope: the first
- * cluster that holds messages is shown, and canmatrix's log lines become
- * problems so that nothing it reports is hidden.
+ * Read a non-DBC file through canmatrix in the worker. The first cluster that
+ * holds messages is shown (ARXML, KCD and FIBEX files can hold several).
  */
 export async function importWithCanmatrix(
   file: File,
@@ -77,12 +76,9 @@ export async function importWithCanmatrix(
   );
   const cluster = result.clusters.find((c) => c.db.messages.length > 0) ?? result.clusters[0];
   if (!cluster) throw new Error(result.error ?? 'canmatrix found no CAN database in this file');
-  const problems = [
-    ...(result.error ? [{ line: 0, text: result.error, reason: 'canmatrix raised' }] : []),
-    ...result.log.map((text) => ({ line: 0, text, reason: 'canmatrix log' })),
-  ];
   return {
-    db: { ...cluster.db, problems: [...cluster.db.problems, ...problems] },
+    // canviewer_adapter.py has already turned canmatrix's log into problems.
+    db: cluster.db,
     cluster: cluster.name,
     clusterCount: result.clusters.length,
     timings,

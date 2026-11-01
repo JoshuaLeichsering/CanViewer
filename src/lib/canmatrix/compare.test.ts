@@ -62,6 +62,30 @@ describe('compareDatabases', () => {
   });
 });
 
+describe('compareDatabases on attributes, nodes and frame format', () => {
+  it('reports differing attribute values per object and import-only attributes once per name', () => {
+    const imported = parseDbc(BASE);
+    imported.messages[0].signals.forEach((s) => (s.attributes.ISignalName = s.name));
+    imported.messages[0].attributes.GenMsgCycleTime = 20;
+    const expected = parseDbc(BASE);
+    expected.messages[0].attributes.GenMsgCycleTime = 10;
+    expect(compareDatabases(expected, imported)).toEqual([
+      'x0x18FECA15 EngineData: attr[GenMsgCycleTime] 10 -> 20',
+      'signal attribute ISignalName: only in the import, on 2 signals',
+    ]);
+  });
+
+  it('compares the frame format by CanViewer’s rules, nodes and value tables', () => {
+    const fd = parseDbc(BASE.replace('EngineData: 8', 'EngineData: 16').replace('BU_: ECU1 ECU2', 'BU_: ECU1') + 'VAL_TABLE_ Gears 0 "N" 1 "D" ;\n');
+    expect(compareDatabases(parseDbc(BASE), fd)).toEqual([
+      'node ECU2: missing',
+      'value table Gears: not in the DBC twin',
+      'x0x18FECA15 EngineData: dlc 8 -> 16',
+      'x0x18FECA15 EngineData: frameFormat "classic" -> "fd"',
+    ]);
+  });
+});
+
 describe('canmatrixFormatFor', () => {
   it('leaves .dbc to the TypeScript parser', () => {
     expect(canmatrixFormatFor('car.dbc')).toBeUndefined();

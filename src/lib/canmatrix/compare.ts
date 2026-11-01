@@ -1,5 +1,16 @@
 import { NO_NODE } from '../dbc/parser';
-import type { DbcDatabase, DbcMessage, DbcSignal, MultiplexInfo } from '../dbc/types';
+import { isCanFd, isJ1939Pg } from '../dbc/canfd';
+import { isJ1939Database } from '../dbc/j1939';
+import type {
+  AttrValue,
+  DbcAttributeDefinition,
+  DbcDatabase,
+  DbcMessage,
+  DbcNode,
+  DbcSignal,
+  DbcValueTable,
+  MultiplexInfo,
+} from '../dbc/types';
 
 /**
  * Field-by-field differences between two databases in CanViewer's model, one
@@ -9,14 +20,43 @@ import type { DbcDatabase, DbcMessage, DbcSignal, MultiplexInfo } from '../dbc/t
  * by name within a message. Used to compare a file read through canmatrix with
  * its DBC twin read by CanViewer's own parser.
  *
- * Compared: extended flag, message name, DLC, sender and comment; per signal
- * the layout (start bit as written in DBC, length, byte order), value type,
- * factor, offset, min and max (unless the DBC leaves the range at [0|0]),
- * unit, receivers, multiplexing, value descriptions and comment. Nodes, attributes and value tables are not compared yet: the
- * adapter does not map them before handover task 4.
+ * Compared:
+ * - the database: attribute definitions (type, enum values, range, default),
+ *   network attributes, whether CanViewer treats it as J1939, nodes (comment,
+ *   attributes) and value tables (entries);
+ * - per message: extended flag, name, DLC, sender, comment, frame format as
+ *   CanViewer's own rules decide it (classic, CAN FD or J1939 PG, see
+ *   src/lib/dbc/canfd.ts), and attributes;
+ * - per signal: the layout (start bit as written in DBC, length, byte order),
+ *   value type, factor, offset, min and max (unless the DBC leaves the range at
+ *   [0|0]), unit, receivers, multiplexing, value descriptions, comment and
+ *   attributes.
+ *
+ * An attribute only the imported side has (the ARXML reader, for one, adds its
+ * own such as ISignalName to every signal) is summed up in one line per name at
+ * the end instead of one line per object; attributes that are missing or
+ * differ get a line each.
  */
 export function compareDatabases(expected: DbcDatabase, actual: DbcDatabase): string[] {
   const out: string[] = [];
+  const extras = new Map<string, number>();
+  const compareAttributes = (
+    where: string,
+    scope: string,
+    e: Record<string, AttrValue>,
+    a: Record<string, AttrValue>,
+  ) => {
+    for (const k of [...new Set([...Object.keys(e), ...Object.keys(a)])].sort()) {
+      if (e[k] === undefined) extras.set(`${scope} ${k}`, (extras.get(`${scope} ${k}`) ?? 0) + 1);
+      else diff(out, where, `attr[${k}]`, e[k], a[k]);
+    }
+  };
+  compareDefinitions(out, expected.attributeDefinitions, actual.attributeDefinitions);
+  compareAttributes('network', 'network', expected.attributes, actual.attributes);
+  diff(out, 'network', 'j1939Database', isJ1939Database(expected), isJ1939Database(actual));
+  compareNodes(out, expected.nodes, actual.nodes, compareAttributes);
+  compareValueTables(out, expected.valueTables, actual.valueTables);
+
   const key = (m: DbcMessage) => `${m.isExtended ? 'x' : 's'}${m.id}`;
   const label = (m: DbcMessage) => `${m.isExtended ? 'x' : ''}0x${m.id.toString(16).toUpperCase()} ${m.name}`;
   const actualByKey = new Map(actual.messages.map((m) => [key(m), m]));
@@ -42,15 +82,29 @@ export function compareDatabases(expected: DbcDatabase, actual: DbcDatabase): st
     diff(out, where, 'dlc', e.dlc, a.dlc);
     diff(out, where, 'sender', node(e.sender), node(a.sender));
     diff(out, where, 'comment', text(e.comment), text(a.comment));
-    compareSignals(out, where, e.signals, a.signals);
+    diff(out, where, 'frameFormat', frameFormat(expected, e), frameFormat(actual, a));
+    compareAttributes(where, 'message', e.attributes, a.attributes);
+    compareSignals(out, where, e.signals, a.signals, compareAttributes);
   }
   for (const a of actual.messages) {
     if (!seen.has(a)) out.push(`${label(a)}: message not in the DBC twin`);
   }
+  for (const [key, count] of extras) {
+    const [scope, name] = key.split(' ');
+    out.push(`${scope} attribute ${name}: only in the import, on ${count} ${scope === 'network' ? 'database' : scope}${count === 1 ? '' : 's'}`);
+  }
   return out;
 }
 
-function compareSignals(out: string[], where: string, expected: DbcSignal[], actual: DbcSignal[]) {
+type AttributeComparer = (where: string, scope: string, e: Record<string, AttrValue>, a: Record<string, AttrValue>) => void;
+
+function compareSignals(
+  out: string[],
+  where: string,
+  expected: DbcSignal[],
+  actual: DbcSignal[],
+  compareAttributes: AttributeComparer,
+) {
   const actualByName = new Map(actual.map((s) => [s.name, s]));
   for (const e of expected) {
     const a = actualByName.get(e.name);
@@ -77,8 +131,61 @@ function compareSignals(out: string[], where: string, expected: DbcSignal[], act
     diff(out, at, 'multiplex', mux(e.multiplex), mux(a.multiplex));
     compareValues(out, at, e.values ?? {}, a.values ?? {});
     diff(out, at, 'comment', text(e.comment), text(a.comment));
+    compareAttributes(at, 'signal', e.attributes, a.attributes);
   }
   for (const name of actualByName.keys()) out.push(`${where} / ${name}: signal not in the DBC twin`);
+}
+
+const frameFormat = (db: DbcDatabase, m: DbcMessage) =>
+  isJ1939Pg(db, m) ? 'j1939pg' : isCanFd(db, m) ? 'fd' : 'classic';
+
+function compareNodes(out: string[], expected: DbcNode[], actual: DbcNode[], compareAttributes: AttributeComparer) {
+  const byName = new Map(actual.map((n) => [n.name, n]));
+  for (const e of expected) {
+    const a = byName.get(e.name);
+    if (!a) {
+      out.push(`node ${e.name}: missing`);
+      continue;
+    }
+    byName.delete(e.name);
+    diff(out, `node ${e.name}`, 'comment', text(e.comment), text(a.comment));
+    compareAttributes(`node ${e.name}`, 'node', e.attributes, a.attributes);
+  }
+  for (const name of byName.keys()) out.push(`node ${name}: not in the DBC twin`);
+}
+
+function compareValueTables(out: string[], expected: DbcValueTable[], actual: DbcValueTable[]) {
+  const byName = new Map(actual.map((t) => [t.name, t]));
+  for (const e of expected) {
+    const a = byName.get(e.name);
+    if (!a) {
+      out.push(`value table ${e.name}: missing`);
+      continue;
+    }
+    byName.delete(e.name);
+    compareValues(out, `value table ${e.name}`, e.values, a.values);
+  }
+  for (const name of byName.keys()) out.push(`value table ${name}: not in the DBC twin`);
+}
+
+function compareDefinitions(out: string[], expected: DbcAttributeDefinition[], actual: DbcAttributeDefinition[]) {
+  const key = (d: DbcAttributeDefinition) => `${d.objectType || 'network'} ${d.name}`;
+  const byKey = new Map(actual.map((d) => [key(d), d]));
+  for (const e of expected) {
+    const where = `definition ${key(e)}`;
+    const a = byKey.get(key(e));
+    if (!a) {
+      out.push(`${where}: missing`);
+      continue;
+    }
+    byKey.delete(key(e));
+    diff(out, where, 'valueType', e.valueType, a.valueType);
+    diff(out, where, 'enumValues', (e.enumValues ?? []).join(','), (a.enumValues ?? []).join(','));
+    diff(out, where, 'min', e.min, a.min);
+    diff(out, where, 'max', e.max, a.max);
+    diff(out, where, 'default', e.defaultValue, a.defaultValue);
+  }
+  for (const k of byKey.keys()) out.push(`definition ${k}: not in the DBC twin`);
 }
 
 function diff(out: string[], where: string, field: string, e: unknown, a: unknown) {

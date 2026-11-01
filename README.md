@@ -99,6 +99,14 @@ from the twin, is pinned in
 regenerate it with `UPDATE_IMPORT_BASELINE=1 npx vitest run src/lib/canmatrix/import-corpus.test.ts`.
 The suite is skipped without the submodules and fails without the wheels.
 
+[mapper.test.ts](src/lib/canmatrix/mapper.test.ts) checks the mapping from canmatrix's model
+to CanViewer's (`canviewer_adapter.py`) the direct way: it reads DBC files through
+canmatrix and compares the result with CanViewer's own parser. `examples/demo.dbc`
+must come out identical. For the 58 opendbc and Model 3 files, what canmatrix's DBC
+reader does differently (it drops dangling comments and lines it cannot read, applies
+long names, creates nodes for undeclared senders) and the problems reported for it are
+pinned in [mapper-dbc-baseline.json](src/lib/canmatrix/mapper-dbc-baseline.json).
+
 ## Supported DBC statements
 
 `VERSION`, `BU_`, `BO_`, `SG_` (incl. `M`/`m<N>` multiplexing), `BO_TX_BU_`, `CM_`
