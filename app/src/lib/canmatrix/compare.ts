@@ -1,6 +1,16 @@
-import { NO_NODE } from '../dbc/parser';
-import { isCanFd, isJ1939Pg } from '../dbc/canfd';
 import { isJ1939Database } from '../dbc/j1939';
+import {
+  attributeChanges,
+  changeOf,
+  definitionChanges,
+  definitionKey,
+  messageChanges,
+  nodeChanges,
+  signalChanges,
+  valueChanges,
+  type CompareOptions,
+  type FieldChange,
+} from '../diff/fields';
 import type {
   AttrValue,
   DbcAttributeDefinition,
@@ -9,7 +19,6 @@ import type {
   DbcNode,
   DbcSignal,
   DbcValueTable,
-  MultiplexInfo,
 } from '../dbc/types';
 
 /**
@@ -20,7 +29,8 @@ import type {
  * by name within a message. Used to compare a file read through canmatrix with
  * its DBC twin read by CanViewer's own parser.
  *
- * Compared:
+ * Compared (the fields and how they are normalized are shared with diff mode,
+ * see app/src/lib/diff/fields.ts):
  * - the database: attribute definitions (type, enum values, range, default),
  *   network attributes, whether CanViewer treats it as J1939, nodes (comment,
  *   attributes) and value tables (entries);
@@ -40,22 +50,21 @@ import type {
 export function compareDatabases(expected: DbcDatabase, actual: DbcDatabase): string[] {
   const out: string[] = [];
   const extras = new Map<string, number>();
-  const compareAttributes = (
-    where: string,
-    scope: string,
-    e: Record<string, AttrValue>,
-    a: Record<string, AttrValue>,
-  ) => {
-    for (const k of [...new Set([...Object.keys(e), ...Object.keys(a)])].sort()) {
-      if (e[k] === undefined) extras.set(`${scope} ${k}`, (extras.get(`${scope} ${k}`) ?? 0) + 1);
-      else diff(out, where, `attr[${k}]`, e[k], a[k]);
+  const report: Reporter = (where, changes) => {
+    for (const c of changes) out.push(line(where, c));
+  };
+  const compareAttributes: AttributeComparer = (where, scope, e, a) => {
+    for (const c of attributeChanges(e, a)) {
+      const key = `${scope} ${c.attribute}`;
+      if (c.before === undefined) extras.set(key, (extras.get(key) ?? 0) + 1);
+      else out.push(line(where, c));
     }
   };
-  compareDefinitions(out, expected.attributeDefinitions, actual.attributeDefinitions);
+  compareDefinitions(out, report, expected.attributeDefinitions, actual.attributeDefinitions);
   compareAttributes('network', 'network', expected.attributes, actual.attributes);
-  diff(out, 'network', 'j1939Database', isJ1939Database(expected), isJ1939Database(actual));
-  compareNodes(out, expected.nodes, actual.nodes, compareAttributes);
-  compareValueTables(out, expected.valueTables, actual.valueTables);
+  report('network', changeOf('j1939Database', isJ1939Database(expected), isJ1939Database(actual)));
+  compareNodes(out, report, expected.nodes, actual.nodes, compareAttributes);
+  compareValueTables(out, report, expected.valueTables, actual.valueTables);
 
   const key = (m: DbcMessage) => `${m.isExtended ? 'x' : 's'}${m.id}`;
   const label = (m: DbcMessage) => `${m.isExtended ? 'x' : ''}0x${m.id.toString(16).toUpperCase()} ${m.name}`;
@@ -77,14 +86,9 @@ export function compareDatabases(expected: DbcDatabase, actual: DbcDatabase): st
     }
     seen.add(a);
     const where = label(e);
-    diff(out, where, 'isExtended', e.isExtended, a.isExtended);
-    diff(out, where, 'name', e.name, a.name);
-    diff(out, where, 'dlc', e.dlc, a.dlc);
-    diff(out, where, 'sender', node(e.sender), node(a.sender));
-    diff(out, where, 'comment', text(e.comment), text(a.comment));
-    diff(out, where, 'frameFormat', frameFormat(expected, e), frameFormat(actual, a));
+    report(where, messageChanges(expected, e, actual, a));
     compareAttributes(where, 'message', e.attributes, a.attributes);
-    compareSignals(out, where, e.signals, a.signals, compareAttributes);
+    compareSignals(out, report, where, e.signals, a.signals, compareAttributes);
   }
   for (const a of actual.messages) {
     if (!seen.has(a)) out.push(`${label(a)}: message not in the DBC twin`);
@@ -96,10 +100,15 @@ export function compareDatabases(expected: DbcDatabase, actual: DbcDatabase): st
   return out;
 }
 
+/** The twin check's options, see CompareOptions. */
+const TWIN: CompareOptions = { zeroRangeUnset: true, valueCountWhenOneSideEmpty: true };
+
+type Reporter = (where: string, changes: FieldChange[]) => void;
 type AttributeComparer = (where: string, scope: string, e: Record<string, AttrValue>, a: Record<string, AttrValue>) => void;
 
 function compareSignals(
   out: string[],
+  report: Reporter,
   where: string,
   expected: DbcSignal[],
   actual: DbcSignal[],
@@ -114,32 +123,19 @@ function compareSignals(
       continue;
     }
     actualByName.delete(e.name);
-    diff(out, at, 'startBit', e.startBit, a.startBit);
-    diff(out, at, 'length', e.length, a.length);
-    diff(out, at, 'byteOrder', e.byteOrder, a.byteOrder);
-    diff(out, at, 'valueType', e.valueType, a.valueType);
-    diff(out, at, 'factor', e.factor, a.factor);
-    diff(out, at, 'offset', e.offset, a.offset);
-    // In DBC, [0|0] means "no range given"; canmatrix computes a range from
-    // the raw value range instead, which is not a reading error.
-    if (e.min !== 0 || e.max !== 0) {
-      diff(out, at, 'min', e.min, a.min);
-      diff(out, at, 'max', e.max, a.max);
-    }
-    diff(out, at, 'unit', e.unit.trim(), a.unit.trim());
-    diff(out, at, 'receivers', nodes(e.receivers), nodes(a.receivers));
-    diff(out, at, 'multiplex', mux(e.multiplex), mux(a.multiplex));
-    compareValues(out, at, e.values ?? {}, a.values ?? {});
-    diff(out, at, 'comment', text(e.comment), text(a.comment));
+    report(at, signalChanges(e, a, TWIN));
     compareAttributes(at, 'signal', e.attributes, a.attributes);
   }
   for (const name of actualByName.keys()) out.push(`${where} / ${name}: signal not in the DBC twin`);
 }
 
-const frameFormat = (db: DbcDatabase, m: DbcMessage) =>
-  isJ1939Pg(db, m) ? 'j1939pg' : isCanFd(db, m) ? 'fd' : 'classic';
-
-function compareNodes(out: string[], expected: DbcNode[], actual: DbcNode[], compareAttributes: AttributeComparer) {
+function compareNodes(
+  out: string[],
+  report: Reporter,
+  expected: DbcNode[],
+  actual: DbcNode[],
+  compareAttributes: AttributeComparer,
+) {
   const byName = new Map(actual.map((n) => [n.name, n]));
   for (const e of expected) {
     const a = byName.get(e.name);
@@ -148,13 +144,13 @@ function compareNodes(out: string[], expected: DbcNode[], actual: DbcNode[], com
       continue;
     }
     byName.delete(e.name);
-    diff(out, `node ${e.name}`, 'comment', text(e.comment), text(a.comment));
+    report(`node ${e.name}`, nodeChanges(e, a));
     compareAttributes(`node ${e.name}`, 'node', e.attributes, a.attributes);
   }
   for (const name of byName.keys()) out.push(`node ${name}: not in the DBC twin`);
 }
 
-function compareValueTables(out: string[], expected: DbcValueTable[], actual: DbcValueTable[]) {
+function compareValueTables(out: string[], report: Reporter, expected: DbcValueTable[], actual: DbcValueTable[]) {
   const byName = new Map(actual.map((t) => [t.name, t]));
   for (const e of expected) {
     const a = byName.get(e.name);
@@ -163,71 +159,39 @@ function compareValueTables(out: string[], expected: DbcValueTable[], actual: Db
       continue;
     }
     byName.delete(e.name);
-    compareValues(out, `value table ${e.name}`, e.values, a.values);
+    report(`value table ${e.name}`, valueChanges(e.values, a.values, TWIN));
   }
   for (const name of byName.keys()) out.push(`value table ${name}: not in the DBC twin`);
 }
 
-function compareDefinitions(out: string[], expected: DbcAttributeDefinition[], actual: DbcAttributeDefinition[]) {
-  const key = (d: DbcAttributeDefinition) => `${d.objectType || 'network'} ${d.name}`;
-  const byKey = new Map(actual.map((d) => [key(d), d]));
+function compareDefinitions(
+  out: string[],
+  report: Reporter,
+  expected: DbcAttributeDefinition[],
+  actual: DbcAttributeDefinition[],
+) {
+  const byKey = new Map(actual.map((d) => [definitionKey(d), d]));
   for (const e of expected) {
-    const where = `definition ${key(e)}`;
-    const a = byKey.get(key(e));
+    const where = `definition ${definitionKey(e)}`;
+    const a = byKey.get(definitionKey(e));
     if (!a) {
       out.push(`${where}: missing`);
       continue;
     }
-    byKey.delete(key(e));
-    diff(out, where, 'valueType', e.valueType, a.valueType);
-    diff(out, where, 'enumValues', (e.enumValues ?? []).join(','), (a.enumValues ?? []).join(','));
-    diff(out, where, 'min', e.min, a.min);
-    diff(out, where, 'max', e.max, a.max);
-    diff(out, where, 'default', e.defaultValue, a.defaultValue);
+    byKey.delete(definitionKey(e));
+    report(where, definitionChanges(e, a));
   }
   for (const k of byKey.keys()) out.push(`definition ${k}: not in the DBC twin`);
 }
 
-function diff(out: string[], where: string, field: string, e: unknown, a: unknown) {
-  if (typeof e === 'number' && typeof a === 'number') {
-    if (e === a || Math.abs(e - a) <= 1e-9 * Math.max(Math.abs(e), Math.abs(a))) return;
-  } else if (e === a) {
-    return;
-  }
-  out.push(`${where}: ${field} ${show(e)} -> ${show(a)}`);
+/** One line per change; value descriptions that only one side has are summed up by count. */
+function line(where: string, c: FieldChange): string {
+  if (c.field === 'values') return `${where}: values ${c.before} entries -> ${c.after} entries`;
+  return `${where}: ${c.field} ${show(c.before)} -> ${show(c.after)}`;
 }
 
 /** Long texts (comments) are cut so that a difference stays one short line. */
 function show(v: unknown): string {
   if (typeof v !== 'string') return String(v);
   return JSON.stringify(v.length > 48 ? v.slice(0, 45) + '...' : v);
-}
-
-const node = (n: string) => (n === NO_NODE ? '' : n);
-const nodes = (ns: string[]) =>
-  ns
-    .filter((n) => n !== NO_NODE && n !== '')
-    .sort()
-    .join(',');
-const text = (s: string | undefined) => (s ?? '').replace(/\r\n/g, '\n').trim();
-
-function mux(m: MultiplexInfo): string {
-  let s = m.role;
-  if (m.switchValue !== undefined) s += ` ${m.switchValue}`;
-  if (m.extended) {
-    s += ` by ${m.extended.switchName} [${m.extended.ranges.map(([lo, hi]) => `${lo}-${hi}`).join(', ')}]`;
-  }
-  return s;
-}
-
-/** Value descriptions: one line if a side has none, else one per differing raw value. */
-function compareValues(out: string[], at: string, e: Record<number, string>, a: Record<number, string>) {
-  const ek = Object.keys(e);
-  const ak = Object.keys(a);
-  if (ek.length === 0 || ak.length === 0) {
-    if (ek.length !== ak.length) out.push(`${at}: values ${ek.length} entries -> ${ak.length} entries`);
-    return;
-  }
-  const keys = [...new Set([...ek, ...ak])].map(Number).sort((x, y) => x - y);
-  for (const k of keys) diff(out, at, `values[${k}]`, e[k]?.trim(), a[k]?.trim());
 }
