@@ -6,9 +6,10 @@
 //! bytes are handed to the page in an initialization script), and calls
 //! `smoke_report` with what it showed. The report goes to the file named by
 //! CANVIEWER_SMOKE_OUT, and to stdout, and the app exits with 0 if every
-//! file opened, 1 if one did not, or 2 if no report came within five
-//! minutes. Without the variable no script is injected and no command is
-//! registered, so the app behaves exactly as it does otherwise.
+//! file opened and the page's Content Security Policy held (no violation,
+//! and a blob: worker under it, see smoke.js), 1 if not, or 2 if no report
+//! came within five minutes. Without the variable no script is injected and
+//! no command is registered, so the app behaves exactly as it does otherwise.
 
 use std::{env, ffi::OsString, fs, path::PathBuf, thread, time::Duration};
 

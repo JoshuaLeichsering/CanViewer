@@ -71,6 +71,11 @@ jobs:
             third_party/canmatrix/tests/files/arxml/ARXMLContainerTest.arxml \
             examples/demo.dbc dist
 
+      - name: Desktop CSP check (the import worker under the desktop app's policy, in Chromium)
+        run: |
+          NODE_PATH="$RUNNER_TEMP/pw/node_modules" node e2e/desktop-csp-check.mjs dist desktop-csp \
+            examples/demo.dbc third_party/canmatrix/tests/files/arxml/test.arxml
+
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -78,5 +83,6 @@ jobs:
           path: |
             test-report.json
             network-check/
+            desktop-csp/
             vite-preview.log
           if-no-files-found: ignore
