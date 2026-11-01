@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-import { DEMO_DBC, expect, listPane, openFile, rail, test } from '../fixtures';
+import { DEMO_DBC, expect, listPane, openFile, openText, rail, test } from '../fixtures';
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
@@ -101,4 +101,30 @@ test('selects signals from the table and the bit layout', async ({ page }) => {
   await expect(page.locator('.signal-card h2')).toHaveText('EngineTemp');
   await page.locator('.bitlayout .cell[title="EngineTemp (bit 16)"]').click();
   await expect(page.getByText('Select a signal in the table or bit layout to see its details.')).toBeVisible();
+});
+
+test('starts another file at its overview, and the rail at its own first items', async ({ page }) => {
+  // Something shown in every destination with a list, in demo.dbc.
+  await rail(page, 'Messages').click();
+  await listPane(page).getByRole('button', { name: /BrakeData/ }).click();
+  await page.getByRole('row', { name: /WheelSpeedFL/ }).click();
+  await expect(page).toHaveURL(/#msg=768\/WheelSpeedFL$/);
+  await rail(page, 'Nodes').click();
+  await listPane(page).getByRole('button', { name: /Tester/ }).click();
+  await rail(page, 'Messages').click();
+  await expect(h1(page)).toHaveText('BrakeData');
+
+  // Another file, with none of them: each destination starts at its first item.
+  await openText(
+    page,
+    'other.dbc',
+    'VERSION ""\nBU_: Gateway\nBO_ 1 First: 8 Gateway\n SG_ A : 0|8@1+ (1,0) [0|255] "" Gateway\nBO_ 2 Second: 8 Gateway\n',
+  );
+  await expect(h1(page)).toHaveText('other.dbc');
+  await expect(page).toHaveURL(/\/$/);
+  await rail(page, 'Messages').click();
+  await expect(h1(page)).toHaveText('First');
+  await expect(page).toHaveURL(/#msg=1$/);
+  await rail(page, 'Nodes').click();
+  await expect(h1(page)).toHaveText('Gateway');
 });

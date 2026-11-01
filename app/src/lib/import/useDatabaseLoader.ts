@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { importWithCanmatrix } from '../canmatrix/client';
 import { DatabaseLoader, type LoaderEvent } from './loader';
 import * as storage from './storage';
@@ -23,7 +23,18 @@ export function useDatabaseLoader(onEvent: (event: LoaderEvent) => void) {
         onEventRef.current(event);
       }),
   );
-  const state = useSyncExternalStore(loader.subscribe, loader.getState);
+  // Plain state rather than useSyncExternalStore: React renders a store's
+  // update on its own, at a higher priority than the reset of the view that
+  // `onEvent` makes for a new database. One render would then show the new
+  // database with the old selection, and the app would remember that
+  // selection for the new file. As state, both changes render together.
+  // Subscribed in a layout effect, so before the restore below runs.
+  const [state, setState] = useState(loader.getState);
+  useLayoutEffect(() => {
+    const update = () => setState(loader.getState());
+    update();
+    return loader.subscribe(update);
+  }, [loader]);
 
   // Guarded by a ref so StrictMode's double effect run cannot restore twice.
   const restored = useRef(false);
