@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { revealScrollTop, rowWindow, shouldVirtualize, VIRTUALIZE_ABOVE } from './virtual-window';
+import { revealScrollTop, rowSegments, rowWindow, shouldVirtualize, VIRTUALIZE_ABOVE } from './virtual-window';
 
 describe('shouldVirtualize', () => {
   it('virtualizes databases with more than 1000 messages only', () => {
@@ -101,5 +101,54 @@ describe('revealScrollTop', () => {
   it('does nothing for an index outside the list or an unusable row height', () => {
     expect(revealScrollTop({ ...view, index: -1, scrollTop: 0 })).toBeNull();
     expect(revealScrollTop({ ...view, rowHeight: 0, index: 5, scrollTop: 0 })).toBeNull();
+  });
+});
+
+describe('rowSegments', () => {
+  it('renders just the window without a focused row, or with one inside it', () => {
+    expect(rowSegments(100, 130, 5000)).toEqual([[100, 130]]);
+    expect(rowSegments(100, 130, 5000, -1)).toEqual([[100, 130]]);
+    expect(rowSegments(100, 130, 5000, 115)).toEqual([[100, 130]]);
+  });
+
+  it('adds the focused row and its neighbours before or after the window', () => {
+    expect(rowSegments(100, 130, 5000, 3)).toEqual([
+      [2, 5],
+      [100, 130],
+    ]);
+    expect(rowSegments(100, 130, 5000, 4000)).toEqual([
+      [100, 130],
+      [3999, 4002],
+    ]);
+  });
+
+  it('merges a focused row next to the window or overlapping its edge into one segment', () => {
+    // Row 98's neighbour 99 touches the window: no gap of zero rows between them.
+    expect(rowSegments(100, 130, 5000, 98)).toEqual([[97, 130]]);
+    expect(rowSegments(100, 130, 5000, 99)).toEqual([[98, 130]]);
+    expect(rowSegments(100, 130, 5000, 130)).toEqual([[100, 132]]);
+    expect(rowSegments(100, 130, 5000, 131)).toEqual([[100, 133]]);
+    expect(rowSegments(100, 130, 5000, 133)).toEqual([
+      [100, 130],
+      [132, 135],
+    ]);
+  });
+
+  it('keeps the neighbours inside the list at its ends', () => {
+    expect(rowSegments(100, 130, 5000, 0)).toEqual([
+      [0, 2],
+      [100, 130],
+    ]);
+    expect(rowSegments(100, 130, 5000, 4999)).toEqual([
+      [100, 130],
+      [4998, 5000],
+    ]);
+  });
+
+  it('ignores a focused index outside the list, and renders the focused row of an empty window', () => {
+    expect(rowSegments(0, 20, 20, 20)).toEqual([[0, 20]]);
+    expect(rowSegments(0, 20, 20, -5)).toEqual([[0, 20]]);
+    expect(rowSegments(0, 0, 0, 0)).toEqual([]);
+    expect(rowSegments(10, 10, 50, 30)).toEqual([[29, 32]]);
   });
 });

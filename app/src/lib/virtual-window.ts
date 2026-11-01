@@ -71,3 +71,28 @@ export function revealScrollTop({ index, rowHeight, scrollTop, viewportHeight, o
   const target = top < scrollTop || rowHeight > viewportHeight ? top : bottom - viewportHeight;
   return target === scrollTop ? null : Math.max(0, target);
 }
+
+/** Rows `start` to `end - 1` of the list, rendered together. */
+export type RowSegment = readonly [start: number, end: number];
+
+/**
+ * The rows to render: the window, plus the focused row and its two neighbours
+ * when the focused row is outside the window. The focused row then stays in
+ * the document, so scrolling away does not drop the keyboard focus, and Tab
+ * and Shift+Tab still reach the rows next to it. Returns ordered segments that
+ * neither overlap nor touch; between two of them a gap stands in for the rows
+ * that are not rendered.
+ */
+export function rowSegments(start: number, end: number, count: number, focused = -1): RowSegment[] {
+  const segments: Array<[number, number]> = [];
+  if (end > start) segments.push([start, end]);
+  if (focused >= 0 && focused < count) segments.push([Math.max(0, focused - 1), Math.min(count, focused + 2)]);
+  segments.sort((a, b) => a[0] - b[0]);
+  const merged: Array<[number, number]> = [];
+  for (const segment of segments) {
+    const last = merged[merged.length - 1];
+    if (last && segment[0] <= last[1]) last[1] = Math.max(last[1], segment[1]);
+    else merged.push(segment);
+  }
+  return merged;
+}
