@@ -42,18 +42,10 @@ export const ALLOWED = new Set([
  * removal is under way, each with the reason. The check prints them as
  * warnings, and fails on an exception that matches nothing shipped, so that
  * the entry goes with the part: once it is gone, the part cannot come back
- * without failing the check.
+ * without failing the check. Empty since .xls import was dropped and xlrd and
+ * xlwt left the wheel lock.
  */
-export const EXCEPTIONS = {
-  xlrd:
-    'xlrd 1.2.0 includes code under the original four-clause BSD license of David Giffin, ' +
-    'whose advertising clause the FSF considers incompatible with the GPL. It is used only to import .xls files. ' +
-    'The owner decided to drop .xls import; delete this entry with the wheel.',
-  xlwt:
-    'xlwt 1.3.0 includes code under the four-clause BSD license of pyExcelerator (Roman V. Kiseliov), ' +
-    'whose advertising clause the FSF considers incompatible with the GPL. canmatrix imports it whenever it reads .xls files. ' +
-    'The owner decided to drop .xls import; delete this entry with the wheel.',
-};
+export const EXCEPTIONS = {};
 
 /**
  * Evaluates a simple SPDX expression (OR, AND, parentheses, WITH, and the
@@ -119,14 +111,6 @@ export const WHEELS = {
   openpyxl: { license: 'MIT', metadata: ['License: MIT'] },
   pyyaml: { license: 'MIT', metadata: ['License: MIT'] },
   six: { license: 'MIT', metadata: ['License: MIT'] },
-  xlrd: { license: 'BSD-3-Clause AND LicenseRef-BSD-4-Clause-Giffin', metadata: ['License: BSD'] },
-  // The wheel ships no license file; its licenses are in the project's docs/licenses.rst.
-  xlwt: {
-    license: 'BSD-3-Clause AND LicenseRef-BSD-4-Clause-Kiseliov AND LGPL-2.1-or-later',
-    metadata: ['License: BSD'],
-    texts: ['xlwt-licenses.txt'],
-    source: 'https://github.com/python-excel/xlwt/blob/1.3.0/docs/licenses.rst',
-  },
 };
 
 /**
