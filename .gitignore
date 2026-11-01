@@ -10,3 +10,5 @@ vite-preview.log
 /coverage/
 /test-results/
 /playwright-report/
+import-ui/
+vite-preview-import-ui.log

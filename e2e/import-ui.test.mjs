@@ -12,10 +12,10 @@
 // Chromium cannot resolve any host but localhost, and any request outside the
 // app's origin fails the run.
 //
-// Needs the corpus submodules (third_party/) and Playwright (not a dependency
-// of the app; require() finds a global install through NODE_PATH):
-//   npm run build && npx vite preview --port 4173 --strictPort &
-//   CANVIEWER_URL=http://localhost:4173/ NODE_PATH=$(npm root -g) \
+// Needs the corpus submodules (third_party/) and Playwright (a dev dependency;
+// `npx playwright install chromium` fetches its browser):
+//   npm run build && npx vite preview --port 4175 --strictPort &
+//   CANVIEWER_URL=http://localhost:4175/ \
 //     node --test --test-reporter=spec e2e/import-ui.test.mjs
 // CANVIEWER_E2E_OUT=<dir> also saves a screenshot of each state.
 import { after, before, describe, test } from 'node:test';

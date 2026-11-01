@@ -60,6 +60,8 @@ node e2e/network-check.mjs http://localhost:4173/ network-check \
   examples/demo.dbc dist
 E2E_PORT=4174 npm run e2e                             # the Playwright flows in e2e/flows/
 node e2e/ui-checks.mjs                                # axe, keyboard, recovery, narrow layout
+npx vite preview --port 4175 --strictPort &
+CANVIEWER_URL=http://localhost:4175/ node --test e2e/import-ui.test.mjs   # the import UI
 ```
 
 The network check must end with `requests outside http://localhost:4173: 0`. Stop the
@@ -67,13 +69,16 @@ preview server afterwards. `npm run e2e` starts its own server on `E2E_PORT` (de
 4180), and every flow fails if the page requests anything outside the app's origin.
 `e2e/ui-checks.mjs` serves `dist/` itself and fails on any serious or critical axe
 finding, in both themes and both languages, at desktop and phone width.
+`e2e/import-ui.test.mjs` opens a file of every canmatrix format from a fresh browser
+profile, and checks the loading stages, the cluster choice, the source note, restoring
+on reload and the translated failures. Stop both preview servers afterwards.
 
 If you change a dependency, also run `npm run notices` (it needs Rust's `cargo` and
 `rustc`, for the desktop crates and the Rust standard library) and commit the regenerated
 `THIRD_PARTY_NOTICES.md`. CI checks that it is up to date, and checks the crates' licenses
 with `cargo deny --manifest-path desktop/Cargo.toml check licenses`. The outputs of the
-check above (`test-report.json`, `network-check/`, `coverage/`, `test-results/`) are
-ignored by git, so the sweep for identifying information does not read them.
+check above (`test-report.json`, `network-check/`, `coverage/`, `test-results/`,
+`import-ui/`) are ignored by git, so the sweep for identifying information does not read them.
 
 ## Conventions
 
