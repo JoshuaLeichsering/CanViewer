@@ -15,7 +15,7 @@ import { hexId } from '../format';
  * checked or parsed again, so opening an editor and applying it unchanged
  * gives back the identical message or signal. A changed field must be
  * something the DBC writer can hold, so that an edited database still
- * round-trips (see docs/decisions/0002-dbc-writer.md).
+ * round-trips (see docs/decisions/0008-dbc-writer.md).
  */
 
 const EXT_FLAG = 0x80000000;

@@ -1,4 +1,4 @@
-# 0002. The DBC writer and what it preserves
+# 0008. The DBC writer and what it preserves
 
 - **Status:** accepted
 - **Date:** 2026-11-01

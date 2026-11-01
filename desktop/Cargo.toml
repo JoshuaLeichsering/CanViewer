@@ -14,7 +14,7 @@ tauri = { version = "2", features = [] }
 serde_json = "1"
 
 # The profile releases are built with: about 4.5 % smaller, slower to build
-# (docs/decisions/0002-desktop-shell.md). CI builds other than a release turn
+# (docs/decisions/0009-desktop-shell.md). CI builds other than a release turn
 # LTO off through CARGO_PROFILE_RELEASE_* (.github/workflows/desktop.yml).
 [profile.release]
 codegen-units = 1

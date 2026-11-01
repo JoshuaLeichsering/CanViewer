@@ -10,7 +10,7 @@
 #
 # The self-test (desktop/src/smoke.rs and smoke.js) also checks that a worker
 # started from a blob: URL is held to the page's Content Security Policy, which
-# is how the app starts its import worker (docs/decisions/0002-desktop-shell.md).
+# is how the app starts its import worker (docs/decisions/0009-desktop-shell.md).
 # CI's own self-test on each system, with demo.dbc and canmatrix's test.arxml,
 # also saves demo.dbc's message list through the export menu
 # (CANVIEWER_SMOKE_EXPORT=1, which the runbook's self-test leaves out): the

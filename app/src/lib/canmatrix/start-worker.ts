@@ -16,7 +16,7 @@
  * The web build keeps the plain URL. It sends no policy for a worker to
  * inherit, and its service worker must serve the worker's requests when the
  * app is offline, which not every browser extends to blob: workers. See
- * docs/decisions/0002-desktop-shell.md.
+ * docs/decisions/0009-desktop-shell.md.
  */
 
 /** The source of the blob: module that loads the worker script at `scriptUrl` (absolute). */

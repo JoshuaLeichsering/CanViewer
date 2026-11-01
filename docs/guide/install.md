@@ -434,7 +434,7 @@ The packages are unsigned by decision, and macOS gets Tauri's ad-hoc signature. 
 release workflow marks where signing goes when certificates exist: Apple's signing and
 notarization through Tauri's `APPLE_*` variables, and Windows through
 `bundle.windows.signCommand`. See
-[the decision record](../decisions/0002-desktop-shell.md#signing).
+[the decision record](../decisions/0009-desktop-shell.md#signing).
 
 ## How this guide is checked
 

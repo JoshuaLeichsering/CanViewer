@@ -6,7 +6,7 @@ import type { AttrValue, DbcAttributeDefinition, DbcDatabase, DbcMessage, DbcSig
  * Writes a DbcDatabase as DBC text that parseDbc reads back to the same
  * model. The guarantee is about the model, not the source text: comment
  * layout, whitespace and the order of statements are not kept (see
- * docs/decisions/0002-dbc-writer.md). It is checked on all 58 OEM corpus
+ * docs/decisions/0008-dbc-writer.md). It is checked on all 58 OEM corpus
  * files by roundtrip.test.ts.
  *
  * Anything the DBC grammar cannot hold as it is (a name with a space, a

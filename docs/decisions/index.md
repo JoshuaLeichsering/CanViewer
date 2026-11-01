@@ -13,10 +13,8 @@ not rewritten when things change; a later record supersedes an earlier one and s
 | [0005](./0005-license-gpl-2-or-later.md) | GPL-2.0-or-later, and what it rules out: `.xls` import, the AppImage |
 | [0006](./0006-documentation-site.md) | This site: VitePress on GitHub Pages, with the web app under `/app/` and tables generated from the baselines |
 | [0007](./0007-pinned-corpus-baselines.md) | Real-world corpora with pinned baselines, and corpus suites that may not skip |
-
-<!-- TODO(phase-2): add the records the other workstreams write (the desktop shell per
-system, from W4; what the DBC writer preserves, from W11), renumbered to follow 0007. The
-sidebar lists every file in this directory by itself. -->
+| [0008](./0008-dbc-writer.md) | The DBC writer keeps the model, not the file's layout: every corpus file reads back as the same database |
+| [0009](./0009-desktop-shell.md) | The desktop shell: Tauri 2 on Windows, macOS and Linux, its packages, the import worker under the page's policy, and release builds with LTO |
 
 ## Writing a record
 

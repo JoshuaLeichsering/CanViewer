@@ -20,7 +20,7 @@ import type { DbcDatabase } from './types';
  * the database: `problems` holds line numbers and dangling references the
  * model cannot hold, and `skipped` counts statements CanViewer does not model.
  * What the writer does with them is asserted separately below. See
- * docs/decisions/0002-dbc-writer.md.
+ * docs/decisions/0008-dbc-writer.md.
  */
 const root = join(dirname(fileURLToPath(import.meta.url)), '../../../..');
 const OPENDBC_DIR = join(root, 'third_party/opendbc/opendbc/dbc');

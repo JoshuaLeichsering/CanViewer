@@ -173,7 +173,7 @@ artifact (`cdp-windows/report.json`).
     Creating the worker from a `blob:` URL would make it inherit the page's policy, at
     the price of `worker-src blob:`.
   - Since resolved: the desktop app now starts the worker that way
-    ([decision 0002](../../decisions/0002-desktop-shell.md)).
+    ([decision 0009](../../decisions/0009-desktop-shell.md)).
 - **The missing favicon shows up here too**: the page requests
   `http://tauri.localhost/favicon.ico`. That is W6 in the goal.
 - **Size.** LTO and single-unit codegen were turned off to speed up CI. With them

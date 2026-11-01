@@ -1,4 +1,4 @@
-# 0002. The desktop shell: Tauri on Windows, macOS and Linux
+# 0009. The desktop shell: Tauri on Windows, macOS and Linux
 
 - **Status:** accepted
 - **Date:** 2026-11-01
