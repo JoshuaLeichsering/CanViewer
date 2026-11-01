@@ -45,6 +45,11 @@ jobs:
       - name: Typecheck
         run: npx tsc --noEmit
 
+      # The export tests compile the generated C structs with cc -fsyntax-only;
+      # in CI they fail rather than skip without a compiler.
+      - name: C compiler for the export tests
+        run: cc --version
+
       - name: Tests (verbose)
         run: npx vitest run --reporter=verbose --reporter=json --outputFile.json=test-report.json
 
@@ -71,6 +76,13 @@ jobs:
             third_party/canmatrix/tests/files/arxml/ARXMLContainerTest.arxml \
             examples/demo.dbc dist
 
+      - name: Export check (downloads and copies equal the pinned files)
+        run: |
+          npx vite preview --port 4174 --strictPort > vite-preview-export.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:4174/ > /dev/null && break; sleep 1; done
+          NODE_PATH="$RUNNER_TEMP/pw/node_modules" node e2e/export-check.mjs \
+            http://localhost:4174/ export-check examples/demo.dbc
+
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -79,4 +91,6 @@ jobs:
             test-report.json
             network-check/
             vite-preview.log
+            export-check/
+            vite-preview-export.log
           if-no-files-found: ignore
