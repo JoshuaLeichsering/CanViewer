@@ -1,6 +1,7 @@
 # CI for every push and pull request: typecheck, all tests with the corpus
-# suites (which must run, never skip), the production build, and the network
-# check that proves the build makes no request outside its own origin.
+# suites (which must run, never skip), the production build, the network
+# check that proves the build makes no request outside its own origin, and the
+# UI checks in a browser (e2e/ui-checks.mjs).
 name: CI
 
 on:
@@ -70,6 +71,9 @@ jobs:
             third_party/canmatrix/tests/files/arxml/test.arxml \
             third_party/canmatrix/tests/files/arxml/ARXMLContainerTest.arxml \
             examples/demo.dbc dist
+
+      - name: UI checks (axe-core accessibility, keyboard, error boundary, narrow layout)
+        run: NODE_PATH="$RUNNER_TEMP/pw/node_modules" node e2e/ui-checks.mjs
 
       - uses: actions/upload-artifact@v4
         if: always()
