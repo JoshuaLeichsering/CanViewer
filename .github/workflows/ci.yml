@@ -1,6 +1,7 @@
 # CI for every push and pull request: typecheck, all tests with the corpus
-# suites (which must run, never skip), the production build, and the network
-# check that proves the build makes no request outside its own origin.
+# suites (which must run, never skip), the production build, the network
+# check that proves the build makes no request outside its own origin, and the
+# browser checks of the signal table and of a 5000-message database.
 name: CI
 
 on:
@@ -71,6 +72,13 @@ jobs:
             third_party/canmatrix/tests/files/arxml/ARXMLContainerTest.arxml \
             examples/demo.dbc dist
 
+      - name: Signal table and large database checks (sorting, filtering, 5000 messages)
+        run: |
+          npx vite preview --port 4174 --strictPort > vite-preview-tbl.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:4174/ > /dev/null && break; sleep 1; done
+          NODE_PATH="$RUNNER_TEMP/pw/node_modules" node e2e/signal-table.mjs http://localhost:4174/ tbl-checks examples/demo.dbc
+          NODE_PATH="$RUNNER_TEMP/pw/node_modules" node e2e/large-database.mjs http://localhost:4174/ tbl-checks
+
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -79,4 +87,6 @@ jobs:
             test-report.json
             network-check/
             vite-preview.log
+            tbl-checks/
+            vite-preview-tbl.log
           if-no-files-found: ignore
