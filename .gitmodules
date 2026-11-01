@@ -6,3 +6,11 @@
 	path = third_party/model3dbc
 	url = https://github.com/joshwardell/model3dbc.git
 	shallow = true
+[submodule "third_party/canmatrix"]
+	path = third_party/canmatrix
+	url = https://github.com/ebroecker/canmatrix.git
+	shallow = true
+[submodule "third_party/cantools"]
+	path = third_party/cantools
+	url = https://github.com/cantools/cantools.git
+	shallow = true
