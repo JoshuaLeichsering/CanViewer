@@ -32,7 +32,7 @@ describe('main', () => {
     localStorage.setItem('canviewer.theme', 'dark');
     await boot();
     expect(document.documentElement.dataset.theme).toBe('dark');
-    expect(screen.getByText('A viewer for DBC CAN database files.')).toBeTruthy();
+    expect(screen.getByText('A viewer for CAN database files.')).toBeTruthy();
   });
 
   it('registers no service worker in development', async () => {
@@ -53,7 +53,7 @@ describe('main', () => {
     const register = stubServiceWorker(vi.fn().mockRejectedValue(new Error('insecure context')));
     await boot();
     expect(register).toHaveBeenCalledOnce();
-    expect(screen.getByText('A viewer for DBC CAN database files.')).toBeTruthy();
+    expect(screen.getByText('A viewer for CAN database files.')).toBeTruthy();
   });
 
   it('registers none in the desktop app, which serves the build from its binary', async () => {

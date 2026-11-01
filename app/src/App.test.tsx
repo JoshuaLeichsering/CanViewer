@@ -43,7 +43,7 @@ describe('App: welcome', () => {
   it('welcomes with an open button, the drop hint and the formats, and nothing to navigate', () => {
     renderWithProviders(<App />);
     expect(document.querySelector('.brand')?.textContent).toBe('CanViewer');
-    expect(screen.getByText('A viewer for DBC CAN database files.')).toBeTruthy();
+    expect(screen.getByText('A viewer for CAN database files.')).toBeTruthy();
     expect(screen.getByText('…or drop a file anywhere in this window')).toBeTruthy();
     expect(screen.getByText(/DBC files open instantly/)).toBeTruthy();
     expect(screen.getByText('examples/demo.dbc')).toBeTruthy();
@@ -138,7 +138,7 @@ describe('App: opening a DBC file', () => {
   it('ignores a drop without a file', () => {
     renderWithProviders(<App />);
     fireEvent.drop(document.querySelector('.app')!, { dataTransfer: { types: ['Files'], files: [] } });
-    expect(screen.getByText('A viewer for DBC CAN database files.')).toBeTruthy();
+    expect(screen.getByText('A viewer for CAN database files.')).toBeTruthy();
   });
 });
 
@@ -241,7 +241,7 @@ describe('App: navigation and deep links', () => {
     localStorage.setItem('canviewer.file', '{not json');
     history.replaceState(null, '', '/#node=TCM');
     renderWithProviders(<App />);
-    expect(screen.getByText('A viewer for DBC CAN database files.')).toBeTruthy();
+    expect(screen.getByText('A viewer for CAN database files.')).toBeTruthy();
     // The hash is left alone while nothing is open.
     expect(hash()).toBe('#node=TCM');
   });
@@ -302,14 +302,14 @@ describe('App: importing other formats through canmatrix', () => {
   it('shows each loading stage, then the imported database, and forgets the stored DBC', async () => {
     let finish!: () => void;
     let stage!: (s: ImportStage) => void;
-    importMock.mockImplementation((_file, onStage) => {
+    importMock.mockImplementation((_name, _bytes, onStage) => {
       stage = onStage!;
       return new Promise((resolve) => {
         finish = () =>
           resolve({
-            db: dbcOf('BU_: Gateway\nBO_ 1 Imported: 8 Gateway\n SG_ S : 0|8@1+ (1,0) [0|255] "" Gateway'),
-            cluster: 'CAN1',
-            clusterCount: 1,
+            clusters: [
+              { name: 'CAN1', db: dbcOf('BU_: Gateway\nBO_ 1 Imported: 8 Gateway\n SG_ S : 0|8@1+ (1,0) [0|255] "" Gateway') },
+            ],
             timings: { runtimeMs: 1, packagesMs: 1, readMs: 1 },
           });
       });
@@ -330,7 +330,7 @@ describe('App: importing other formats through canmatrix', () => {
     expect(screen.queryByRole('status')).toBeNull();
     expect(document.title).toBe('system.arxml — CanViewer');
     expect(localStorage.getItem('canviewer.file')).toBeNull();
-    expect(importMock.mock.calls[0][0].name).toBe('system.arxml');
+    expect(importMock.mock.calls[0][0]).toBe('system.arxml');
   });
 
   it('reports a failed import and keeps the file that was open', async () => {
@@ -366,9 +366,7 @@ describe('App: importing other formats through canmatrix', () => {
       throw new Error('storage disabled');
     });
     importMock.mockResolvedValue({
-      db: dbcOf('BU_: A'),
-      cluster: 'CAN',
-      clusterCount: 1,
+      clusters: [{ name: 'CAN', db: dbcOf('BU_: A') }],
       timings: { runtimeMs: 0, packagesMs: 0, readMs: 0 },
     });
     renderWithProviders(<App />);

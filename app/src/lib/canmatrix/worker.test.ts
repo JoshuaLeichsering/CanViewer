@@ -12,7 +12,7 @@ const py = vi.hoisted(() => {
   const proxy = { toJs: vi.fn(), destroy: vi.fn() };
   const adapter = { read: vi.fn((_data: Uint8Array, _importType: string) => proxy) };
   const pyodide = {
-    loadPackage: vi.fn(async () => {}),
+    loadPackage: vi.fn(async (_names: unknown, _options?: { errorCallback?: (m: string) => void }) => {}),
     runPython: vi.fn(),
     FS: { writeFile: vi.fn() },
     pyimport: vi.fn(() => adapter),
@@ -24,14 +24,29 @@ vi.mock('pyodide', () => ({ loadPyodide: py.loadPyodide }));
 const ADAPTER = readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'canviewer_adapter.py'), 'utf8');
 const ASSETS = 'http://localhost/app/pyodide/';
 
-/** The worker's global scope: what it posts, and its onmessage handler. */
+/** What the worker's unhandledrejection listener sees of an event. */
+type Rejection = { reason: unknown; preventDefault: () => void };
+
+/** The worker's global scope: what it posts, its onmessage handler and its event listeners. */
 let posted: WorkerReply[];
-let scope: { postMessage(m: WorkerReply): void; onmessage: ((e: MessageEvent<WorkerRequest>) => Promise<void>) | null };
+let scope: {
+  postMessage(m: WorkerReply): void;
+  onmessage: ((e: MessageEvent<WorkerRequest>) => Promise<void>) | null;
+  addEventListener(type: string, listener: (e: Rejection) => void): void;
+  listeners: Record<string, Array<(e: Rejection) => void>>;
+};
 
 async function freshWorker() {
   vi.resetModules();
   posted = [];
-  scope = { postMessage: (m) => posted.push(m), onmessage: null };
+  scope = {
+    postMessage: (m) => posted.push(m),
+    onmessage: null,
+    listeners: {},
+    addEventListener(type, listener) {
+      (this.listeners[type] ??= []).push(listener);
+    },
+  };
   vi.stubGlobal('self', scope);
   await import('./worker');
   expect(scope.onmessage).toBeTypeOf('function');
@@ -65,7 +80,7 @@ describe('import worker', () => {
     const lock = JSON.parse(options.lockFileContents as string);
     expect(Object.keys(lock.packages)).toContain('canmatrix');
     expect(options.lockFileContents).not.toMatch(/https?:/);
-    expect(py.pyodide.loadPackage).toHaveBeenNthCalledWith(1, 'canmatrix', expect.objectContaining({ checkIntegrity: true }));
+    expect(py.pyodide.loadPackage).toHaveBeenNthCalledWith(1, ['canmatrix'], expect.objectContaining({ checkIntegrity: true }));
     expect(py.pyodide.FS.writeFile).toHaveBeenCalledWith('/home/pyodide/canviewer_adapter.py', ADAPTER);
     expect(py.pyodide.runPython).toHaveBeenCalledWith('import sys; sys.path.insert(0, "/home/pyodide")');
     expect(py.pyodide.pyimport).toHaveBeenCalledWith('canviewer_adapter');
@@ -108,22 +123,62 @@ describe('import worker', () => {
       throw new Error('PythonError: bad file');
     });
     await send({ id: 1 });
-    expect(last()).toEqual({ id: 1, kind: 'error', message: 'PythonError: bad file' });
+    expect(last()).toEqual({ id: 1, kind: 'error', message: 'PythonError: bad file', stage: 'reading' });
 
     py.proxy.toJs.mockImplementationOnce(() => {
       throw 'conversion failed';
     });
     await send({ id: 2 });
-    expect(last()).toEqual({ id: 2, kind: 'error', message: 'conversion failed' });
+    expect(last()).toEqual({ id: 2, kind: 'error', message: 'conversion failed', stage: 'reading' });
     expect(py.proxy.destroy).toHaveBeenCalledOnce();
   });
 
   it('tries the runtime again after a failed start, such as offline before it was ever cached', async () => {
     py.loadPyodide.mockRejectedValueOnce(new Error('Failed to fetch'));
     await send({ id: 1 });
-    expect(last()).toEqual({ id: 1, kind: 'error', message: 'Failed to fetch' });
+    expect(last()).toEqual({ id: 1, kind: 'error', message: 'Failed to fetch', stage: 'runtime' });
     await send({ id: 2 });
     expect(py.loadPyodide).toHaveBeenCalledTimes(2);
     expect(last()?.kind).toBe('result');
+  });
+
+  it('fails the package step when Pyodide reports a package it could not load, and tries it again next time', async () => {
+    // Pyodide resolves loadPackage even then, and reports the package to errorCallback.
+    py.pyodide.loadPackage.mockImplementation(async (names: unknown, options?: { errorCallback?: (m: string) => void }) => {
+      if (Array.isArray(names) && names.includes('openpyxl')) options?.errorCallback?.("Failed to load 'openpyxl.whl'");
+    });
+    await send({ id: 1, importType: 'xlsx', packages: ['openpyxl'] });
+    expect(last()).toEqual({ id: 1, kind: 'error', message: "Failed to load 'openpyxl.whl'", stage: 'packages' });
+    expect(py.adapter.read).not.toHaveBeenCalled();
+
+    py.pyodide.loadPackage.mockImplementation(async () => {});
+    posted = [];
+    await send({ id: 2, importType: 'xlsx', packages: ['openpyxl'] });
+    expect(kinds()).toEqual(['stage:runtime', 'stage:packages', 'stage:reading', 'result']);
+    expect(py.pyodide.loadPackage).toHaveBeenLastCalledWith(['openpyxl'], expect.objectContaining({ checkIntegrity: true }));
+  });
+
+  it('fails the start when canmatrix itself does not load', async () => {
+    py.pyodide.loadPackage.mockImplementationOnce(async (_names: unknown, options?: { errorCallback?: (m: string) => void }) => {
+      options?.errorCallback?.("Failed to load 'canmatrix.whl'");
+    });
+    await send({ id: 1 });
+    expect(last()).toEqual({ id: 1, kind: 'error', message: "Failed to load 'canmatrix.whl'", stage: 'runtime' });
+  });
+
+  it('keeps the fetch rejections of a failed start out of the console, and nothing once the runtime is up', async () => {
+    const [onRejection] = scope.listeners.unhandledrejection;
+    const rejection = (reason: unknown) => {
+      const e = { reason, preventDefault: vi.fn() };
+      onRejection(e);
+      return e.preventDefault;
+    };
+    expect(rejection(new TypeError('Failed to fetch'))).toHaveBeenCalledOnce();
+    // Anything else is a real problem, and stays visible.
+    expect(rejection(new Error('something else'))).not.toHaveBeenCalled();
+
+    await send({ id: 1 });
+    expect(last()?.kind).toBe('result');
+    expect(rejection(new TypeError('Failed to fetch'))).not.toHaveBeenCalled();
   });
 });
