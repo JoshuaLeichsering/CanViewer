@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { parseDbc } from './parser';
-import demo from '../../../examples/demo.dbc?raw';
+import demo from '../../../../examples/demo.dbc?raw';
 
 describe('parseDbc on demo database', () => {
   const db = parseDbc(demo);
