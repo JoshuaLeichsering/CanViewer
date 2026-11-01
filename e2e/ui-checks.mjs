@@ -7,7 +7,8 @@
 //   nodes open with Enter, and the focus order follows the layout;
 // - the search field: the "/" hint never cuts the placeholder off;
 // - the error boundary: a view that throws shows a recovery screen, and its
-//   "Reset stored file" button ends the crash loop of a file restored on start;
+//   "Reset stored file" button ends the crash loop of a file restored on start,
+//   a DBC (localStorage) or an imported file (IndexedDB);
 // - the narrow layout: nothing scrolls sideways at 390 px, comments keep a
 //   readable width, and the list and the detail take turns;
 // - deep links pasted into the open app, and the favicon.
@@ -35,6 +36,8 @@ const repoPath = (path) => fileURLToPath(new URL(`../${path}`, import.meta.url))
 const DEMO = readFileSync(repoPath('examples/demo.dbc'), 'utf8');
 /** demo.dbc with a comment on a signal that does not exist, which is one parse problem. */
 const DEMO_WITH_PROBLEM = `${DEMO}\nCM_ SG_ 256 NoSuchSignal "A comment on a signal that is not there.";\n`;
+/** A KCD file, read through canmatrix (so the Python runtime loads in this run). */
+const HOMER_KCD = readFileSync(repoPath('third_party/cantools/tests/files/kcd/the_homer.kcd'));
 
 const VIEWPORTS = { desktop: { width: 1440, height: 900 }, narrow: { width: 390, height: 844 } };
 /** The rail's destinations, in their order on screen. */
@@ -476,8 +479,15 @@ describe('error boundary', () => {
     assert.equal((await activeElement(page)).tag, 'h1');
     assert.match(await page.evaluate(() => localStorage.getItem('canviewer.file')), /rgh-crash\.dbc/);
 
-    await screen.locator('button', { hasText: 'Gespeicherte Datei zurücksetzen' }).click();
+    // The reset reloads once the stored files are gone (IndexedDB deletes
+    // asynchronously), so wait for that load: the recovery screen is a
+    // .welcome too.
+    await Promise.all([
+      page.waitForEvent('load'),
+      screen.locator('button', { hasText: 'Gespeicherte Datei zurücksetzen' }).click(),
+    ]);
     await page.waitForSelector('.welcome');
+    assert.equal(await screen.count(), 0);
     assert.equal(await page.evaluate(() => localStorage.getItem('canviewer.file')), null);
     assert.equal(new URL(page.url()).hash, '');
     // Only the stored file is gone: language and theme stay.
@@ -486,6 +496,45 @@ describe('error boundary', () => {
     // And the app works again.
     await openFile(page, 'demo.dbc', DEMO);
     assert.equal(await heading(page), 'demo.dbc');
+    assert.deepEqual(problems, []);
+    await context.close();
+  });
+
+  test('"Reset stored file" also ends the crash loop of an imported file, restored from IndexedDB', async () => {
+    const { context, page, problems } = await openApp({ init: crashOnTitle });
+    const screen = page.locator('[data-testid=rgh-crash]');
+    /** The name of the imported file the app keeps for the next start (lib/import/storage.ts), or null. */
+    const storedImport = () =>
+      page.evaluate(
+        () =>
+          new Promise((resolve, reject) => {
+            const open = indexedDB.open('canviewer-import');
+            open.onerror = () => reject(open.error);
+            open.onsuccess = () => {
+              const db = open.result;
+              if (!db.objectStoreNames.contains('files')) return db.close(), resolve(null);
+              const get = db.transaction('files').objectStore('files').get('last');
+              get.onsuccess = () => (db.close(), resolve(get.result?.name ?? null));
+              get.onerror = () => reject(get.error);
+            };
+          }),
+      );
+    await page.setInputFiles('input[type=file]', { name: 'rgh-crash.kcd', mimeType: 'application/xml', buffer: HOMER_KCD });
+    // The first import starts the Python runtime.
+    await screen.waitFor({ timeout: 60_000 });
+    for (let i = 0; i < 50 && (await storedImport()) === null; i++) await page.waitForTimeout(100);
+    assert.equal(await storedImport(), 'rgh-crash.kcd');
+    assert.equal(await page.evaluate(() => localStorage.getItem('canviewer.file')), null);
+
+    // Restored on start and read through canmatrix again, it crashes again.
+    await page.reload();
+    await screen.waitFor({ timeout: 60_000 });
+
+    await Promise.all([page.waitForEvent('load'), screen.locator('button', { hasText: 'Reset stored file' }).click()]);
+    await page.waitForSelector('.welcome');
+    assert.equal(await storedImport(), null);
+    assert.equal(await screen.count(), 0);
+    assert.equal(await page.locator('[data-testid=imp-progress]').count(), 0);
     assert.deepEqual(problems, []);
     await context.close();
   });
