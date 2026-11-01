@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /**
  * Sorting and filtering for the signal table of a message. Kept free of React
  * so the rules can be tested on their own:

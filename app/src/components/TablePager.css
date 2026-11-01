@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-or-later */
 /*
  * The pager of a table shown one page at a time (the Overview's message table
  * of a large database). Colors come from the tokens in styles.css; every class

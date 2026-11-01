@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 // Signal table check: sorting and filtering in the real UI, by mouse and keyboard,
 // in English and German.
 //

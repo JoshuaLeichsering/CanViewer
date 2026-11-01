@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 import { useEffect, useId, useMemo, useRef, useState, type CSSProperties } from 'react';
 import type { DbcMessage } from '../lib/dbc/types';
 import { useI18n, type MsgKey } from '../lib/i18n';

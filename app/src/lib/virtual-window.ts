@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /**
  * The arithmetic behind the virtualized message list: which rows of a long
  * list of equally tall rows to render for a scroll position, and where to

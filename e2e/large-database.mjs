@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 // Large database check: with 5000 messages the message list and the overview
 // stay responsive.
 //

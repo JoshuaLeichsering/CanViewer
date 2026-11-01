@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /**
  * Paging for a table too long to render at once: the Overview's message table
  * of a database with more than 1000 messages shows 200 messages at a time, the
