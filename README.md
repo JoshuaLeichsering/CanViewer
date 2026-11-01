@@ -86,7 +86,7 @@ A production build carries the Pyodide runtime and those wheels in `dist/pyodide
 visit. See the [worker spike notes](docs/spikes/2026-11-01-pyodide-worker/README.md).
 
 An example database ships with the repository: open
-[examples/demo.dbc](examples/demo.dbc) via **Open DBC…** or drag & drop it into
+[examples/demo.dbc](examples/demo.dbc) via **Open file…** or drag & drop it into
 the window.
 
 ## Tested against real-world files
