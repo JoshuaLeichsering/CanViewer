@@ -673,8 +673,7 @@ td .tag {
   padding: 8px 0 4px;
   overflow-x: auto;
 }
-.card h2,
-.card-title {
+.card h2 {
   font-size: 16px;
   line-height: 24px;
   font-weight: 500;

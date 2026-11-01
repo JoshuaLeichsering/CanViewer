@@ -38,6 +38,7 @@ move items up/down freely and check them off when done.
 ## Infrastructure
 
 - [ ] Error boundary with a "reset stored file" escape hatch
-- [ ] Deploy as static site (Gitea Pages / any static host)
+- [ ] Deploy as a static site on GitHub Pages, next to the documentation
 - [ ] Optional: package as desktop app (Tauri) for offline/workshop use
-- [ ] CI on Gitea Actions: typecheck + tests (incl. submodule corpus) on push
+- [x] CI on GitHub Actions: typecheck, tests (incl. the submodule corpus), build and
+      network check on every push to `main` and every pull request

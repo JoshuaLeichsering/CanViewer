@@ -52,7 +52,7 @@ PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS=1 node e2e/network-check.mjs \
   examples/demo.dbc dist
 ```
 
-[network-check.log](network-check.log), verbatim:
+The script's output, verbatim:
 
 ```
 # phase A: online, cold (http://localhost:4173/)
@@ -86,18 +86,21 @@ HAR: 46 entries, origins ["http://localhost:4173"]
 net-log: 152 url entries, origins ["http://localhost:4173"]
 ```
 
-- [requests.json](requests.json): every request of all four phases, with its source
-  (page or worker, or service worker), status, whether the service worker answered it,
-  and any failure. Playwright reports the dedicated worker's requests as the page's.
-- [requests.har](requests.har): HAR of phases A to C (phase D runs in a second browser
-  context without one).
-- [netlog-urls.txt](netlog-urls.txt): every `url` and `host` value in Chromium's net-log
-  for the whole run, which covers every context including the service worker. The only
-  host values are `localhost` and `http://localhost:4173`.
-- [A-online-arxml.png](A-online-arxml.png): `test.arxml` open in the existing views.
-  The screenshot after the offline open in phase C is byte-identical (same MD5).
-- [D-offline-import-error.png](D-offline-import-error.png): the message when a profile
-  that never imported anything tries an import offline.
+The run also wrote its raw records, which were removed from the repository before it
+went public; the last three lines above summarise them, and running the check again
+writes them anew into its output directory:
+
+- `requests.json`: every request of all four phases, with its source (page or worker,
+  or service worker), status, whether the service worker answered it, and any failure.
+  Playwright reports the dedicated worker's requests as the page's.
+- `requests.har`: a HAR of phases A to C (phase D runs in a second browser context
+  without one).
+- the `url` and `host` values of Chromium's net-log for the whole run, which covers
+  every context including the service worker. The only host values were `localhost`
+  and `http://localhost:4173`.
+- screenshots of `test.arxml` open in the views of the time (byte-identical after the
+  offline open in phase C), and of the message shown when a profile that never imported
+  anything tries an import offline.
 
 ## What the numbers say
 
@@ -127,9 +130,8 @@ net-log: 152 url entries, origins ["http://localhost:4173"]
   canmatrix format), the first cluster with messages is shown, a stage line replaces the
   file info while loading, and canmatrix's log lines are listed as problems. An imported
   file is not restored on reload. Task 5 covers the UI properly.
-- In the sidebar, 8-digit hex IDs run into long message names (visible in
-  `A-online-arxml.png`). That is the existing layout, but ARXML files with extended IDs
-  and long names will show it more often.
+- In the sidebar of the time, 8-digit hex IDs ran into long message names. ARXML files
+  with extended IDs and long names show such layout limits more often.
 - `vite build` logs `Module "node:…" has been externalized for browser compatibility`
   for `pyodide.mjs`'s Node-only branches. Those branches never run in the browser.
 - The service worker is registered only in production builds. It ignores `Vary` when
