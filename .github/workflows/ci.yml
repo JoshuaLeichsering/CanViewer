@@ -1,7 +1,8 @@
 # CI for every push and pull request: typecheck, all tests with the corpus
 # suites (which must run, never skip) and the coverage thresholds of
 # vite.config.ts, the production build, the network check that proves the
-# build makes no request outside its own origin, and the end-to-end flows.
+# build makes no request outside its own origin, the end-to-end flows, and the
+# UI checks in a browser (e2e/ui-checks.mjs).
 name: CI
 
 on:
@@ -89,6 +90,11 @@ jobs:
           # The network check's server still holds 4173.
           E2E_PORT: '4174'
         run: npm run e2e
+
+      # Playwright comes from the dev dependencies (npm ci), its Chromium from
+      # the install step above.
+      - name: UI checks (axe-core accessibility, keyboard, error boundary, narrow layout)
+        run: node e2e/ui-checks.mjs
 
       - uses: actions/upload-artifact@v4
         if: always()

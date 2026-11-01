@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import type { DbcDatabase, DbcMessage } from '../lib/dbc/types';
 import type { Selection } from '../App';
 import { occurrenceOf } from '../lib/dbc/identity';
@@ -7,8 +7,10 @@ import { isCanFd } from '../lib/dbc/canfd';
 import { isJ1939Database } from '../lib/dbc/j1939';
 import { useI18n } from '../lib/i18n';
 import { hexId } from '../lib/format';
+import { onListKeyDown } from '../lib/keyboard';
 import { Icon } from './Icon';
 import { messageTag, MessageTag } from './MessageTag';
+import { useHintFits } from './useHintFits';
 
 export type MessageFilter = 'all' | 'ext' | 'fd';
 
@@ -32,13 +34,18 @@ export function ListPane(props: {
   kind: 'messages' | 'nodes' | 'tables';
   selection: Selection;
   onSelect: (s: Selection) => void;
+  /** Selection by the arrow keys, which keeps the list in view on narrow screens (defaults to onSelect). */
+  onBrowse?: (s: Selection) => void;
   search: string;
   onSearch: (q: string) => void;
   filter: MessageFilter;
   onFilter: (f: MessageFilter) => void;
 }) {
+  const { t } = useI18n();
+  const label = { messages: t('railMessages'), nodes: t('railNodes'), tables: t('statValueTables') }[props.kind];
   return (
-    <section className="list-pane">
+    // Named, so that the pane is a landmark region.
+    <section className="list-pane" aria-label={label}>
       {props.kind === 'messages' && <MessageList {...props} />}
       {props.kind === 'nodes' && <NodeList {...props} />}
       {props.kind === 'tables' && <TableList {...props} />}
@@ -50,6 +57,7 @@ function MessageList({
   db,
   selection,
   onSelect,
+  onBrowse = onSelect,
   search,
   onSearch,
   filter,
@@ -67,6 +75,25 @@ function MessageList({
     );
   }, [db, query, filter]);
 
+  const searchRef = useRef<HTMLInputElement>(null);
+  const hintRef = useRef<HTMLElement>(null);
+  const hintFits = useHintFits(searchRef, hintRef, t('searchPlaceholder'), search === '');
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const selectionOf = (m: DbcMessage): Selection => ({ kind: 'message', rawId: m.rawId, occ: occurrenceOf(db, m) });
+  const activeIndex = messages.findIndex(
+    (m) => selection.kind === 'message' && selection.rawId === m.rawId && selection.occ === occurrenceOf(db, m),
+  );
+  // From the search field, ↓ goes to the selected message (or the first match)
+  // and Enter opens it.
+  const onSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (messages.length === 0 || (e.key !== 'ArrowDown' && e.key !== 'Enter')) return;
+    e.preventDefault();
+    const index = Math.max(activeIndex, 0);
+    if (e.key === 'Enter') return onSelect(selectionOf(messages[index]));
+    if (activeIndex < 0) onBrowse(selectionOf(messages[0]));
+    scrollRef.current?.querySelector<HTMLElement>(`[data-rgh-index="${index}"]`)?.focus();
+  };
+
   const filters: Array<[MessageFilter, string]> = [
     ['all', t('filterAll')],
     ['ext', t('filterExtended')],
@@ -79,11 +106,20 @@ function MessageList({
         <label className="search-field">
           <Icon name="search" size={22} />
           <input
+            ref={searchRef}
             type="search"
             placeholder={t('searchPlaceholder')}
+            aria-label={t('searchPlaceholder')}
+            aria-keyshortcuts="/"
             value={search}
             onChange={(e) => onSearch(e.target.value)}
+            onKeyDown={onSearchKeyDown}
           />
+          {search === '' && (
+            <kbd ref={hintRef} className={hintFits ? 'rgh-kbd' : 'rgh-kbd rgh-kbd-off'} aria-hidden="true">
+              /
+            </kbd>
+          )}
           {search !== '' && (
             <button className="clear state" title={t('clearSearch')} aria-label={t('clearSearch')} onClick={() => onSearch('')}>
               <Icon name="close" size={20} />
@@ -110,8 +146,14 @@ function MessageList({
           n: query !== '' || filter !== 'all' ? `${messages.length} / ${db.messages.length}` : messages.length,
         })}
       </div>
-      <div className="list-scroll">
-        {messages.map((m) => {
+      <div
+        ref={scrollRef}
+        className="list-scroll"
+        onKeyDown={(e) =>
+          onListKeyDown(e, messages.length, (i) => onBrowse(selectionOf(messages[i])), () => searchRef.current?.focus())
+        }
+      >
+        {messages.map((m, i) => {
           const occ = occurrenceOf(db, m);
           const active = selection.kind === 'message' && selection.rawId === m.rawId && selection.occ === occ;
           const cycle = m.attributes.GenMsgCycleTime;
@@ -125,6 +167,7 @@ function MessageList({
           return (
             <button
               key={`${m.rawId}.${occ}`}
+              data-rgh-index={i}
               className={`list-item state ${active ? 'active' : ''}`}
               aria-current={active ? 'true' : undefined}
               onClick={() => onSelect({ kind: 'message', rawId: m.rawId, occ })}
@@ -148,7 +191,7 @@ function MessageList({
   );
 }
 
-function NodeList({ db, selection, onSelect }: Parameters<typeof ListPane>[0]) {
+function NodeList({ db, selection, onSelect, onBrowse = onSelect }: Parameters<typeof ListPane>[0]) {
   const { t } = useI18n();
   const counts = useMemo(
     () =>
@@ -166,14 +209,18 @@ function NodeList({ db, selection, onSelect }: Parameters<typeof ListPane>[0]) {
   return (
     <>
       <div className="list-label">{t('listNodes', { n: db.nodes.length })}</div>
-      <div className="list-scroll">
-        {db.nodes.map((n) => {
+      <div
+        className="list-scroll"
+        onKeyDown={(e) => onListKeyDown(e, db.nodes.length, (i) => onBrowse({ kind: 'node', name: db.nodes[i].name }))}
+      >
+        {db.nodes.map((n, i) => {
           const active = selection.kind === 'node' && selection.name === n.name;
           const c = counts.get(n.name)!;
           const sub = [n.comment?.split('\n')[0], t('txRx', { tx: c.tx, rx: c.rx })].filter(Boolean).join(' · ');
           return (
             <button
               key={n.name}
+              data-rgh-index={i}
               className={`list-item state ${active ? 'active' : ''}`}
               aria-current={active ? 'true' : undefined}
               onClick={() => onSelect({ kind: 'node', name: n.name })}
@@ -191,17 +238,23 @@ function NodeList({ db, selection, onSelect }: Parameters<typeof ListPane>[0]) {
   );
 }
 
-function TableList({ db, selection, onSelect }: Parameters<typeof ListPane>[0]) {
+function TableList({ db, selection, onSelect, onBrowse = onSelect }: Parameters<typeof ListPane>[0]) {
   const { t, tn } = useI18n();
   return (
     <>
       <div className="list-label">{t('listTables', { n: db.valueTables.length })}</div>
-      <div className="list-scroll">
-        {db.valueTables.map((tbl) => {
+      <div
+        className="list-scroll"
+        onKeyDown={(e) =>
+          onListKeyDown(e, db.valueTables.length, (i) => onBrowse({ kind: 'valueTable', name: db.valueTables[i].name }))
+        }
+      >
+        {db.valueTables.map((tbl, i) => {
           const active = selection.kind === 'valueTable' && selection.name === tbl.name;
           return (
             <button
               key={tbl.name}
+              data-rgh-index={i}
               className={`list-item state ${active ? 'active' : ''}`}
               aria-current={active ? 'true' : undefined}
               onClick={() => onSelect({ kind: 'valueTable', name: tbl.name })}

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { DbcDatabase, DbcMessage } from '../lib/dbc/types';
 import type { Selection } from '../App';
 import { occurrenceOf } from '../lib/dbc/identity';
@@ -113,6 +113,14 @@ export function NetworkGraph({
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
   const [selectedEdge, setSelectedEdge] = useState<GraphLink | null>(null);
 
+  // On narrow screens the graph scrolls sideways in its card (narrow.css):
+  // start in the middle of the ring rather than at its left edge.
+  const cardRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const card = cardRef.current;
+    if (card) card.scrollLeft = (card.scrollWidth - card.clientWidth) / 2;
+  }, [graph]);
+
   const positions = useMemo(() => {
     const map = new Map<string, Point>();
     const radius = Math.min(W, H) / 2 - 70;
@@ -169,7 +177,7 @@ export function NetworkGraph({
     <div>
       {header}
       <div className="row">
-        <div className="card graph-card">
+        <div className="card graph-card" ref={cardRef}>
           <div className="graph-wrap">
             <svg
               className="netgraph"
@@ -179,11 +187,12 @@ export function NetworkGraph({
                 setSelectedEdge(null);
               }}
             >
+              {/* Arrowheads in graph units, so that they keep their size on thick lines. */}
               <defs>
-                <marker id="ng-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <marker id="ng-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
                   <path d="M 0 0 L 10 5 L 0 10 z" className="ng-arrow" />
                 </marker>
-                <marker id="ng-arrow-hi" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <marker id="ng-arrow-hi" viewBox="0 0 10 10" refX="8" refY="5" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
                   <path d="M 0 0 L 10 5 L 0 10 z" className="ng-arrow hi" />
                 </marker>
               </defs>
@@ -211,16 +220,30 @@ export function NetworkGraph({
               ))}
               {graph.nodes.map((name) => {
                 const p = positions.get(name)!;
+                const select = () => {
+                  setSelectedNode(name);
+                  setSelectedEdge(null);
+                };
                 return (
                   <g
                     key={name}
                     className={`ng-node ${nodeState(name)}`}
+                    tabIndex={0}
+                    role="button"
+                    aria-label={name}
+                    aria-pressed={selectedNode === name}
                     onMouseEnter={() => setHovered(name)}
                     onMouseLeave={() => setHovered(null)}
+                    onFocus={() => setHovered(name)}
+                    onBlur={() => setHovered(null)}
                     onClick={(e) => {
                       e.stopPropagation();
-                      setSelectedNode(name);
-                      setSelectedEdge(null);
+                      select();
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key !== 'Enter' && e.key !== ' ') return;
+                      e.preventDefault();
+                      select();
                     }}
                   >
                     <circle cx={p.x} cy={p.y} r={NODE_R} />
