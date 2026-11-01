@@ -45,6 +45,9 @@ jobs:
       - name: Typecheck
         run: npx tsc --noEmit
 
+      - name: Tests of the scripts (release tooling and the install runbook)
+        run: node --test "scripts/*.test.mjs"
+
       - name: Tests (verbose)
         run: npx vitest run --reporter=verbose --reporter=json --outputFile.json=test-report.json
 
