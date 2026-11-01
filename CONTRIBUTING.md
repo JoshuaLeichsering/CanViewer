@@ -59,11 +59,14 @@ node e2e/network-check.mjs http://localhost:4173/ network-check \
   third_party/canmatrix/tests/files/arxml/ARXMLContainerTest.arxml \
   examples/demo.dbc dist
 E2E_PORT=4174 npm run e2e                             # the Playwright flows in e2e/flows/
+node e2e/ui-checks.mjs                                # axe, keyboard, recovery, narrow layout
 ```
 
 The network check must end with `requests outside http://localhost:4173: 0`. Stop the
 preview server afterwards. `npm run e2e` starts its own server on `E2E_PORT` (default
 4180), and every flow fails if the page requests anything outside the app's origin.
+`e2e/ui-checks.mjs` serves `dist/` itself and fails on any serious or critical axe
+finding, in both themes and both languages, at desktop and phone width.
 
 If you change a dependency, also run `npm run notices` (it needs Rust's `cargo` and
 `rustc`, for the desktop crates and the Rust standard library) and commit the regenerated

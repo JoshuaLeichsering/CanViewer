@@ -13,9 +13,10 @@
 // - deep links pasted into the open app, and the favicon.
 // Every check also fails on a page error or a failed same-origin request.
 //
-// Usage (Playwright is not a dependency of the app; see network-check.mjs):
+// Usage (Playwright is a dev dependency; `npx playwright install chromium`
+// fetches its browser):
 //   npm run build
-//   NODE_PATH=$(npm root -g) node e2e/ui-checks.mjs [app-url]
+//   node e2e/ui-checks.mjs [app-url]
 // Without an app URL the script serves dist/ itself with Vite's preview server,
 // from whichever directory it is started.
 import assert from 'node:assert/strict';

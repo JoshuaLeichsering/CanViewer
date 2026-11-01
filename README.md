@@ -43,7 +43,7 @@ No data leaves your machine — files are parsed locally.
 |---|---|
 | `app/` | The web app, and Vite's root: `index.html` and `src/` (the views, the DBC parser in `src/lib/dbc/`, the canmatrix import in `src/lib/canmatrix/`, each with its tests next to it) |
 | `desktop/` | The Tauri desktop shell, which packages the build in `dist/` |
-| `e2e/` | Checks that drive a browser or the packaged app: `network-check.mjs`, the Playwright flows in `flows/` (`npm run e2e`, configured in `playwright.config.ts`), and the desktop smoke test over CDP with its build config (`desktop-cdp-smoke.mjs`, `desktop-cdp.conf.json`) |
+| `e2e/` | Checks that drive a browser or the packaged app: `network-check.mjs`, the Playwright flows in `flows/` (`npm run e2e`, configured in `playwright.config.ts`), the UI checks (`ui-checks.mjs`), and the desktop smoke test over CDP with its build config (`desktop-cdp-smoke.mjs`, `desktop-cdp.conf.json`) |
 | `scripts/` | Build and maintenance scripts: `fetch-wheels.mjs`, the Vite plugins, the CI check of the test report, the coverage summary, the license and identifying-information checks, the generator of `THIRD_PARTY_NOTICES.md` |
 | `examples/` | Sample files, such as `demo.dbc` |
 | `docs/` | Handover notes, spike reports, design notes and [decision records](docs/decisions/) |
@@ -66,14 +66,15 @@ npm test               # unit tests + corpus suites
 npm run test:coverage  # the same, with the coverage thresholds of vite.config.ts
 npm run build          # typecheck + production build (dist/)
 npm run e2e            # Playwright flows against the build (npx playwright install chromium once)
+node e2e/ui-checks.mjs # accessibility (axe), keyboard and narrow-layout checks against the build
 ```
 
 CI ([ci.yml](.github/workflows/ci.yml)) runs on every push to `main` and every pull
 request: typecheck, all tests with the coverage thresholds, a check that every corpus
 suite ran over the expected number of files with nothing skipped
 ([check-test-report.mjs](scripts/check-test-report.mjs)), the production build, the
-network check, which fails on any request outside the app's origin, and the end-to-end
-flows. A second job checks licenses, notices and identifying information
+network check, which fails on any request outside the app's origin, the end-to-end
+flows and the UI checks. A second job checks licenses, notices and identifying information
 ([CONTRIBUTING.md](CONTRIBUTING.md#the-local-check) lists every step).
 
 `dev`, `test` and `build` run `fetch-wheels` first. It downloads the wheels listed in
