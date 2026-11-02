@@ -4,12 +4,13 @@
 // scripts/third-party-notices.mjs; the Rust crates are checked by cargo-deny
 // against desktop/deny.toml, which follows the same list.
 //
-// CanViewer is GPL-2.0-or-later. Every license below can be combined with it.
-// Apache-2.0 is compatible with the GPL version 3 only, so where an
+// CanViewer is GPL-2.0-or-later. Every license on ALLOWED can be combined with
+// it. Apache-2.0 is compatible with the GPL version 3 only, so where an
 // Apache-2.0 part is included (the Material Symbols icon paths in the web app,
 // crates such as `tao` in the desktop app), the combined program is
 // distributed under the terms of the GPL version 3, which "or any later
-// version" allows.
+// version" allows. INSTALLER_LICENSES are for the programs inside the Windows
+// installers only, which are not combined with CanViewer.
 
 /**
  * CanViewer's own license files, at the repository root: the notice with the
@@ -29,6 +30,12 @@ export const ALLOWED = new Set([
   'BSD-3-Clause',
   'CC0-1.0',
   'ISC',
+  // The GNU Library GPL version 2 or later, for GNU libiconv, which lxml's
+  // etree module links statically. Its section 3 lets a recipient apply the
+  // GNU GPL (version 2, or a later one) instead, so it combines with
+  // CanViewer; the library stays a separate part, the lxml wheel, which can be
+  // replaced by one rebuilt from its sources.
+  'LGPL-2.0-or-later',
   'MIT',
   'MIT-0',
   // File-level copyleft. MPL-2.0 allows combination with the GPL (its section
@@ -115,7 +122,8 @@ export const WHEELS = {
   // LICENCE.python: parts derived from CPython's xml.etree.
   'et-xmlfile': { license: 'MIT AND PSF-2.0', metadata: ['License: MIT'] },
   // LICENSES.txt: parts derived from ElementTree and CPython (PSF), and the
-  // ISO Schematron resources; libxml2 and libxslt are compiled in (see WHEEL_BUNDLED).
+  // ISO Schematron resources; libxml2, libxslt and libiconv are compiled in
+  // (see WHEEL_BUNDLED).
   // Two of those resources, isoschematron/resources/xsl/RNG2Schtrn.xsl and
   // XSD2Schtrn.xsl, carry no license at all ("unlicensed and copyright the
   // respective authors", LICENSES.txt). They stay in the wheel, as in every
@@ -149,6 +157,27 @@ export const WHEEL_BUNDLED = {
       texts: ['libxslt-Copyright.txt'],
       source: 'https://gitlab.gnome.org/GNOME/libxslt',
       markers: ['xsltApplyStylesheet', 'exsltDateCreateDate'],
+    },
+    {
+      // The version is the one Pyodide's recipe builds (packages/libiconv/meta.yaml
+      // at pyodide-recipes 314-20260911); the markers are names from GNU
+      // libiconv's own table of encodings, which no other iconv has.
+      name: 'GNU libiconv',
+      version: '1.16',
+      license: 'LGPL-2.0-or-later',
+      texts: ['gnu-LGPL-2.0.txt'],
+      source: [
+        'https://ftp.gnu.org/gnu/libiconv/libiconv-1.16.tar.gz',
+        'https://github.com/pyodide/pyodide-recipes/tree/314-20260911/packages/libiconv',
+        'https://github.com/pyodide/pyodide-recipes/tree/314-20260911/packages/lxml',
+      ],
+      note:
+        'The character-set conversion that libxml2 uses, linked statically into lxml’s `etree` module ' +
+        '(`lxml/etree.cpython-314-wasm32-emscripten.so`) by Pyodide’s build: pyodide-recipes 314-20260911 builds ' +
+        'libiconv 1.16 as a static library (packages/libiconv) and links it into lxml 6.1.3 (packages/lxml, `-liconv`). ' +
+        'The library is under the GNU Library General Public License, version 2 or (at your option) any later version. ' +
+        'The lxml wheel is a file of its own in `pyodide/`, which can be replaced with one rebuilt from these sources.',
+      markers: ['ISO-IR-165', 'MULELAO-1'],
     },
   ],
   pyyaml: [
@@ -592,3 +621,140 @@ export const RUST_STD = {
     'test',
   ],
 };
+
+/**
+ * The Windows installers, by the name of Tauri's bundle (its directory in the
+ * bundle directory, as PACKAGES in scripts/desktop-release.mjs uses it), and
+ * how the notices name each.
+ */
+export const WINDOWS_INSTALLER_FILES = { msi: '.msi', nsis: '-setup.exe' };
+
+/**
+ * Licenses that only the programs inside the Windows installers carry (see
+ * WINDOWS_INSTALLERS). They are not compatible with the GPL, and need not be:
+ * an installer's own code is a program of its own, which unpacks and
+ * registers CanViewer and comes in the same file, not combined with it. They
+ * must never be on ALLOWED.
+ */
+export const INSTALLER_LICENSES = new Set(['CPL-1.0', 'MS-RL']);
+
+/**
+ * What the Windows installers hold besides the desktop app: the parts of the
+ * WiX Toolset in the .msi, the parts of NSIS in the -setup.exe, and what
+ * Tauri's bundler adds to them. Reviewed for the bundler in @tauri-apps/cli
+ * 2.12.4 (package-lock.json), which is tauri-bundler 2.10.4: its
+ * src/bundle/windows/msi/mod.rs downloads WiX 3.14.1 (release wix3141rtm,
+ * wix314-binaries.zip), and src/bundle/windows/nsis/mod.rs NSIS 3.13
+ * (nsis-3.13.zip, the same file as NSIS's own release) and nsis_tauri_utils
+ * 0.5.3, each checked by its hash. Review the list again when @tauri-apps/cli
+ * is upgraded.
+ *
+ * The installers are built in CI, on Windows only, so these entries carry no
+ * markers: scripts/check-licenses.mjs checks their licenses and texts, not
+ * that they are there. `in` names the installers a part is in
+ * (WINDOWS_INSTALLER_FILES).
+ */
+export const WINDOWS_INSTALLERS = [
+  {
+    name: 'WiX Toolset: WixUI and its custom actions',
+    version: '3.14.1',
+    license: 'MS-RL',
+    texts: ['windows-installers/wix-LICENSE.txt'],
+    source: 'https://github.com/wixtoolset/wix3/tree/wix3141rtm',
+    in: ['msi'],
+    note:
+      'In the `.msi`: the dialogs of WixUI_InstallDir with their bitmaps, icons and strings (src/ext/UIExtension/wixlib), ' +
+      'and uica.dll, the custom actions with which those dialogs check the chosen folder and print the license ' +
+      '(src/ext/UIExtension/ca, linked with the libraries in src/libs/dutil and src/libs/wcautil). ' +
+      'The source code of each of these files is in WiX’s v3.14.1 release (tag wix3141rtm), at the address below, ' +
+      'under the Microsoft Reciprocal License (WiX’s LICENSE.TXT, the license text below).',
+  },
+  {
+    name: 'NSIS',
+    version: '3.13',
+    license: 'Zlib',
+    texts: ['windows-installers/nsis-COPYING.txt'],
+    source: 'https://sourceforge.net/projects/nsis/files/NSIS%203/3.13/nsis-3.13-src.tar.bz2',
+    in: ['nsis'],
+    note:
+      'In the `-setup.exe`: the installer stub and the uninstaller it writes, the plugins the installer calls ' +
+      '(System, nsDialogs, StartMenu and NSISdl), the Modern UI 2, the include headers (StrFunc among them), ' +
+      'the language files and the default graphics. NSIS’s COPYING (the license text below) puts them under the zlib/libpng license. ' +
+      'The address below is NSIS’s 3.13 source release; NSIS’s repository has the same source as the tag ' +
+      '[v313](https://github.com/kichik/nsis/tree/v313).',
+  },
+  {
+    name: 'NSIS LZMA compression module',
+    version: '3.13',
+    license: 'CPL-1.0',
+    texts: ['windows-installers/nsis-COPYING.txt'],
+    source: 'https://sourceforge.net/projects/nsis/files/NSIS%203/3.13/nsis-3.13-src.tar.bz2',
+    in: ['nsis'],
+    note:
+      'In the `-setup.exe`: the LZMA decompressor in the installer stub, which the uninstaller shares, and which unpacks ' +
+      'the installer’s data (Tauri compresses it with LZMA, NSIS’s default). It is under the Common Public License 1.0, ' +
+      'with the special exception for the LZMA compression module at the end of NSIS’s COPYING. ' +
+      'The source code of the LZMA compression module is available in the NSIS 3.13 source release, ' +
+      '`nsis-3.13-src.tar.bz2`, at the address below, in its directory `Source/7zip/`.',
+  },
+  {
+    name: 'nsis_tauri_utils (NSIS plugin)',
+    version: '0.5.3',
+    license: 'MIT OR Apache-2.0',
+    texts: ['windows-installers/nsis-tauri-utils-LICENSE_MIT.txt', 'spdx-Apache-2.0.txt'],
+    source: 'https://github.com/tauri-apps/nsis-tauri-utils/tree/nsis_tauri_utils-v0.5.3',
+    in: ['nsis'],
+    note:
+      'In the `-setup.exe`: `nsis_tauri_utils.dll`, Tauri’s plugin with which the installer compares versions, ' +
+      'replaces text in strings and starts the app as the user, built from the crate crates/nsis-tauri-utils. The crates it links follow. ' +
+      'Like any Rust library, it also holds parts of the Rust standard library (MIT OR Apache-2.0).',
+  },
+  {
+    name: 'nsis-plugin-api (in nsis_tauri_utils)',
+    version: '0.0.0, of nsis-tauri-utils 0.5.3',
+    license: 'MIT OR Apache-2.0',
+    texts: ['windows-installers/nsis-tauri-utils-LICENSE_MIT.txt', 'spdx-Apache-2.0.txt'],
+    source: 'https://github.com/tauri-apps/nsis-tauri-utils/tree/nsis_tauri_utils-v0.5.3/crates/nsis-plugin-api',
+    in: ['nsis'],
+    note: 'The interface to NSIS, a crate of the same repository, under its license.',
+  },
+  {
+    name: 'semver (in nsis_tauri_utils)',
+    version: '1.0.27',
+    license: 'MIT OR Apache-2.0',
+    texts: ['windows-installers/semver-LICENSE-MIT.txt', 'spdx-Apache-2.0.txt'],
+    source: 'https://crates.io/crates/semver/1.0.27',
+    in: ['nsis'],
+    note:
+      'nsis-tauri-utils asks for semver 1.0 and keeps no Cargo.lock; 1.0.27 was the latest 1.0 release ' +
+      'when the plugin was built (its release file is dated 26 January 2026).',
+  },
+  {
+    name: 'windows-sys (in nsis_tauri_utils)',
+    version: '0.61.2',
+    license: 'MIT OR Apache-2.0',
+    texts: ['windows-installers/windows-rs-license-mit.txt', 'spdx-Apache-2.0.txt'],
+    source: 'https://crates.io/crates/windows-sys/0.61.2',
+    in: ['nsis'],
+  },
+  {
+    name: 'windows-link (in nsis_tauri_utils)',
+    version: '0.2.1',
+    license: 'MIT OR Apache-2.0',
+    texts: ['windows-installers/windows-rs-license-mit.txt', 'spdx-Apache-2.0.txt'],
+    source: 'https://crates.io/crates/windows-link/0.2.1',
+    in: ['nsis'],
+    note: 'Used by windows-sys. Its license file is the same as windows-sys’s.',
+  },
+  {
+    name: 'Tauri bundler’s installer templates',
+    version: '2.10.4',
+    license: 'Apache-2.0 OR MIT',
+    texts: ['windows-installers/tauri-bundler-License-MIT.txt', 'spdx-Apache-2.0.txt'],
+    source: 'https://github.com/tauri-apps/tauri/tree/tauri-bundler-v2.10.4/crates/tauri-bundler/src/bundle/windows',
+    in: ['msi', 'nsis'],
+    note:
+      'In both installers: the WiX source (msi/main.wxs) and the NSIS script (nsis/installer.nsi, with its .nsh files ' +
+      'and language strings) from which tauri-bundler, in @tauri-apps/cli, makes them.',
+  },
+];

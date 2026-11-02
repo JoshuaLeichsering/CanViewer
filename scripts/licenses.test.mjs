@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { declaredLicense, withHeader } from './check-spdx-headers.mjs';
-import { ALLOWED, BUILD_HELPERS, classifyModule, isAllowed } from './license-policy.mjs';
+import { ALLOWED, BUILD_HELPERS, INSTALLER_LICENSES, WINDOWS_INSTALLERS, classifyModule, isAllowed } from './license-policy.mjs';
 import { excerpt, linesBetween, render, uncomment } from './third-party-notices.mjs';
 
 test('license expressions are allowed when some choice uses allowed licenses only', () => {
@@ -21,8 +21,13 @@ test('license expressions are allowed when some choice uses allowed licenses onl
   assert.equal(isAllowed('MIT', new Set(['Apache-2.0'])), false);
 });
 
-test('the allowlist holds no copyleft license stronger than file level', () => {
-  for (const id of ALLOWED) assert.doesNotMatch(id, /^(A?GPL|LGPL|SSPL|EUPL|CDDL|EPL)/);
+test('the allowlist holds no copyleft license stronger than file level, besides the LGPL of GNU libiconv', () => {
+  // LGPL-2.0-or-later, whose section 3 allows the GPL instead, for libiconv in
+  // lxml's etree module: a library that stays a replaceable part (license-policy.mjs).
+  const reviewed = new Set(['LGPL-2.0-or-later']);
+  for (const id of ALLOWED) if (!reviewed.has(id)) assert.doesNotMatch(id, /^(A?GPL|LGPL|SSPL|EUPL|CDDL|EPL)/);
+  // The installers' own licenses are not compatible with the GPL: they may never reach the app.
+  for (const id of INSTALLER_LICENSES) assert.equal(ALLOWED.has(id), false, `${id} is for the Windows installers only`);
 });
 
 test('SPDX headers go first, after a shebang, or after a Python coding line', () => {
@@ -161,4 +166,52 @@ test('the notices list the documentation site, and the fonts it shares with the 
   assert.match(md, /Copyright \(c\) Evan You/);
   // Without the site, the fonts ship in the apps only.
   assert.match(render(sample()), /^(?![\s\S]*documentation site)/);
+});
+
+test('the notices list GNU libiconv as compiled into lxml, under the LGPL, with its sources', () => {
+  const committed = readFileSync(new URL('../THIRD_PARTY_NOTICES.md', import.meta.url), 'utf8');
+  const entry = committed.match(/^#### GNU libiconv \(compiled into lxml\)\n([\s\S]*?)(?=^#{2,4} )/m)?.[1];
+  assert.ok(entry, 'libiconv has an entry under lxml');
+  assert.match(entry, /^- Version: 1\.16$/m);
+  assert.match(entry, /^- License: LGPL-2\.0-or-later$/m);
+  assert.match(entry, /<https:\/\/ftp\.gnu\.org\/gnu\/libiconv\/libiconv-1\.16\.tar\.gz>/);
+  assert.match(entry, /<https:\/\/github\.com\/pyodide\/pyodide-recipes\/tree\/314-20260911\/packages\/lxml>/);
+  assert.match(committed, /GNU LIBRARY GENERAL PUBLIC LICENSE\s+Version 2, June 1991/);
+});
+
+const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+test('the notices list the parts of the Windows installers, and only those, in a section of their own', () => {
+  const parts = [
+    'WiX Toolset: WixUI and its custom actions',
+    'NSIS',
+    'NSIS LZMA compression module',
+    'nsis_tauri_utils (NSIS plugin)',
+    'nsis-plugin-api (in nsis_tauri_utils)',
+    'semver (in nsis_tauri_utils)',
+    'windows-sys (in nsis_tauri_utils)',
+    'windows-link (in nsis_tauri_utils)',
+    'Tauri bundler’s installer templates',
+  ];
+  assert.deepEqual(WINDOWS_INSTALLERS.map((p) => p.name), parts);
+  const committed = readFileSync(new URL('../THIRD_PARTY_NOTICES.md', import.meta.url), 'utf8');
+  for (const md of [render({ ...sample(), windowsInstallers: WINDOWS_INSTALLERS }), committed]) {
+    // The section runs to the next heading of its level or above.
+    const section = md.match(/^### Windows installers\n([\s\S]*?)(?=^#{2,3} )/m)?.[1];
+    assert.ok(section, 'the notices have a section for the Windows installers');
+    assert.match(section, /applies to the two Windows installers only, the `\.msi` and the `-setup\.exe`/);
+    assert.deepEqual([...section.matchAll(/^#### (.+)$/gm)].map((m) => m[1]), parts);
+    assert.match(section, /The source code of the LZMA compression module is available in the NSIS 3\.13 source release/);
+    for (const p of WINDOWS_INSTALLERS) {
+      const where = p.in.length === 2 ? '\\.msi and -setup\\.exe' : p.in[0] === 'msi' ? '\\.msi' : '-setup\\.exe';
+      const row = new RegExp(`^\\| \\[${escapeRe(p.name)}\\]\\(#[^)]+\\) \\| ${escapeRe(p.version)} \\| ${escapeRe(p.license)} \\| Windows ${where} \\|$`, 'm');
+      assert.match(md, row, `${p.name} is in the contents, as shipping in the installers only`);
+    }
+  }
+  // The MS-RL and the CPL with NSIS's exception come with the parts under them.
+  const md = render({ ...sample(), windowsInstallers: WINDOWS_INSTALLERS });
+  assert.match(md, /Microsoft Reciprocal License \(MS-RL\)/);
+  assert.match(md, /SPECIAL EXCEPTION FOR LZMA COMPRESSION MODULE/);
+  // Without the list, there is no such section.
+  assert.doesNotMatch(render(sample()), /^### Windows installers$/m);
 });

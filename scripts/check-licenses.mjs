@@ -19,6 +19,10 @@
 //   lock records it, its license is on the allowlist, and it comes with a
 //   license text or a notice. (The site's build checks that the list matches
 //   what its pages bundle.)
+// - The Windows installers: each part WINDOWS_INSTALLERS lists names the
+//   installers it is in and its license texts, and its license is on the
+//   allowlist or among INSTALLER_LICENSES, which only those parts may carry.
+//   The installers are not built here, so their parts carry no markers.
 // - The policy itself: every entry names a part that ships, and every text in
 //   scripts/third-party/licenses/ is used, so that nothing stale stays behind.
 //
@@ -33,6 +37,7 @@ import {
   CRATE_FILE_NOTICES,
   DOCS_SITE,
   EXCEPTIONS,
+  INSTALLER_LICENSES,
   NOT_BUNDLED,
   NPM_TEXTS,
   PYODIDE_COMPONENTS,
@@ -41,6 +46,8 @@ import {
   VENDORED,
   WHEEL_BUNDLED,
   WHEELS,
+  WINDOWS_INSTALLERS,
+  WINDOWS_INSTALLER_FILES,
   isAllowed,
 } from './license-policy.mjs';
 import { readZip } from './zip.mjs';
@@ -173,6 +180,19 @@ for (const c of RUST_STD.components) {
   if (checkLicense('Rust standard library part', c.name, c.license)) ok.push(`Rust standard library ${RUST_STD.version} part ${c.name}: ${c.license}`);
 }
 
+// the Windows installers: separate programs, so INSTALLER_LICENSES count too
+// for them (and only for them); no markers, since the installers are not built here
+for (const id of INSTALLER_LICENSES) if (ALLOWED.has(id)) problems.push(`ALLOWED: ${id} is for the Windows installers only; keep it in INSTALLER_LICENSES`);
+const installerAllowed = new Set([...ALLOWED, ...INSTALLER_LICENSES]);
+for (const p of WINDOWS_INSTALLERS) {
+  const what = `Windows installer part ${p.name}`;
+  if (!p.in?.length || p.in.some((k) => !(k in WINDOWS_INSTALLER_FILES))) problems.push(`${what}: \`in\` must name installers among ${Object.keys(WINDOWS_INSTALLER_FILES).join(', ')}`);
+  if (!p.texts?.length) problems.push(`${what}: names no license text`);
+  if (!p.version || !p.source) problems.push(`${what}: needs a version and a source`);
+  if (isAllowed(p.license, installerAllowed)) ok.push(`${what} ${p.version}: ${p.license}`);
+  else problems.push(`${what}: ${p.license} is neither on the allowlist nor among INSTALLER_LICENSES (scripts/license-policy.mjs)`);
+}
+
 // the policy names only what ships
 const wheelNames = new Set(Object.keys(wheels.packages));
 const stale = (table, names, what) => {
@@ -197,6 +217,7 @@ const named = new Set([
   ...Object.values(STANDARD_TEXTS),
   ...CRATE_FILE_NOTICES.flatMap((n) => n.texts ?? []),
   ...RUST_STD.components.flatMap((c) => c.texts),
+  ...WINDOWS_INSTALLERS.flatMap((p) => p.texts ?? []),
 ]);
 const onDisk = (dir) =>
   readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
@@ -212,6 +233,7 @@ for (const p of problems) console.log(`FAIL  ${p}`);
 console.log(
   `\n${npmCount} npm production dependencies, ${wheelCount} wheels, ${PYODIDE_COMPONENTS.length} parts of the Pyodide runtime, ` +
     `${BUILD_HELPERS.length} build helpers, ${RUST_STD.components.length} parts of the Rust standard library, ` +
+    `${WINDOWS_INSTALLERS.length} parts of the Windows installers, ` +
     `${DOCS_SITE.packages.length + DOCS_SITE.helpers.length} parts of the documentation site and ${present.size} license texts checked: ` +
     `${problems.length} problem(s), ${warnings.length} excepted part(s) still shipping.`,
 );
