@@ -6,7 +6,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
-import { RUNBOOK, parseRunbook, scriptFor } from './runbook.mjs';
+import { RUNBOOK, envFor, parseRunbook, scriptFor } from './runbook.mjs';
 
 const md = (s) => s.replace(/^ {4}/gm, '');
 
@@ -83,4 +83,11 @@ test('the blocks are plain ASCII', () => {
     const bad = [...b.code].filter((c) => c.charCodeAt(0) > 126 || (c.charCodeAt(0) < 32 && c !== '\n'));
     assert.deepEqual(bad, [], `${id} has characters outside printable ASCII`);
   }
+});
+
+test('Windows PowerShell blocks run without an inherited PSModulePath, other shells keep the environment', () => {
+  const env = { Path: 'C:\\Windows', PSModulePath: 'C:\\Program Files\\PowerShell\\7\\Modules', psmodulepath: 'x', HOME: 'h' };
+  assert.deepEqual(envFor('powershell', env), { Path: 'C:\\Windows', HOME: 'h' });
+  assert.equal(envFor('sh', env), env);
+  assert.equal(envFor('zsh', env), env);
 });

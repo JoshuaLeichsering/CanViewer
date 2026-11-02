@@ -38,6 +38,19 @@ export const SHELLS = {
   },
 };
 
+/**
+ * The environment a block runs in. Windows PowerShell 5.1 started from
+ * PowerShell 7 (as a CI step's pwsh does, through node) inherits PowerShell
+ * 7's PSModulePath, then loads PowerShell 7's modules and loses cmdlets such
+ * as Get-FileHash. Without the variable it builds its own default path, as it
+ * does when a person opens it from the Start menu.
+ */
+export function envFor(lang, env = process.env) {
+  if (lang !== 'powershell') return env;
+  // Windows environment names are case-insensitive: drop every spelling.
+  return Object.fromEntries(Object.entries(env).filter(([key]) => key.toLowerCase() !== 'psmodulepath'));
+}
+
 const MARKER = /^\s*<!--\s*runbook:\s*([a-z0-9][a-z0-9-]*)\s*-->\s*$/;
 const FENCE = /^(\s*)(`{3,}|~{3,})\s*([\w-]*)/;
 
@@ -91,7 +104,7 @@ export function runBlock(id, { file = RUNBOOK, cwd = process.cwd() } = {}) {
   const script = join(dir, `${id}${shell.ext}`);
   writeFileSync(script, scriptFor(block));
   try {
-    const r = spawnSync(shell.program, [...shell.args, script], { cwd, stdio: 'inherit' });
+    const r = spawnSync(shell.program, [...shell.args, script], { cwd, stdio: 'inherit', env: envFor(block.lang) });
     if (r.error) throw r.error;
     console.log(`runbook ${id}: exit code ${r.status}`);
     return r.status ?? 1;
