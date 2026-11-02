@@ -1,9 +1,10 @@
 # Releases are built here, and only here. A tag v<version> builds the desktop
 # packages on Windows, macOS and Linux, tests each one by following the install
 # runbook (docs/guide/install.md) on its system, and publishes them as a GitHub
-# release with SHA256SUMS, THIRD_PARTY_NOTICES.md, demo.dbc, and notes that give
-# each package's size. The maintainer's steps are in that runbook's last
-# section.
+# release with SHA256SUMS, THIRD_PARTY_NOTICES.md, demo.dbc, the source archives
+# that two parts' licenses ask for (SOURCE_ARCHIVES in
+# scripts/license-policy.mjs), and notes that give each package's size. The
+# maintainer's steps are in that runbook's last section.
 #
 #   v0.2.0-rc.1   a pre-release, published at once
 #   v0.2.0        a draft, which the maintainer checks and then publishes
@@ -87,6 +88,9 @@ jobs:
         with:
           pattern: packages-*
           path: parts
+
+      - name: The source archives, each checked against its pinned SHA-256
+        run: node scripts/desktop-release.mjs sources --out parts/sources | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: Join the packages into the release, with SHA256SUMS and the notes
         run: |

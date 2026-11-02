@@ -36,7 +36,11 @@ Each release also carries:
   that your download is complete and unchanged;
 - `demo.dbc`: a small CAN database, for checking the installed app;
 - `THIRD_PARTY_NOTICES.md`: the licenses of the third-party software in CanViewer. It is
-  also installed with the app.
+  also installed with the app;
+- `libiconv-1.16.tar.gz` and `wix3-wix3141rtm.tar.gz`: the source code of GNU libiconv,
+  which every package contains, and of the WiX Toolset, whose installer dialogs the `.msi`
+  contains. Their licenses ask for the source to come with the program; you do not need
+  these files to install CanViewer.
 
 The version in the file names here is the version this guide was last released with. A
 newer release has the same files under its own version.
@@ -413,8 +417,9 @@ Open **Actions** → **Release** on GitHub, or run `gh run watch`. The workflow:
    the web app's export. The self-test in this guide leaves the export out, so it saves
    nothing in your Downloads folder;
 4. joins the packages into one release, checks each against the checksum its build job
-   recorded, adds `SHA256SUMS`, `THIRD_PARTY_NOTICES.md` and `demo.dbc`, and writes the
-   notes with each package's size;
+   recorded, adds `THIRD_PARTY_NOTICES.md`, `demo.dbc` and the two source archives
+   (downloaded, and checked against the SHA-256 that `scripts/license-policy.mjs` pins),
+   writes `SHA256SUMS`, and writes the notes with each package's size;
 5. creates the GitHub release: a **pre-release** for a version with `-rc.N`, a **draft**
    for a final version. Then it downloads the assets from the release and checks them
    against `SHA256SUMS` once more.
@@ -426,8 +431,8 @@ tag), then **Re-run jobs**.
 ### 4. Check the artifacts
 
 On the release page, check that:
-- the assets are the four packages, `SHA256SUMS`, `THIRD_PARTY_NOTICES.md` and
-  `demo.dbc`;
+- the assets are the four packages, `SHA256SUMS`, `THIRD_PARTY_NOTICES.md`, `demo.dbc`,
+  `libiconv-1.16.tar.gz` and `wix3-wix3141rtm.tar.gz`;
 - the notes list each package with its size, and link the workflow run;
 - the run's jobs passed, and their logs show the self-test reports (`"passed": true`).
 

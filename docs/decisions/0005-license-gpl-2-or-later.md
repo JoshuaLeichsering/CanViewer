@@ -75,16 +75,21 @@ The duties that follow, as the audit found them:
   `desktop/deny.toml` for the crates).
 - The import corpus no longer includes `.xls`: the suite reads 114 files and compares 70
   twins, instead of 122 and 78.
-- **Open: the sources of two copyleft parts.** For most parts, the notices' pointer to
-  the upstream source is enough. Two licenses ask for more. GNU libiconv 1.16
+- **The sources of two copyleft parts come with every release** (decided by the owner on
+  2026-11-02, before the first release). For most parts, the notices' pointer to the
+  upstream source is enough. Two licenses ask for more. GNU libiconv 1.16
   (LGPL-2.0-or-later), in the web app and every package, asks for its source to come
   with the binary or to be offered from the same place (LGPL-2.0 section 4). WiX
   3.14.1's dialogs and `uica.dll` (MS-RL), in the `.msi`, ask for the source of those
-  files to be provided (MS-RL 3(A)). Attaching the libiconv 1.16 and WiX v3.14.1 source
-  archives to every release, with the notices pointing there, would meet both texts;
-  dropping the `.msi` would remove WiX's parts. The owner has not decided yet; until
-  then the notices point to the upstream sources. NSIS's LZMA module (CPL-1.0) asks only
-  for a statement of where its source is, which the notices make.
+  files to be provided (MS-RL 3(A)). So every release carries `libiconv-1.16.tar.gz`
+  and `wix3-wix3141rtm.tar.gz` next to its packages, and the notices name each with its
+  part. The release workflow downloads both from upstream and refuses either unless its
+  SHA-256 is the one `SOURCE_ARCHIVES` in `scripts/license-policy.mjs` pins: for
+  libiconv the hash Pyodide's recipe pins (it builds the tarball without patches), for
+  WiX that of GitHub's archive of the tag `wix3141rtm`. The alternatives were to keep the
+  upstream pointers only, or to drop the `.msi`, which would have removed WiX's parts
+  but not libiconv. NSIS's LZMA module (CPL-1.0) asks only for a statement of where its
+  source is, which the notices make.
 
 ## Alternatives considered
 

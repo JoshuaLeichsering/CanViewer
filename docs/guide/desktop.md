@@ -31,8 +31,10 @@ Each release on the repository's GitHub Releases page has:
 | macOS | `CanViewer_<version>_universal.dmg` | `CanViewer.app`, for Apple silicon and Intel |
 | Linux | `CanViewer_<version>_amd64.deb` | the package `can-viewer`, with the program `/usr/bin/canviewer` |
 
-Next to them are `SHA256SUMS`, to check the download, `THIRD_PARTY_NOTICES.md`, and
-`demo.dbc`, a sample database to open once the app is installed. Every package installs
+Next to them are `SHA256SUMS`, to check the download, `THIRD_PARTY_NOTICES.md`,
+`demo.dbc`, a sample database to open once the app is installed, and
+`libiconv-1.16.tar.gz` and `wix3-wix3141rtm.tar.gz`, the source code that the licenses of
+GNU libiconv and the WiX Toolset ask to come with the packages. Every package installs
 CanViewer's license files (`COPYRIGHT`, `LICENSE` and `LICENSE-GPL-3.0`) and the notices
 with the app, and its installer shows `COPYRIGHT` as the license; **About CanViewer** in
 the app opens them too. The release notes give

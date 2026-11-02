@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { declaredLicense, withHeader } from './check-spdx-headers.mjs';
-import { ALLOWED, BUILD_HELPERS, INSTALLER_LICENSES, WINDOWS_INSTALLERS, classifyModule, isAllowed } from './license-policy.mjs';
+import { ALLOWED, BUILD_HELPERS, INSTALLER_LICENSES, SOURCE_ARCHIVES, WINDOWS_INSTALLERS, classifyModule, isAllowed } from './license-policy.mjs';
 import { excerpt, linesBetween, render, uncomment } from './third-party-notices.mjs';
 
 test('license expressions are allowed when some choice uses allowed licenses only', () => {
@@ -176,7 +176,25 @@ test('the notices list GNU libiconv as compiled into lxml, under the LGPL, with 
   assert.match(entry, /^- License: LGPL-2\.0-or-later$/m);
   assert.match(entry, /<https:\/\/ftp\.gnu\.org\/gnu\/libiconv\/libiconv-1\.16\.tar\.gz>/);
   assert.match(entry, /<https:\/\/github\.com\/pyodide\/pyodide-recipes\/tree\/314-20260911\/packages\/lxml>/);
+  assert.match(entry, /^- Source archive: `libiconv-1\.16\.tar\.gz` \(SHA-256 `e6a1b1b589654277ee790cce3734f07876ac4ccfaecbee8afa0b649cf529cc04`\), with every CanViewer release at <https:\/\/github\.com\/JoshuaLeichsering\/CanViewer\/releases>$/m);
   assert.match(committed, /GNU LIBRARY GENERAL PUBLIC LICENSE\s+Version 2, June 1991/);
+});
+
+test('each source archive a release carries is named by the notices, with the part it is the source of', () => {
+  const committed = readFileSync(new URL('../THIRD_PARTY_NOTICES.md', import.meta.url), 'utf8');
+  // Each entry runs from its heading to the next heading of any level.
+  const named = committed.split(/^(?=#{2,4} )/m).flatMap((entry) => {
+    const heading = entry.match(/^#### (.+)$/m)?.[1];
+    return [...entry.matchAll(/^- Source archive: `([^`]+)` \(SHA-256 `([0-9a-f]{64})`\)/gm)].map((m) => [m[1], heading, m[2]]);
+  });
+  assert.deepEqual(named, [
+    ['libiconv-1.16.tar.gz', 'GNU libiconv (compiled into lxml)', SOURCE_ARCHIVES[0].sha256],
+    ['wix3-wix3141rtm.tar.gz', 'WiX Toolset: WixUI and its custom actions', SOURCE_ARCHIVES[1].sha256],
+  ]);
+  assert.match(committed, /every release also carries that source as a file\nof its own, which the component’s entry names as its source archive\./);
+  // An entry cannot name an archive the release does not carry.
+  const wix = WINDOWS_INSTALLERS.find((p) => p.archive);
+  assert.throws(() => render({ ...sample(), windowsInstallers: [{ ...wix, archive: 'nowhere.tar.gz' }] }), /its archive nowhere\.tar\.gz is not in SOURCE_ARCHIVES/);
 });
 
 const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
