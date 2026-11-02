@@ -134,10 +134,17 @@ h3 {
   color: var(--on-surface-var);
 }
 
+/* Pinned to the top corner of its containing block, so that it never makes
+   anything taller than it is, wherever it stands. */
 .visually-hidden {
   position: absolute;
+  top: 0;
+  left: 0;
   width: 1px;
   height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
   overflow: hidden;
   clip: rect(0 0 0 0);
   white-space: nowrap;
@@ -185,7 +192,8 @@ h3 {
   }
 }
 
-/* navigation rail */
+/* navigation rail: in a window shorter than its 650 px of buttons, the rail
+   scrolls rather than the page */
 .rail {
   position: relative;
   display: flex;
@@ -195,6 +203,7 @@ h3 {
   padding: 16px 0;
   background: var(--surface);
   min-height: 0;
+  overflow-y: auto;
 }
 .rail-icon-btn {
   width: 48px;
@@ -278,9 +287,11 @@ h3 {
   flex: 1;
 }
 
-/* settings menu (opened from the rail's menu button) */
+/* settings menu (opened from the rail's menu button). Fixed rather than
+   absolute, so that the rail, which scrolls, does not clip it: the rail starts
+   at the window's top left corner, so the place is the same. */
 .menu-popover {
-  position: absolute;
+  position: fixed;
   top: 12px;
   left: 76px;
   z-index: 30;
@@ -319,8 +330,9 @@ h3 {
   background: var(--outline-var);
 }
 
-/* list pane */
+/* list pane. Positioned, so that it clips what it holds, as the detail does. */
 .list-pane {
+  position: relative;
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -531,7 +543,12 @@ td .tag {
 
 /* ---------- main area ---------- */
 
+/* The detail scrolls on its own, and the page never does. Positioned, so that
+   it is the containing block of what it holds: a scroll container clips only
+   the absolutely positioned elements it contains, and an unpositioned one
+   would leave them to stretch the page. */
 .main {
+  position: relative;
   min-width: 0;
   overflow-y: auto;
   padding: 8px 24px 48px;
