@@ -53,6 +53,8 @@ const DEMO_ASC_WITH_PROBLEM = readFileSync(repoPath('examples/demo.asc'), 'utf8'
 const VIEWPORTS = { desktop: { width: 1440, height: 900 }, narrow: { width: 390, height: 844 } };
 /** The rail's destinations, in their order on screen. */
 const RAIL = { overview: 0, messages: 1, network: 2, nodes: 3, tables: 4, compare: 5, traces: 6 };
+/** Widths at which no label of the navigation bar may be cut off (app/src/narrow.css). */
+const NAV_WIDTHS = [390, 375, 360, 320];
 
 let base = process.argv[2];
 let server;
@@ -749,14 +751,27 @@ describe('narrow layout (390 px)', () => {
       await page.locator('[data-testid=edt-save-dbc]').click();
       assert.equal((await download).suggestedFilename(), 'demo.dbc');
 
-      // The navigation bar: every label fits, with the active one in bold.
-      for (const destination of ['overview', 'messages', 'network', 'compare']) {
-        await rail(page, destination);
-        await frames(page);
-        const cut = await page.locator('.rail-item .label').evaluateAll((labels) =>
-          labels.filter((l) => l.scrollWidth > l.clientWidth).map((l) => `${l.textContent} (${l.scrollWidth} > ${l.clientWidth} px)`),
-        );
-        assert.deepEqual(cut, [], `with ${destination} active, these labels are cut off`);
+      // The navigation bar: every label fits, with the active one in bold, and
+      // every destination is on screen, at 390 px and on narrower phones
+      // (360 px is a common Android width, 320 px the narrowest iPhone's).
+      for (const width of NAV_WIDTHS) {
+        await page.setViewportSize({ width, height: VIEWPORTS.narrow.height });
+        for (const destination of Object.keys(RAIL)) {
+          await rail(page, destination);
+          await frames(page);
+          const cut = await page.locator('.rail-item').evaluateAll((items) => {
+            const right = document.documentElement.clientWidth;
+            return items.flatMap((item) => {
+              const label = item.querySelector('.label');
+              const box = item.getBoundingClientRect();
+              const problems = [];
+              if (label.scrollWidth > label.clientWidth) problems.push(`${label.textContent} (${label.scrollWidth} > ${label.clientWidth} px)`);
+              if (box.left < -0.5 || box.right > right + 0.5) problems.push(`${label.textContent} (off screen, ${Math.round(box.left)}..${Math.round(box.right)} px)`);
+              return problems;
+            });
+          });
+          assert.deepEqual(cut, [], `at ${width} px with ${destination} active, these labels are cut off`);
+        }
       }
       assert.deepEqual(problems, []);
       await context.close();

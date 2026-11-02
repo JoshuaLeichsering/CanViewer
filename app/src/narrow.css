@@ -46,7 +46,7 @@
     padding: 0;
     background: var(--sc);
   }
-  /* Seven destinations share 390 px: each takes the width its label needs
+  /* Seven destinations share 375 px or more: each takes the width its label needs
      (Material's small label size, without the letter spacing), and the rest
      is shared out, so that no label is cut off in either language. */
   .rail-item {
@@ -163,5 +163,43 @@
     bottom: 88px;
     min-width: 0;
     width: calc(100vw - 32px);
+  }
+}
+
+/* Below 375 px (360 px is a common Android width) seven 48 px pills no
+   longer fit beside the longer German labels. The items then share the width
+   equally, except that none is narrower than its label with a 2 px margin on
+   either side, and each pill takes what its item gets, up to 48 px. Below
+   350 px the labels drop to 10 px, the size of iOS tab bar labels, with a
+   1.5 px margin, which is what all seven need down to about 310 px. Below
+   312 px, where even that is too wide, a label is cut off with an ellipsis
+   again rather than pushing the last destinations off the screen. */
+@media (max-width: 374px) {
+  .rail-item {
+    flex: 1 1 0;
+    min-width: auto;
+    padding: 0;
+  }
+  .rail-item .pill {
+    width: 100%;
+    max-width: 48px;
+  }
+  .rail-item .label {
+    padding: 0 2px;
+  }
+}
+
+@media (max-width: 349px) {
+  .rail-item {
+    font-size: 10px;
+  }
+  .rail-item .label {
+    padding: 0 1.5px;
+  }
+}
+
+@media (max-width: 311px) {
+  .rail-item {
+    min-width: 0;
   }
 }
