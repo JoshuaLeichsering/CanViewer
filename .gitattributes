@@ -7,3 +7,5 @@ app/src/lib/export/pinned/** -text
 # Every build job puts examples/demo.dbc into the release, and the parts must agree byte
 # for byte: keep the committed bytes on every system (Windows would check it out with CRLF).
 examples/** -text
+# Shell scripts run under bash on every system, which needs LF line endings.
+*.sh text eol=lf
