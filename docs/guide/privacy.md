@@ -44,6 +44,14 @@ you first open a non-DBC file. It does not see your files, their names, or anyth
 you do in the app; none of it is sent. GitHub's own privacy statement covers what it
 logs.
 
+The app is served from `https://joshualeichsering.github.io/CanViewer/app/`. Browsers
+keep storage per origin (scheme, host and port), not per path, so the copy of the last
+file the app keeps (local storage and IndexedDB, above) is in the storage of
+`https://joshualeichsering.github.io`, which every GitHub Pages site of that account
+shares: a page of any other site the account publishes there could read it. To leave
+nothing behind, use **Close file** when you are done, or use the desktop app, whose
+storage is its own.
+
 If you would rather not load the app from GitHub at all, use the
 [desktop app](./desktop.md), or build the web app yourself and serve it from your own
 machine (see the [developer guide](../develop/index.md)).
@@ -58,5 +66,8 @@ machine (see the [developer guide](../develop/index.md)).
 - **Desktop app**: everything is inside the program. It works offline from the start
   and makes no network requests at all. Its content security policy allows the window
   to load only the app's own files, and the worker that reads non-DBC formats runs under
-  the same policy, so it cannot reach another host either. The web app sends no such
-  policy (GitHub Pages cannot set one); there, the checks above stand in for it.
+  the same policy, so it cannot reach another host either. The web app has no such
+  policy: GitHub Pages cannot send the header, and a policy in the page itself would not
+  reach its import worker
+  ([why](../decisions/0009-desktop-shell.md#alternatives-considered)). There, the checks
+  above stand in for it.

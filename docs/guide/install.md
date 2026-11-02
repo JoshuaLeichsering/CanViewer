@@ -418,6 +418,10 @@ On the release page, check that:
 - the notes list each package with its size, and link the workflow run;
 - the run's jobs passed, and their logs show the self-test reports (`"passed": true`).
 
+Then put the run's link into the last paragraph of
+[How this guide is checked](#how-this-guide-is-checked), with the tag it checked, in a
+pull request, so that the guide names the run that last checked it.
+
 Then download a package and follow this guide on a real computer. For a final release,
 publish the draft: **Edit** → **Publish release**, or
 `gh release edit v0.2.0 --draft=false`.
@@ -450,4 +454,6 @@ The two things CI does around the blocks: it marks the installed macOS app as do
 (the quarantine attribute a browser sets), so that the first-launch command has something
 to remove; and it runs the Linux self-test under a virtual display (`xvfb-run`).
 
-The run that last checked this guide against a release is linked in that release's notes.
+Each release's notes link the run that built it, which is the run that checked this guide
+against its packages. The run that last checked this guide against a release: not
+recorded yet; the first will be the run of `v0.2.0-rc.1`.

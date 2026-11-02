@@ -125,11 +125,18 @@ site:
 4. on `main`, and only when the repository is public, uploads the site and deploys it to
    GitHub Pages.
 
-It runs on pull requests that touch the app, the docs, the Markdown files at the root,
-their scripts or the workflow (build and checks only), on pushes to `main`, and on
-demand. The source link check also runs in `ci.yml`, on every push and pull request. Pages has to be enabled
-once in the repository's settings (source: GitHub Actions); a private repository needs
-a paid plan for it, so the site goes live when the repository is public.
+It runs on every pull request (build and checks only), on pushes to `main`, and on
+demand. The source link check also runs in `ci.yml`, on every push and pull request.
+Pages has to be enabled once in the repository's settings (source: GitHub Actions); a
+private repository needs a paid plan for it, so the site goes live when the repository
+is public.
+
+The app's origin is the account's: every GitHub Pages site of the account is served from
+`https://joshualeichsering.github.io`, so all of them share the storage in which the app
+keeps the last file a visitor opened, and a user site at the root could register a
+service worker whose scope covers `/CanViewer/app/`. Publish no other, untrusted content
+as a Pages site of this account. A custom domain for the app would give it an origin of
+its own ([Privacy](../guide/privacy.md#what-the-web-host-sees)).
 
 To check the published layout locally:
 

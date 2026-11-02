@@ -263,6 +263,24 @@ When the owner obtains certificates (a paid service, his decision):
     worker.
   - A `<meta>` CSP in `index.html`. Rejected: a worker loaded from its own URL does not
     inherit it either.
+- **A `<meta>` CSP for the web app's page itself**, which GitHub Pages would honour
+  although it cannot send the header. Not adopted, for now:
+  - One `dist/` serves the web app and every desktop package (`frontendDist`), and the
+    desktop app would enforce a `<meta>` policy in its `index.html` together with the
+    header. The tag would have to allow what only the desktop app needs (`ipc:` and
+    `http://ipc.localhost` for Tauri's IPC, `blob:` workers), or the desktop packages
+    would need an HTML of their own: a second build variant that only the Windows,
+    macOS and Linux runs of the desktop workflow could test.
+  - In the browser it would hold the page's main thread only. The import worker, which
+    reads every file that is not DBC, starts from its own URL there (above) and would
+    not inherit it, so the part that handles the most data would stay outside it.
+  - What the policy would enforce, no request outside the origin, is what the network
+    check records three ways on every change, for the build and for the app as Pages
+    serves it; the docs crawl does the same for the site.
+
+  Worth revisiting if the web build moves its worker to the `blob:` start (which needs
+  a check that every browser's service worker serves `blob:` workers offline), or if
+  the desktop packages get their own HTML for another reason.
   - A custom protocol handler in Rust that adds the header to every response. Rejected:
     it would replace Tauri's asset protocol with code of our own, for what the `blob:`
     start gives with two lines.
