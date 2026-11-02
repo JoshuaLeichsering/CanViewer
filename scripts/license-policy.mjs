@@ -172,6 +172,7 @@ export const WHEEL_BUNDLED = {
         'https://github.com/pyodide/pyodide-recipes/tree/314-20260911/packages/lxml',
       ],
       note:
+        'Copyright (C) 1999-2019 Free Software Foundation, Inc. ' +
         'The character-set conversion that libxml2 uses, linked statically into lxml’s `etree` module ' +
         '(`lxml/etree.cpython-314-wasm32-emscripten.so`) by Pyodide’s build: pyodide-recipes 314-20260911 builds ' +
         'libiconv 1.16 as a static library (packages/libiconv) and links it into lxml 6.1.3 (packages/lxml, `-liconv`). ' +
@@ -692,7 +693,7 @@ export const WINDOWS_INSTALLERS = [
     in: ['nsis'],
     note:
       'In the `-setup.exe`: the LZMA decompressor in the installer stub, which the uninstaller shares, and which unpacks ' +
-      'the installer’s data (Tauri compresses it with LZMA, NSIS’s default). It is under the Common Public License 1.0, ' +
+      'the installer’s data (Tauri’s bundler compresses it with LZMA, its default for `bundle.windows.nsis.compression`, which CanViewer does not change). It is under the Common Public License 1.0, ' +
       'with the special exception for the LZMA compression module at the end of NSIS’s COPYING. ' +
       'The source code of the LZMA compression module is available in the NSIS 3.13 source release, ' +
       '`nsis-3.13-src.tar.bz2`, at the address below, in its directory `Source/7zip/`.',
@@ -707,7 +708,8 @@ export const WINDOWS_INSTALLERS = [
     note:
       'In the `-setup.exe`: `nsis_tauri_utils.dll`, Tauri’s plugin with which the installer compares versions, ' +
       'replaces text in strings and starts the app as the user, built from the crate crates/nsis-tauri-utils. The crates it links follow. ' +
-      'Like any Rust library, it also holds parts of the Rust standard library (MIT OR Apache-2.0).',
+      'It also holds parts of the Rust standard library (core, alloc and compiler_builtins; the plugin is built without std), ' +
+      'under the licenses that the section on the Rust standard library gives for them.',
   },
   {
     name: 'nsis-plugin-api (in nsis_tauri_utils)',
