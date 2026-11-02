@@ -4,3 +4,6 @@ app/src/lib/canmatrix/mapper-dbc-baseline.json linguist-generated=true
 THIRD_PARTY_NOTICES.md linguist-generated=true
 # Pinned export output is compared byte for byte (the CSV files end their records with CRLF).
 app/src/lib/export/pinned/** -text
+# Every build job puts examples/demo.dbc into the release, and the parts must agree byte
+# for byte: keep the committed bytes on every system (Windows would check it out with CRLF).
+examples/** -text
