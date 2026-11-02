@@ -1085,6 +1085,12 @@ tr.selected .sig-chip {
   border: 2px solid var(--error);
   padding: 0 11px 0 15px;
 }
+/* An invalid field already has the thick border, so focus adds a ring, as
+   in the signal table's filters: focused and unfocused must look different. */
+.text-field.invalid:focus-within {
+  outline: 2px solid var(--error);
+  outline-offset: 1px;
+}
 .text-field .field-label {
   position: absolute;
   top: -9px;
