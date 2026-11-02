@@ -6,6 +6,8 @@
 //   encoder, a replayed log with a line not read, a comparison, an import's
 //   progress, source note and cluster picker, the export and copy-as menus, and
 //   the Save as DBC, discard and About dialogs;
+// - About CanViewer: it opens by keyboard, and the license files and notices
+//   it links resolve inside the app's origin;
 // - keyboard: "/" focuses the message search (and closes the settings menu),
 //   the arrow keys, Home and End move through the lists, table rows and network
 //   nodes open with Enter, and the focus order follows the layout;
@@ -784,6 +786,43 @@ describe('narrow layout (390 px)', () => {
     await page.keyboard.press('Enter');
     assert.equal(await page.locator('.list-pane').isVisible(), false);
     assert.equal(await heading(page), 'BrakeData');
+    assert.deepEqual(problems, []);
+    await context.close();
+  });
+});
+
+describe('About CanViewer', () => {
+  test('opens from the settings menu by keyboard, and its documents resolve inside the origin', async () => {
+    const { context, page, problems } = await openApp();
+    const menuButton = page.locator('.rail-icon-btn[aria-expanded]');
+    await menuButton.focus();
+    await page.keyboard.press('Enter');
+    await page.keyboard.press('End');
+    assert.equal((await activeElement(page)).text, 'About CanViewer');
+    await page.keyboard.press('Enter');
+    const dialog = page.getByTestId('abt-dialog');
+    await dialog.waitFor();
+    assert.equal((await activeElement(page)).text, 'Close', 'the dialog takes the focus');
+    // The license files and the notices: same-origin links to files the build has.
+    const origin = new URL(base).origin;
+    const docs = await page.getByTestId('abt-doc').evaluateAll((links) => links.map((a) => a.href));
+    assert.deepEqual(
+      docs.map((href) => new URL(href).pathname.split('/').pop()),
+      ['COPYRIGHT.txt', 'LICENSE.txt', 'LICENSE-GPL-3.0.txt', 'THIRD_PARTY_NOTICES.md'],
+    );
+    for (const href of docs) {
+      assert.equal(new URL(href).origin, origin, href);
+      assert.equal(await page.evaluate((h) => fetch(h).then((r) => r.status), href), 200, href);
+    }
+    assert.equal(await page.getByTestId('abt-source').getAttribute('href'), 'https://github.com/JoshuaLeichsering/CanViewer');
+    // A document opens in the dialog, without leaving the page.
+    await page.getByRole('link', { name: 'GNU General Public License, version 3' }).click();
+    assert.match(await page.getByTestId('abt-text').textContent(), /Version 3, 29 June 2007/);
+    assert.equal(new URL(page.url()).origin + new URL(page.url()).pathname, new URL(base).href);
+    // Escape closes it, and the focus goes back to the menu button.
+    await page.keyboard.press('Escape');
+    await dialog.waitFor({ state: 'detached' });
+    assert.equal(await menuButton.evaluate((el) => el === document.activeElement), true);
     assert.deepEqual(problems, []);
     await context.close();
   });
