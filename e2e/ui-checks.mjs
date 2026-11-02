@@ -12,6 +12,9 @@
 // - keyboard: "/" focuses the message search (and closes the settings menu),
 //   the arrow keys, Home and End move through the lists, table rows and network
 //   nodes open with Enter, and the focus order follows the layout;
+// - the network view: from the desktop app's smallest window to 1920 × 1080,
+//   the graph and its details fit the detail pane, which does not scroll, and
+//   the node labels stay on the graph;
 // - the search field: the "/" hint never cuts the placeholder off;
 // - the error boundary: a view that throws shows a recovery screen, and its
 //   "Reset stored file" button ends the crash loop of a file restored on start,
@@ -905,6 +908,39 @@ describe('favicon', () => {
     const shapes = (svg) => svg.replace(/<svg\b[^>]*>/, '').trim();
     assert.match(icon.body, /^<svg xmlns="http:\/\/www\.w3\.org\/2000\/svg" viewBox="96 96 832 832">/);
     assert.equal(shapes(icon.body), shapes(appIcon));
+    assert.deepEqual(problems, []);
+    await context.close();
+  });
+});
+
+describe('network view', () => {
+  test('the graph and its details fit the detail pane, from the desktop app\'s smallest window to 1920 × 1080', async () => {
+    const { context, page, problems } = await openApp();
+    await openFile(page, 'demo.dbc', DEMO);
+    await rail(page, 'network');
+    // With a node selected, the details panel lists its connections.
+    await page.locator('.ng-node[aria-label="ABS"]').click();
+    assert.equal(await page.locator('.side-card .side-head h2').textContent(), 'ABS');
+    const misfits = [];
+    // The desktop app's smallest and default windows (desktop/tauri.conf.json), and larger screens.
+    for (const size of [{ width: 720, height: 480 }, { width: 1280, height: 820 }, VIEWPORTS.desktop, { width: 1920, height: 1080 }]) {
+      await page.setViewportSize(size);
+      await frames(page);
+      const m = await page.evaluate(() => {
+        const box = (selector) => document.querySelector(selector).getBoundingClientRect().toJSON();
+        const main = document.querySelector('.main');
+        return { main: box('.main'), scroll: main.scrollHeight - main.clientHeight, graph: box('.netgraph'), labels: box('.graph-wrap'), side: box('.side-card') };
+      });
+      const at = `${size.width} × ${size.height}`;
+      if (m.scroll > 0) misfits.push(`${at}: the detail scrolls by ${m.scroll} px`);
+      if (m.graph.bottom > m.main.bottom + 0.5) misfits.push(`${at}: the graph ends ${Math.round(m.graph.bottom - m.main.bottom)} px below the detail`);
+      if (m.side.top >= m.main.bottom || m.side.right > m.main.right + 0.5) misfits.push(`${at}: the details panel is out of sight`);
+      // The labels are placed in percent of .graph-wrap: it must be the graph's own box.
+      if (Math.abs(m.labels.width - m.graph.width) > 1 || Math.abs(m.labels.height - m.graph.height) > 1) {
+        misfits.push(`${at}: the labels' box is ${Math.round(m.labels.width)} × ${Math.round(m.labels.height)}, the graph ${Math.round(m.graph.width)} × ${Math.round(m.graph.height)}`);
+      }
+    }
+    assert.deepEqual(misfits, [], 'the network view does not fit');
     assert.deepEqual(problems, []);
     await context.close();
   });

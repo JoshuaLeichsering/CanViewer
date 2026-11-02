@@ -1281,6 +1281,48 @@ tr.selected .sig-chip {
   max-width: 420px;
   min-width: 0;
 }
+/* From 600 px wide the network view fills the detail's height. The graph is as
+   large as both the width and the height left allow, and its details stay
+   beside it, scrolling on their own if they must. .graph-area is a size
+   container, so that the graph can be sized from its height as well as its
+   width (760 × 520 is its viewBox, W × H in NetworkGraph.tsx); .graph-wrap
+   stays the graph's own box, in which the labels are placed. Narrower, the
+   graph keeps a readable size and scrolls sideways instead (narrow.css). */
+@media (min-width: 600px) {
+  .network-view {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+  .network-view > .row {
+    flex: 1;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    min-height: 0;
+    margin-bottom: 0;
+  }
+  .network-view .graph-card {
+    display: flex;
+    flex-direction: column;
+  }
+  .graph-area {
+    flex: 1;
+    min-height: 200px;
+    container-type: size;
+    display: grid;
+    place-items: center;
+  }
+  .graph-area > .graph-wrap {
+    width: min(100cqw, 100cqh * 760 / 520);
+  }
+  .network-view .side-card {
+    flex-shrink: 3;
+    align-self: flex-start;
+    min-width: 200px;
+    max-height: 100%;
+    overflow-y: auto;
+  }
+}
 .side-card h2.side-title {
   margin: 4px 0;
   font-size: 22px;
