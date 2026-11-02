@@ -460,7 +460,7 @@ jobs:
 
       - name: Tauri config for this build
         run: node scripts/desktop-release.mjs config --out "$RUNNER_TEMP/tauri.ci.json" $RELEASE_FLAG
-      - name: Build the package (deb; no AppImage, see the license audit)
+      - name: Build the package (deb; no AppImage, see decision record 0005)
         run: npx tauri build --ci --bundles deb --config "$RUNNER_TEMP/tauri.ci.json"
 
       - name: Collect the package under its release name

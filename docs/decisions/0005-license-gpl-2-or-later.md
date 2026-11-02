@@ -2,20 +2,23 @@
 
 - **Status:** accepted
 - **Date:** 2026-11-01
-- **Condensed from:** the owner's decisions recorded in the [goal](../handover/2026-11-01-goal.md#decisions-so-far)
-  and the [license audit](../handover/2026-11-01-license-audit.md)
 
 ## Context
 
 The repository is to be published under the GNU General Public License version 2. An
 audit of every third-party part of the web build, the desktop packages and the
-repository checked what that choice allows.
+repository checked what that choice allows. It was an engineering review, not legal
+advice.
 
 Its main finding: every Tauri 2 desktop binary links Apache-2.0 code (the window library
 `tao`, and `dpi` and `muda`), and the web bundle carries the Material Symbols icon paths,
 also Apache-2.0. The Free Software Foundation considers Apache-2.0 incompatible with
 GPLv2 but compatible with GPLv3. A GPL-2.0-only license would have blocked every desktop
 package and the icons.
+
+It also found three parts that the license could not carry as they were: the `.xls`
+reader, Microsoft's binary-only code in the Windows executable, and the libraries an
+AppImage would bundle. The decision below deals with each.
 
 ## Decision
 
@@ -48,7 +51,7 @@ package and the icons.
 
 ## Consequences
 
-The audit lists the duties that follow. In short:
+The duties that follow, as the audit found them:
 
 - The repository must carry the GPL-2.0 and GPL-3.0 texts, license metadata in
   `package.json`, `desktop/Cargo.toml` and `desktop/tauri.conf.json`, and SPDX headers.
@@ -59,13 +62,29 @@ The audit lists the duties that follow. In short:
   `/usr/share/doc/can-viewer/copyright`.
 - Every package and the web build must carry third-party notices for the runtime, the
   wheels, the fonts, the icons and the crates, and an About entry must show the license,
-  a source link and the notices.
+  a source link and the notices. `THIRD_PARTY_NOTICES.md` names each part's license and
+  its exact upstream source, among them GNU libiconv, compiled into lxml, and the
+  programs inside the Windows installers (WiX's dialogs and custom actions in the
+  `.msi`, NSIS with its LZMA module in the `-setup.exe`, and Tauri's installer plugin and
+  templates).
 - Every release that ships binaries must come with the corresponding source at its tag,
   including the lock files that pin every third-party part.
-- A license check in CI, with an allowlist that follows the audit, is to keep new
-  dependencies within it.
+- A license check in CI keeps new dependencies within an allowlist: the licenses that
+  combine with GPL-2.0-or-later, and two more (CPL-1.0 and MS-RL) allowed only for the
+  separate programs inside the Windows installers (`scripts/license-policy.mjs`, and
+  `desktop/deny.toml` for the crates).
 - The import corpus no longer includes `.xls`: the suite reads 114 files and compares 70
   twins, instead of 122 and 78.
+- **Open: the sources of two copyleft parts.** For most parts, the notices' pointer to
+  the upstream source is enough. Two licenses ask for more. GNU libiconv 1.16
+  (LGPL-2.0-or-later), in the web app and every package, asks for its source to come
+  with the binary or to be offered from the same place (LGPL-2.0 section 4). WiX
+  3.14.1's dialogs and `uica.dll` (MS-RL), in the `.msi`, ask for the source of those
+  files to be provided (MS-RL 3(A)). Attaching the libiconv 1.16 and WiX v3.14.1 source
+  archives to every release, with the notices pointing there, would meet both texts;
+  dropping the `.msi` would remove WiX's parts. The owner has not decided yet; until
+  then the notices point to the upstream sources. NSIS's LZMA module (CPL-1.0) asks only
+  for a statement of where its source is, which the notices make.
 
 ## Alternatives considered
 

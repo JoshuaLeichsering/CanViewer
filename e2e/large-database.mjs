@@ -327,7 +327,7 @@ check(focusAway.renderedRows <= BUDGET.renderedRows, `at most ${BUDGET.renderedR
 check(focusTab.focused === 'Msg_0004' && focusTab.inView, 'Tab moves from the focused row to the next one and scrolls it into view');
 check(focusBack.focused === 'Msg_0003' && focusBack.inView, 'Shift+Tab moves to the previous row and scrolls it into view');
 
-// End and Home (W6's list keys) reach rows the virtual list had not rendered.
+// End and Home (the list keys) reach rows the virtual list had not rendered.
 await page.waitForTimeout(100);
 await page.locator('.list-scroll .list-item', { hasText: 'Msg_0003' }).focus();
 await page.keyboard.press('End');

@@ -21,11 +21,10 @@ if (!base.startsWith('/') || !base.endsWith('/')) throw new Error(`DOCS_BASE mus
 const srcDir = fileURLToPath(new URL('..', import.meta.url));
 const repoRoot = fileURLToPath(new URL('../..', import.meta.url));
 /**
- * Kept in the repository, not on the site: the working notes and evidence of
- * the sessions that built CanViewer (the site's archive page links to them on
- * GitHub), and the design renders.
+ * Kept in the repository, not on the site: the spike reports and the design
+ * notes with their renders (the site's archive page links to them on GitHub).
  */
-const EXCLUDED = ['handover', 'spikes', 'design'];
+const EXCLUDED = ['spikes', 'design'];
 
 /** Sidebar entries for every page in a directory, titled by their first heading. */
 function pagesIn(dir: string): DefaultTheme.SidebarItem[] {
@@ -104,7 +103,6 @@ const develop: DefaultTheme.SidebarItem[] = [
       { text: 'Tests and baselines', link: '/develop/testing' },
       { text: 'Documentation', link: '/develop/documentation' },
       { text: 'Release process', link: '/develop/release' },
-      { text: 'Going public', link: '/develop/go-public' },
       { text: 'The two ARXML readers', link: '/develop/arxml-readers' },
     ],
   },

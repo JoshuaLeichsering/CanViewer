@@ -7,26 +7,22 @@
 
 CanViewer is to be installable from a GitHub Release on macOS, Windows and Linux, by
 following one runbook, and the packaged app is to do everything the web build does,
-offline, ARXML import included ([the goal](../handover/2026-11-01-goal.md), intention 4
-and its section on the desktop packages). It must make no network requests at all
-(intention 2). The owner decided that
-the builds stay unsigned, that Linux ships a `.deb` and no AppImage, that the bundle
+offline, ARXML import included. It must make no network requests at all. The owner
+decided that the builds stay unsigned, that Linux ships a `.deb` and no AppImage, that the bundle
 identifier stays `io.github.joshualeichsering.canviewer`, and that the placeholder icon
 stays.
 
 The spike ([its report](../spikes/2026-11-01-tauri-desktop/README.md)) built a Tauri 2
 shell and tested it in CI on all three systems. Its deciding question was whether the
-system webviews run the Pyodide import worker. In run
-[41313248134](https://github.com/JoshuaLeichsering/CanViewer/actions/runs/41313248134)
-the installed app opened `examples/demo.dbc` and canmatrix's `test.arxml` on each
-system:
+system webviews run the Pyodide import worker. In the spike's CI run the installed app
+opened `examples/demo.dbc` and canmatrix's `test.arxml` on each system:
 
 | | Windows | macOS | Linux |
 |---|---|---|---|
 | Webview | WebView2 156 (Chromium) | WKWebView, macOS 26.6.2 (arm64) | WebKitGTK 2.52.6 |
 | `test.arxml` through Pyodide, cold | 4,251 ms | 2,160 ms | 6,835 ms |
 | CSP violations, errors | none, none | none, none | none, none |
-| Requests outside the app (Windows over CDP, run 41314152587) | 0 of 14 | (no request record in WebKit) | (no request record in WebKit) |
+| Requests outside the app (Windows over CDP, in a later run) | 0 of 14 | (no request record in WebKit) | (no request record in WebKit) |
 
 It also found that the Pyodide worker ran without the Content Security Policy, which this
 record resolves.
@@ -128,8 +124,8 @@ and releases are built with it. Every other CI build turns both off through
 
 - With them, the installed Windows executable was 16,811,008 bytes; without them,
   17,608,704 bytes. That is 797,696 bytes, or 4.5 %, smaller.
-- With them and a cold cache, the Windows build step took 8 min 9 s (run 41311971460).
-  Without them and with a warm cache, it took 2 min 0 s. The two are not directly
+- With them and a cold cache, the Windows build step took 8 min 9 s (the spike's first
+  run). Without them and with a warm cache, it took 2 min 0 s. The two are not directly
   comparable, which is why the slower build is kept to releases.
 
 Releases are rare, and a tag's run cannot use the Rust caches of pull request runs, so a
@@ -150,7 +146,7 @@ The Windows installers keep Tauri's default `webviewInstallMode`, `downloadBoots
 On a computer without the WebView2 runtime (it ships with Windows 11 and current
 Windows 10), the installer downloads it from Microsoft. That is the installer, at install
 time, not the app. The embedded and offline modes would put Microsoft's installers into
-the package, which the license audit advised against.
+the package, binary-only code with terms of their own, so they are not used.
 
 ### The release workflow
 
@@ -250,13 +246,13 @@ When the owner obtains certificates (a paid service, his decision):
 - **Wails, Neutralinojs** and similar shells. They were not tried. Tauri was already
   proven in CI with every package format needed (MSI, NSIS, `.dmg`, `.deb`).
 - **No desktop app, only the web app** (installable as a PWA). That would leave nothing
-  to download from a GitHub Release, which is what intention 4 asks for. The web app
+  to download from a GitHub Release, which the context above asks for. The web app
   stays for every system without a package.
 - **One `.dmg` per architecture.** It takes the same two compiles, and readers would
   have to pick the right one.
-- **An AppImage.** It was dropped after the license audit: it would carry about 120
-  libraries of the build machine, with a duty to provide their sources for every
-  release.
+- **An AppImage.** It was dropped for its license duties
+  ([0005](./0005-license-gpl-2-or-later.md)): it would carry about 120 libraries of the
+  build machine, with a duty to provide their sources for every release.
 - **For the worker's policy:**
   - Start it from a `blob:` URL in the web build too. Rejected: there is no policy to
     inherit there, and offline imports depend on the service worker serving the

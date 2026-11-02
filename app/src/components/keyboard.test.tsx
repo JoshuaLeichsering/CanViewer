@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // @vitest-environment jsdom
-// Keyboard access in the components (W6): the list panes, the settings menu
+// Keyboard access in the components: the list panes, the settings menu
 // and the network graph's nodes. The browser checks in e2e/ui-checks.mjs run
 // the same keys against the built app; these pin the components' own handling.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';

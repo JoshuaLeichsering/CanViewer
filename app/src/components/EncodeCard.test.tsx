@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // @vitest-environment jsdom
-// The encoder card (W10) on its own: physical values in, the frame out, and
+// The encoder card on its own: physical values in, the frame out, and
 // its ways to the decode card and the clipboard. The property and corpus tests
 // in app/src/lib/dbc pin the encoding itself; e2e/trc-traces-encoder.mjs drives
 // the card in the message view.

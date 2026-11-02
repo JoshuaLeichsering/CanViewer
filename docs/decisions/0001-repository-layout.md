@@ -16,8 +16,7 @@ a browser or against the packaged app, and maintenance scripts, and more are pla
 (end-to-end flows, screenshots, a documentation site). Before the repository goes public,
 the owner asked for a professional structure: the web app in its own directory instead
 of the root, and likewise the desktop shell, the end-to-end checks, the scripts and the
-documentation, with only config and top-level documents at the root (see
-[the goal](../handover/2026-11-01-goal.md), F3).
+documentation, with only config and top-level documents at the root.
 
 ## Decision
 
@@ -28,7 +27,7 @@ documentation, with only config and top-level documents at the root (see
 | `e2e/` | Checks that drive a browser or the packaged app: `network-check.mjs`, and the desktop smoke test over CDP with its build config (`desktop-cdp-smoke.mjs`, `desktop-cdp.conf.json`) |
 | `scripts/` | Build and maintenance scripts: `fetch-wheels.mjs`, the Vite plugins, the CI check of the test report |
 | `examples/` | Sample files, such as `demo.dbc` |
-| `docs/` | Handover notes, spike reports, design notes and these decision records |
+| `docs/` | Working notes (spike reports, design notes) and these decision records |
 | `third_party/` | The corpus submodules (opendbc, model3dbc, canmatrix, cantools) |
 | `.github/workflows/` | CI (`ci.yml`) and the desktop builds (`desktop.yml`) |
 | the root | Config only: `package.json`, `package-lock.json`, `tsconfig.json`, `vite.config.ts`, `.gitignore`, `.gitattributes`, `.gitmodules`; and `README.md`, `BACKLOG.md` |

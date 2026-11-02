@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // @vitest-environment jsdom
-// The Compare page (W9) as the app holds it: the open file, a comparison
+// The Compare page as the app holds it: the open file, a comparison
 // with another version read from the page's file input, and what is shown
 // when reading that version fails. e2e/diff-check.mjs drives the same page
 // in a browser, drop target and clipboard included.

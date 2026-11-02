@@ -210,14 +210,14 @@ describe('accessibility (axe-core): no serious or critical issues', () => {
       await page.locator('tr.clickable', { hasText: 'EngineSpeed' }).click();
       await page.locator('.text-field input').fill('10 27 40 1F 00 64 00 00');
       await check('message with a signal and a payload');
-      // W11's editors are dialogs over the page.
+      // The editors are dialogs over the page.
       await page.locator('[data-testid="edt-edit-message"]').click();
       await check('message editor');
       await page.keyboard.press('Escape');
       await page.locator('[data-testid="edt-edit-signal"]').click();
       await check('signal editor');
       await page.keyboard.press('Escape');
-      // The header also holds W8's copy-as-code menu button.
+      // The header also holds the copy-as-code menu button.
       await page.locator('.page-header').getByRole('button', { name: combo.lang === 'de' ? 'Link kopieren' : 'Copy link' }).click();
       await page.waitForSelector('.snackbar');
       await check('message with the copy-link snackbar');
@@ -456,7 +456,7 @@ describe('focus order', () => {
   test('Tab follows the layout: below 600 px the theme toggle is in the top bar', async () => {
     const { context, page, problems } = await openApp({ viewport: 'narrow' });
     await openFile(page, 'demo.dbc', DEMO);
-    // Top bar (menu, open file, W11's Save as DBC, theme), then the navigation bar at the bottom.
+    // Top bar (menu, open file, Save as DBC, theme), then the navigation bar at the bottom.
     assert.deepEqual(await tabOrder(page, 11), [
       'Settings',
       'Open file',

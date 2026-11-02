@@ -142,7 +142,7 @@ describe('the stored DBC (localStorage, unchanged)', () => {
     expect(parseStoredDbc('null')).toBeUndefined();
     expect(parseStoredDbc('{"name":"a.dbc"}')).toBeUndefined();
     expect(parseStoredDbc('{"name":"a.dbc","text":"x","extra":1}')).toEqual({ name: 'a.dbc', text: 'x' });
-    // From W6's stored-file tests, which this module took over.
+    // From the earlier stored-file tests, which this module took over.
     expect(parseStoredDbc('"demo.dbc"')).toBeUndefined();
     expect(parseStoredDbc('["demo.dbc", "VERSION"]')).toBeUndefined();
     expect(parseStoredDbc(JSON.stringify({ name: { not: 'a string' }, text: 'VERSION ""' }))).toBeUndefined();

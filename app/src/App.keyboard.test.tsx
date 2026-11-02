@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // @vitest-environment jsdom
-// What W6 added to the app as a whole: "/" focuses the message search from any
+// Keyboard and layout in the app as a whole: "/" focuses the message search from any
 // view, a deep link pasted into the open app is followed, and on narrow screens
 // the list and the detail take turns with a back button between them.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';

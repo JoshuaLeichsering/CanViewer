@@ -396,7 +396,7 @@ describe('App: unsaved edits and what would replace them', () => {
         { name: 'Comfort', db: dbcOf('BU_: ECU\nBO_ 2 SeatHeating: 8 ECU\n SG_ T : 0|8@1+ (1,0) [0|255] "" ECU') },
       ],
     });
-  /** Renames the first message in the message editor (W11). */
+  /** Renames the first message in the message editor. */
   const renameFirstMessage = async (name: string) => {
     fireEvent.click(rail('Messages'));
     fireEvent.click(screen.getByTestId('edt-edit-message'));

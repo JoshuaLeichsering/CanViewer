@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // @vitest-environment jsdom
-// The Traces view (W10) as the app holds it: a log opened from the page, the
+// The Traces view as the app holds it: a log opened from the page, the
 // facts, the filters and the search, the table by mouse and keyboard, a
 // frame's detail with the way to its message, and leaving and coming back.
 // e2e/trc-traces-encoder.mjs drives the same view in a browser.

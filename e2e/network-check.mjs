@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-// Network and offline check for the Pyodide import worker (handover task 3).
+// Network and offline check for the Pyodide import worker.
 //
 // Drives a production build served by `vite preview` in Chromium and records
 // every request three ways: Playwright's request events (page, dedicated

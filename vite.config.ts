@@ -67,7 +67,7 @@ export default defineConfig({
       exclude: ['app/src/**/*.test.{ts,tsx}', 'app/src/test/**', 'app/src/**/*.d.ts'],
       reporter: ['text', 'text-summary', 'html', 'json-summary'],
       reportsDirectory: 'coverage',
-      // Minimums, enforced whenever coverage runs. The goal asks for at least
+      // Minimums, enforced whenever coverage runs. The project asks for at least
       // 90 % of the lines in app/src/lib and 80 % overall; these sit higher,
       // but below what the tests reached when they were set, so that losing
       // tests fails the run while new code has some room. They may only rise:

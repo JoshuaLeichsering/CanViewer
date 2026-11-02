@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-// End-to-end check of the Traces view and the frame encoder (W10), against a
+// End-to-end check of the Traces view and the frame encoder, against a
 // production build served by `vite preview`, in Chromium.
 //
 // It opens examples/demo.dbc, encodes frames in the message view (multiplexing

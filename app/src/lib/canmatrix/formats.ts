@@ -36,7 +36,7 @@ export const CANMATRIX_FORMATS: Record<string, CanmatrixFormat> = {
   xlsx: { importType: 'xlsx', packages: ['openpyxl'], label: 'XLSX' },
   // No .xls: canmatrix reads it with xlrd 1.2.0, whose license includes an
   // original-BSD advertising clause that is incompatible with the GPL
-  // (docs/handover/2026-11-01-license-audit.md). .xlsx covers Excel files.
+  // (docs/decisions/0005-license-gpl-2-or-later.md). .xlsx covers Excel files.
 };
 
 /** Extensions CanViewer's own DBC parser opens (DBC files are sometimes shipped as .txt). */

@@ -468,7 +468,4 @@ The two things CI does around the blocks: it marks the installed macOS app as do
 to remove; and it runs the Linux self-test under a virtual display (`xvfb-run`).
 
 Each release's notes link the run that built it, which is the run that checked this guide
-against its packages. Before the first release, the release workflow's dry run
-[41383813314](https://github.com/JoshuaLeichsering/CanViewer/actions/runs/41383813314)
-checked this guide against version 0.2.0's packages on all three systems, on
-2026-11-02.
+against its packages.

@@ -4,9 +4,9 @@
  * the pages in docs/ as files of the repository, and the documentation site.
  *
  * - Relative links are written as they work on GitHub. A link that leaves the
- *   site (to a source file, or to the notes in docs/handover/) becomes a link to
- *   that file on GitHub; a link to a page stays a page link. A relative link to
- *   a file that does not exist fails the build.
+ *   site (to a source file, or to the working notes in docs/spikes/ and
+ *   docs/design/) becomes a link to that file on GitHub; a link to a page stays
+ *   a page link. A relative link to a file that does not exist fails the build.
  * - Links to the published site itself (the web app under app/, or a page)
  *   become links within the site, so that a local or pull request build never
  *   leaves its own origin. The app is not part of the page router, so its links

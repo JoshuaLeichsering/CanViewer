@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // @vitest-environment jsdom
-// The two hooks that react to layout (W6): the search field's "/" hint gives
+// The two hooks that react to layout: the search field's "/" hint gives
 // way when the placeholder would not fit beside it, and a container that
 // scrolls sideways takes the keyboard focus. jsdom lays nothing out, so the
 // sizes, the text measurement and ResizeObserver are stubbed here; the browser
