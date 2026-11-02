@@ -83,6 +83,9 @@ export const DiffView = forwardRef<
   const [filter, setFilter] = useState<Filter>('all');
   const [expanded, setExpanded] = useState<ReadonlySet<number>>(new Set());
   const [copied, setCopied] = useState<'ok' | 'failed' | null>(null);
+  // The comparison as it is now: a swap while another version loads must not be lost.
+  const latest = useRef(comparison);
+  latest.current = comparison;
 
   const open = { name: fileName, db };
   const other = comparison && { name: comparison.name, db: comparison.db };
@@ -105,7 +108,7 @@ export const DiffView = forwardRef<
     setLoading({ name: file.name, stage: null });
     try {
       const otherDb = await readDatabaseFile(file, (stage) => setLoading({ name: file.name, stage }), cluster);
-      onComparison({ name: file.name, db: otherDb, openIsLater: comparison?.openIsLater ?? false });
+      onComparison({ name: file.name, db: otherDb, openIsLater: latest.current?.openIsLater ?? false });
       setFilter('all');
       setExpanded(new Set());
     } catch (e) {

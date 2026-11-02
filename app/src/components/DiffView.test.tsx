@@ -76,6 +76,22 @@ describe('DiffView', () => {
     expect(screen.queryByTestId('dif-versions')).toBeNull();
   });
 
+  it('keeps a swap made while another version is still loading', async () => {
+    let finish: (v: { clusters: Array<{ name: string; db: DbcDatabase }> }) => void = () => {};
+    importMock.mockImplementation(() => new Promise((resolve) => (finish = resolve)));
+    renderWithProviders(<Harness />);
+    choose(fileOf('demo-v2.dbc', DEMO_V2));
+    const versions = await screen.findByTestId('dif-versions');
+    const before = () => versions.querySelector('.dif-version-name')?.textContent ?? '';
+    choose(fileOf('later.kcd', '<NetworkDefinition/>'));
+    await waitFor(() => expect(importMock).toHaveBeenCalledOnce());
+    fireEvent.click(screen.getByRole('button', { name: 'Swap versions' }));
+    expect(before()).toContain('demo-v2.dbc');
+    finish({ clusters: [{ name: 'CAN', db: parseDbc('BU_: ECU\nBO_ 1 Later: 8 ECU\n') }] });
+    // The open file stays the later version, as the swap made it.
+    await waitFor(() => expect(before()).toContain('later.kcd'));
+  });
+
   it('compares the cluster the open file shows when the other version has it', async () => {
     const cluster = (name: string, message: string) => ({
       name,
