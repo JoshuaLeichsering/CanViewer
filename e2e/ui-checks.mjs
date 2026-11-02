@@ -6,8 +6,9 @@
 //   encoder, a replayed log with a line not read, a comparison, an import's
 //   progress, source note and cluster picker, the export and copy-as menus, and
 //   the Save as DBC, discard and About dialogs;
-// - About CanViewer: it opens by keyboard, and the license files and notices
-//   it links resolve inside the app's origin;
+// - About CanViewer: it opens by keyboard, the license files and notices it
+//   links resolve inside the app's origin, and each of them opens offline
+//   after one visit;
 // - keyboard: "/" focuses the message search (and closes the settings menu),
 //   the arrow keys, Home and End move through the lists, table rows and network
 //   nodes open with Enter, and the focus order follows the layout;
@@ -17,7 +18,8 @@
 //   a DBC (localStorage) or an imported file (IndexedDB);
 // - the narrow layout: nothing scrolls sideways at 390 px, comments keep a
 //   readable width, every top-bar button can be seen and clicked, no label of
-//   the navigation bar is cut off, and the list and the detail take turns;
+//   the navigation bar is cut off or off screen at 390, 375, 360 or 320 px
+//   with any destination active, and the list and the detail take turns;
 // - deep links pasted into the open app, and the favicon.
 // Every check also fails on a page error or a failed same-origin request.
 //
@@ -839,6 +841,50 @@ describe('About CanViewer', () => {
     await dialog.waitFor({ state: 'detached' });
     assert.equal(await menuButton.evaluate((el) => el === document.activeElement), true);
     assert.deepEqual(problems, []);
+    await context.close();
+  });
+
+  test('each of its documents opens offline after one visit, from the service worker\'s cache', async () => {
+    // A visit online installs the service worker, which precaches the app
+    // with the license files and notices; none of them is opened online.
+    const context = await browser.newContext({ viewport: VIEWPORTS.desktop, serviceWorkers: 'allow' });
+    context.setDefaultTimeout(15_000);
+    await context.addInitScript(() => localStorage.setItem('canviewer.lang', 'en'));
+    const page = await context.newPage();
+    const errors = [];
+    page.on('pageerror', (e) => errors.push(`page error: ${e.message}`));
+    await page.goto(base);
+    await page.evaluate(() => navigator.serviceWorker.ready);
+    await page.reload();
+    await page.evaluate(() => navigator.serviceWorker.ready);
+    assert.equal(await page.evaluate(() => Boolean(navigator.serviceWorker.controller)), true, 'the service worker controls the page');
+
+    await context.setOffline(true);
+    // The network is gone: a file the service worker does not hold fails.
+    assert.match(await page.evaluate(() => fetch('offline-probe', { cache: 'no-store' }).then((r) => `HTTP ${r.status}`, (e) => String(e))), /TypeError/);
+    await page.reload();
+    await page.waitForSelector('.welcome');
+    await page.locator('.rail-icon-btn[aria-expanded]').click();
+    await page.getByRole('menuitem', { name: 'About CanViewer' }).click();
+    await page.getByTestId('abt-dialog').waitFor();
+    const expected = [/Copyright \(C\)/, /Version 2, June 1991/, /Version 3, 29 June 2007/, /# Third-party notices/];
+    const docs = page.getByTestId('abt-doc');
+    assert.equal(await docs.count(), expected.length);
+    for (const [i, text] of expected.entries()) {
+      await docs.nth(i).click();
+      // The document is shown below the list, or an alert says why it is not.
+      const outcome = await page.waitForFunction(
+        (source) => {
+          const alert = document.querySelector('[data-testid=abt-dialog] [role=alert]');
+          if (alert) return `failed: ${alert.textContent}`;
+          const shown = document.querySelector('[data-testid=abt-text]')?.textContent ?? '';
+          return new RegExp(source).test(shown) && 'shown';
+        },
+        text.source,
+      );
+      assert.equal(await outcome.jsonValue(), 'shown', `document ${i}`);
+    }
+    assert.deepEqual(errors, []);
     await context.close();
   });
 });

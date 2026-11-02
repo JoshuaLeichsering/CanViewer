@@ -12,8 +12,12 @@
  *
  * serviceWorker: emits sw.js (from app/src/service-worker.js) with the list of
  * built files to precache, so the app opens offline after the first visit.
- * The Pyodide files are not precached: they are cached when first used, so a
- * DBC-only visitor never downloads them.
+ * That list includes the license files and notices (scripts/vite-legal.ts),
+ * which the About dialog opens. The Pyodide files are not precached: they are
+ * cached when first used, so a DBC-only visitor never downloads them. The
+ * worker's version is a hash of the precached files' names and contents, so
+ * that a changed file whose name stays the same (index.html, the notices)
+ * still replaces the cached copy.
  *
  * favicon: the browser tab's icon, made from desktop/app-icon.svg at build
  * time (and served by the dev server), so that it cannot drift from the
@@ -159,12 +163,14 @@ export function serviceWorker(): Plugin {
     apply: 'build',
     enforce: 'post',
     generateBundle(_options, bundle) {
-      const precache = ['./', ...Object.keys(bundle).filter((f) => !f.startsWith('pyodide/'))].sort();
-      const version = createHash('sha256')
-        .update(precache.join('\n'))
-        .update(JSON.stringify(lock))
-        .digest('hex')
-        .slice(0, 12);
+      const files = Object.keys(bundle).filter((f) => !f.startsWith('pyodide/')).sort();
+      const precache = ['./', ...files].sort();
+      const hash = createHash('sha256').update(precache.join('\n'));
+      for (const f of files) {
+        const item = bundle[f];
+        hash.update(`\0${f}\0`).update(item.type === 'chunk' ? item.code : item.source);
+      }
+      const version = hash.update(JSON.stringify(lock)).digest('hex').slice(0, 12);
       const pyodideVersion = createHash('sha256').update(JSON.stringify(lock)).digest('hex').slice(0, 12);
       const source = readFileSync(join(root, 'app/src/service-worker.js'), 'utf8')
         .replace('__SHELL_VERSION__', version)

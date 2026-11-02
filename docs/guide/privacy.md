@@ -59,7 +59,8 @@ machine (see the [developer guide](../develop/index.md)).
 ## Offline use
 
 - **Web app**: after the first visit, a service worker keeps the app's files in your
-  browser, so the app opens and reads DBC files without a network. The Python runtime is
+  browser, so the app opens and reads DBC files without a network, and *About
+  CanViewer* still shows the license texts and the third-party notices. The Python runtime is
   cached the first time you open a non-DBC file; after that, imports work offline too.
   A browser that has never imported a file cannot do so offline: the import then fails
   with a message, and the app keeps working for DBC files.

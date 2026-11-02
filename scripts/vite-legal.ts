@@ -14,13 +14,13 @@
  * - Every file under pyodide/ must be covered: the runtime files by the
  *   pyodide row, each wheel by its file name.
  * - CanViewer's license files (COPYRIGHT.txt, LICENSE.txt, LICENSE-GPL-3.0.txt,
- *   from LICENSE_FILES) and THIRD_PARTY_NOTICES.md are written to dist/ after
- *   the bundle, so the service worker does not precache them: they cost a
- *   visitor nothing until opened (the About dialog links them).
+ *   from LICENSE_FILES) and THIRD_PARTY_NOTICES.md are added to the bundle,
+ *   so that the service worker precaches them with the app shell: the About
+ *   dialog opens each of them offline too, as it does in the desktop app.
  *
  * Regenerate the notices with `node scripts/third-party-notices.mjs`.
  */
-import { copyFileSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Plugin } from 'vite';
@@ -48,13 +48,9 @@ function hasRow(notices: string, name: string, version?: string) {
 }
 
 export function legalFiles({ emit }: { emit: boolean }): Plugin {
-  let outDir = '';
   return {
     name: 'canviewer:legal-files',
     apply: 'build',
-    configResolved(config) {
-      outDir = config.build.outDir;
-    },
     generateBundle(_options, bundle) {
       const notices = readFileSync(NOTICES, 'utf8');
       const packages = new Set<string>();
@@ -90,11 +86,13 @@ export function legalFiles({ emit }: { emit: boolean }): Plugin {
       if (problems.length) {
         this.error(`${problems.join('\n')}\nRegenerate the notices: node scripts/third-party-notices.mjs`);
       }
-    },
-    writeBundle() {
       if (!emit) return;
-      for (const name of LICENSE_FILES) copyFileSync(join(root, name), join(outDir, `${name}.txt`));
-      copyFileSync(NOTICES, join(outDir, 'THIRD_PARTY_NOTICES.md'));
+      // After the checks above, which these files are not part of. The
+      // service worker plugin runs later (enforce: 'post') and precaches them.
+      for (const name of LICENSE_FILES) {
+        this.emitFile({ type: 'asset', fileName: `${name}.txt`, source: readFileSync(join(root, name)) });
+      }
+      this.emitFile({ type: 'asset', fileName: 'THIRD_PARTY_NOTICES.md', source: notices });
     },
   };
 }

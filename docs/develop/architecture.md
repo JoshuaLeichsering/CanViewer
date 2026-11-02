@@ -95,10 +95,11 @@ from `localStorage`, an imported file from IndexedDB, with the cluster it showed
   [`styles.css`](../../app/src/styles.css)
   ([decision record 0004](../decisions/0004-material-3-interface.md)).
 - **Offline**: in production builds a service worker
-  ([`service-worker.js`](../../app/src/service-worker.js)) precaches the app shell and
+  ([`service-worker.js`](../../app/src/service-worker.js)) precaches the app shell,
+  with the license files and the third-party notices that *About CanViewer* opens, and
   caches the Pyodide files when they are first fetched. It is generated at build time
   by a plugin in [`vite-plugins.ts`](../../scripts/vite-plugins.ts), which fills in the
-  list of files to precache.
+  list of files to precache and a version made from their contents.
 
 ## The desktop shell
 

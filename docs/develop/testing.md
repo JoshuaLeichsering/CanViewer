@@ -128,7 +128,7 @@ has the commands to run them:
 | Check | What it covers |
 |---|---|
 | `npm run e2e` ([`e2e/flows/`](../../e2e/flows/)) | Playwright flows: open a file, navigate, decode, switch theme and language, deep links, offline reload. The server is `vite preview` on `E2E_PORT` (default 4180). A flow that needs other browser options, a locale say, sets them with `test.use({ ... })`, since the request guard watches only the fixture's context. |
-| [`ui-checks.mjs`](../../e2e/ui-checks.mjs) | axe-core in both themes and both languages, at desktop and phone width; the keyboard, the error recovery screen, the narrow layout |
+| [`ui-checks.mjs`](../../e2e/ui-checks.mjs) | axe-core in both themes and both languages, at desktop and phone width; the keyboard, the error recovery screen, the narrow layout (navigation labels down to 320 px), About CanViewer online and offline |
 | [`import-ui.test.mjs`](../../e2e/import-ui.test.mjs) | a file of every canmatrix format by the file dialog and by drag and drop, the loading stages on a cold start, the cluster choice, the source note, restoring on reload, the translated failures |
 | [`signal-table.mjs`](../../e2e/signal-table.mjs), [`large-database.mjs`](../../e2e/large-database.mjs) | sorting and filtering the signal table; a generated database of 5000 messages within time budgets |
 | [`export-check.mjs`](../../e2e/export-check.mjs) | every export and copy equals the pinned file in `app/src/lib/export/pinned/` |

@@ -2,8 +2,9 @@
 /* CanViewer service worker. Built into dist/sw.js by scripts/vite-plugins.ts,
  * which fills in the placeholders. Production builds only.
  *
- * - The app shell (index.html and the built JS/CSS, worker included) is
- *   precached on install, so the app opens offline after the first visit.
+ * - The app shell (index.html and the built JS/CSS, worker included, with the
+ *   license files and notices the About dialog opens) is precached on install,
+ *   so the app opens offline after the first visit.
  * - Files under pyodide/ (runtime and wheels, ~16 MB) are cached the first time
  *   they are fetched, i.e. on the first non-DBC import, so an import works
  *   offline once one has been done online.
