@@ -29,7 +29,7 @@ below expect them in your Downloads folder.
 |---|---|
 | Windows 10 and 11, 64-bit | `CanViewer_0.1.0_x64-setup.exe` installs for your user account and needs no administrator rights. `CanViewer_0.1.0_x64_en-US.msi` installs for all users of the computer, needs administrator rights, and suits IT departments. Take one of them. |
 | macOS, Apple silicon and Intel | `CanViewer_0.1.0_universal.dmg` |
-| Linux: Debian, Ubuntu and their derivatives, 64-bit (x86-64) | `CanViewer_0.1.0_amd64.deb` |
+| Linux: a `.deb`, built and tested on Ubuntu, 64-bit (x86-64) | `CanViewer_0.1.0_amd64.deb` |
 
 Each release also carries:
 - `SHA256SUMS`: the SHA-256 checksum of every file in the release, so that you can check
@@ -326,6 +326,12 @@ CANVIEWER_SMOKE_FILES="$PWD/demo.dbc" canviewer
 
 Download the new release, check it, and install it as in step 2. `apt` replaces the
 version you have, and your settings are kept.
+
+If you installed a release candidate (a version such as `0.2.0-rc.1`), `apt` reports the
+final release of the same version (`0.2.0`) as a downgrade and asks whether to go on:
+the package keeps the version as written, and Debian's version rules sort a part after
+a hyphen as a revision, so `0.2.0-rc.1` counts as later than `0.2.0`. Answering yes is
+right, or `sudo apt remove can-viewer` first.
 
 ### 6. Uninstall
 

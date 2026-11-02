@@ -49,7 +49,7 @@ export const PACKAGES = {
     { dir: 'msi', match: /\.msi$/, name: (v) => `CanViewer_${v}_x64_en-US.msi`, label: 'Windows 10 and 11, x64: Windows Installer package for all users (needs administrator rights)' },
   ],
   macos: [{ dir: 'dmg', match: /\.dmg$/, name: (v) => `CanViewer_${v}_universal.dmg`, label: 'macOS, Apple silicon and Intel (universal)' }],
-  linux: [{ dir: 'deb', match: /\.deb$/, name: (v) => `CanViewer_${v}_amd64.deb`, label: 'Linux, Debian and Ubuntu and their derivatives, x86-64' }],
+  linux: [{ dir: 'deb', match: /\.deb$/, name: (v) => `CanViewer_${v}_amd64.deb`, label: 'Linux, x86-64: a .deb, built and tested on Ubuntu' }],
 };
 
 /** Tauri's bundle directory for each system's build (macOS builds the universal target). */

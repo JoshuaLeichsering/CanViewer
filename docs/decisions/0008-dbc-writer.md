@@ -9,7 +9,8 @@ CanViewer is getting editing: message and signal properties can be changed in th
 and the result is saved with *Save as DBC*. Saving is only trustworthy if writing does not
 change the database behind the user's back. The project's first intention is that
 CanViewer shows what the file says, no less and no more, and that a loss is visible,
-never silent (see [the goal](../handover/2026-11-01-goal.md), W11).
+never silent (see [the goal](../handover/2026-11-01-goal.md) and its section on
+editing).
 
 The TypeScript parser (`app/src/lib/dbc/parser.ts`) is in charge of `.dbc` files. It
 reads a file into a `DbcDatabase`, the model every view works on. It keeps no concrete

@@ -8,7 +8,8 @@
 CanViewer is to be installable from a GitHub Release on macOS, Windows and Linux, by
 following one runbook, and the packaged app is to do everything the web build does,
 offline, ARXML import included ([the goal](../handover/2026-11-01-goal.md), intention 4
-and W4). It must make no network requests at all (intention 2). The owner decided that
+and its section on the desktop packages). It must make no network requests at all
+(intention 2). The owner decided that
 the builds stay unsigned, that Linux ships a `.deb` and no AppImage, that the bundle
 identifier stays `io.github.joshualeichsering.canviewer`, and that the placeholder icon
 stays.
@@ -104,8 +105,7 @@ That check runs in Chromium in CI on every pull request (`ci.yml`). In the real 
 the app's self-test (`desktop/src/smoke.js`) starts its own `blob:` worker and makes the
 same fetch, and passes only if the policy blocks it. On Windows, the CDP check makes that
 fetch inside the app's own worker as well. WebKit's part of this (macOS and Linux) is
-verified only by the desktop workflow's run, which cannot happen in the Linux sandbox
-where this was written.
+verified by the desktop workflow's runs on macOS and Linux.
 
 **The web build keeps the plain URL.** It sends no policy for a worker to inherit, so a
 `blob:` start would gain nothing there. And its service worker must serve the worker's
@@ -173,10 +173,10 @@ the package, which the license audit advised against.
   them against `SHA256SUMS`.
 - It never changes an existing release. A failed draft or pre-release is deleted by hand
   (`gh release delete <tag> --yes` keeps the tag), and the run is repeated.
-- A release must bundle `LICENSE` and `THIRD_PARTY_NOTICES.md` as Tauri resources
+- A release must bundle `THIRD_PARTY_NOTICES.md` and CanViewer's license files
+  (`COPYRIGHT`, `LICENSE`, `LICENSE-GPL-3.0`) as Tauri resources
   (`scripts/desktop-release.mjs config --release`, which fails without them). Other
-  builds bundle whichever of them exist. Both files come from W5, which Phase 2 merges
-  before W4.
+  builds bundle whichever of them exist.
 - **Pre-release versions and the MSI.** Windows Installer accepts only numeric versions,
   so the overlay gives WiX `X.Y.Z.N` for `X.Y.Z-rc.N`. Windows Installer compares only
   the first three fields, so a release candidate installed from the `.msi` must be
