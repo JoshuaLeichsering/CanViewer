@@ -263,6 +263,13 @@ When the owner obtains certificates (a paid service, his decision):
     worker.
   - A `<meta>` CSP in `index.html`. Rejected: a worker loaded from its own URL does not
     inherit it either.
+  - A custom protocol handler in Rust that adds the header to every response. Rejected:
+    it would replace Tauri's asset protocol with code of our own, for what the `blob:`
+    start gives with two lines.
+  - Start the worker from a `data:` URL. Rejected: its origin would be opaque, and
+    `'self'` would no longer match the self-hosted runtime.
+  - Document it and change nothing. Rejected: the change cost nothing measurable, and
+    turns a promise into an enforced rule.
 - **A `<meta>` CSP for the web app's page itself**, which GitHub Pages would honour
   although it cannot send the header. Not adopted, for now:
   - One `dist/` serves the web app and every desktop package (`frontendDist`), and the
@@ -281,13 +288,6 @@ When the owner obtains certificates (a paid service, his decision):
   Worth revisiting if the web build moves its worker to the `blob:` start (which needs
   a check that every browser's service worker serves `blob:` workers offline), or if
   the desktop packages get their own HTML for another reason.
-  - A custom protocol handler in Rust that adds the header to every response. Rejected:
-    it would replace Tauri's asset protocol with code of our own, for what the `blob:`
-    start gives with two lines.
-  - Start the worker from a `data:` URL. Rejected: its origin would be opaque, and
-    `'self'` would no longer match the self-hosted runtime.
-  - Document it and change nothing. Rejected: the change cost nothing measurable, and
-    turns a promise into an enforced rule.
 - **No LTO at all**, as in the spike's later runs. Rejected for releases, which give up
   the 4.5 % for build time saved only on a rare, cold build. Kept for pull request
   builds.
