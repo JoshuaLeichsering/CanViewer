@@ -28,8 +28,9 @@
 # tested here like any other.
 #
 # Windows and macOS minutes are expensive, so this runs only for pull requests
-# that change the desktop shell, its checks, its runbook or this workflow, when
-# release.yml calls it (tags), and on demand.
+# that change the desktop shell, its checks, its runbook, what every package
+# bundles (the license files and the notices), the release workflow or this
+# one, when release.yml calls it (tags), and on demand.
 name: Desktop (Tauri)
 
 on:
@@ -39,11 +40,18 @@ on:
       - e2e/desktop-*
       - app/src/lib/desktop.ts
       - app/src/lib/canmatrix/start-worker.ts
+      - app/src/lib/canmatrix/client.ts
       - scripts/desktop-release.mjs
       - scripts/release-version.mjs
       - scripts/runbook.mjs
+      - scripts/license-policy.mjs
       - docs/guide/install.md
+      - COPYRIGHT
+      - LICENSE
+      - LICENSE-GPL-3.0
+      - THIRD_PARTY_NOTICES.md
       - .github/workflows/desktop.yml
+      - .github/workflows/release.yml
   workflow_dispatch:
     inputs:
       release:

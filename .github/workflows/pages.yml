@@ -5,40 +5,17 @@
 # app as it will be published, and crawls the whole site in Chromium; both
 # browser checks fail on any request outside the origin. Only a push to main
 # deploys, and only once the repository is public: GitHub Pages for a private
-# repository needs a paid plan. Pull requests build and check, nothing more,
-# and only when they touch what the site is built from.
+# repository needs a paid plan. Pull requests build and check, nothing more.
+# There is no path filter: the job runs on Linux only, and what it is built and
+# checked from reaches further than the site's own sources (the network check
+# opens files from the canmatrix submodule, the site's icon is the desktop
+# app's), so every change runs it.
 name: Pages
 
 on:
   push:
     branches: [main]
-    paths:
-      - 'app/**'
-      - 'docs/**'
-      - 'e2e/**'
-      - 'examples/**'
-      - 'scripts/**'
-      - 'desktop/app-icon.svg'
-      - '*.md'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'vite.config.ts'
-      - 'tsconfig.json'
-      - '.github/workflows/pages.yml'
   pull_request:
-    paths:
-      - 'app/**'
-      - 'docs/**'
-      - 'e2e/**'
-      - 'examples/**'
-      - 'scripts/**'
-      - 'desktop/app-icon.svg'
-      - '*.md'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'vite.config.ts'
-      - 'tsconfig.json'
-      - '.github/workflows/pages.yml'
   workflow_dispatch:
 
 permissions:

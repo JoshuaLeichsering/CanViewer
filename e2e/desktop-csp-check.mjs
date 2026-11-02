@@ -202,7 +202,11 @@ await selfTest.addInitScript(() => {
 });
 await selfTest.addInitScript({ content: smoke });
 await smokePage.goto(`${origin}/`);
-const smokeResult = await Promise.race([reported, new Promise((r) => setTimeout(() => r(undefined), 300_000))]);
+// The timer is cleared once the report is in: left running, it would keep
+// Node alive for the rest of the 300 s after the check has passed.
+let smokeTimer;
+const smokeResult = await Promise.race([reported, new Promise((r) => (smokeTimer = setTimeout(() => r(undefined), 300_000)))]);
+clearTimeout(smokeTimer);
 const smokeReport = smokeResult ? JSON.parse(smokeResult.report) : undefined;
 if (smokeReport) {
   for (const f of smokeReport.files) say(`self-test ${f.file}: ${f.ms} ms, opened: ${f.opened} -> ${f.info}`);

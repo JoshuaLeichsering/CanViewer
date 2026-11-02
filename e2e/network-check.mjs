@@ -25,12 +25,14 @@
 //     http://localhost:4173/ <out-dir> <first.arxml> <second.arxml> <file.dbc> dist
 import { mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import { basename, join } from 'node:path';
+import { basename, join, resolve } from 'node:path';
 
 // require() rather than import, so that a global install found via NODE_PATH works too.
 const { chromium } = createRequire(import.meta.url)('playwright');
 
-const [, , appUrl, outDir, arxml1, arxml2, dbc, distDir] = process.argv;
+const [, , appUrl, outArg, arxml1, arxml2, dbc, distDir] = process.argv;
+// Absolute, for Chromium's --log-net-log, which does not resolve ../ paths.
+const outDir = resolve(outArg);
 mkdirSync(outDir, { recursive: true });
 const origin = new URL(appUrl).origin;
 
