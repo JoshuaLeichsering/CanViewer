@@ -20,6 +20,8 @@
 //   readable width, every top-bar button can be seen and clicked, no label of
 //   the navigation bar is cut off or off screen at 390, 375, 360 or 320 px
 //   with any destination active, and the list and the detail take turns;
+// - page scroll: the page itself never scrolls, in any view, from 390 px wide
+//   to the desktop app's smallest window: only the list and the detail do;
 // - deep links pasted into the open app, and the favicon.
 // Every check also fails on a page error or a failed same-origin request.
 //
@@ -803,6 +805,49 @@ describe('narrow layout (390 px)', () => {
     await page.keyboard.press('Enter');
     assert.equal(await page.locator('.list-pane').isVisible(), false);
     assert.equal(await heading(page), 'BrakeData');
+    assert.deepEqual(problems, []);
+    await context.close();
+  });
+});
+
+/** How far the page itself scrolls down (0 when it does not). */
+const pageOverflow = (page) => page.evaluate(() => document.documentElement.scrollHeight - document.documentElement.clientHeight);
+
+describe('page scroll', () => {
+  test('the page itself never scrolls, in any view and at any window size: only the list and the detail do', async () => {
+    // The desktop app's default and smallest windows (desktop/tauri.conf.json),
+    // besides the desktop and narrow sizes of the other checks.
+    const sizes = [VIEWPORTS.desktop, { width: 1280, height: 820 }, { width: 720, height: 480 }, VIEWPORTS.narrow];
+    const views = {
+      overview: '',
+      message: '#msg=256',
+      'message with a signal': '#msg=256/EngineSpeed',
+      network: '#graph',
+      node: '#node=ECM',
+      'value table': '#vt=GearPositions',
+      compare: '#diff',
+      traces: '#trace',
+    };
+    const { context, page, problems } = await openApp();
+    const scrolls = [];
+    const measure = async (state) => {
+      for (const size of sizes) {
+        await page.setViewportSize(size);
+        await frames(page);
+        const px = await pageOverflow(page);
+        if (px > 0) scrolls.push(`${state} at ${size.width} × ${size.height}: ${px} px`);
+      }
+    };
+    await measure('welcome');
+    await openFile(page, 'demo.dbc', DEMO);
+    for (const [view, hash] of Object.entries(views)) {
+      await page.evaluate((h) => {
+        location.hash = h;
+      }, hash);
+      await frames(page);
+      await measure(view);
+    }
+    assert.deepEqual(scrolls, [], 'the page scrolls');
     assert.deepEqual(problems, []);
     await context.close();
   });

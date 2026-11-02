@@ -45,6 +45,8 @@
     gap: 0;
     padding: 0;
     background: var(--sc);
+    /* The bar fits by width (below); its buttons in the top bar are outside it. */
+    overflow: visible;
   }
   /* Seven destinations share 375 px or more: each takes the width its label needs
      (Material's small label size, without the letter spacing), and the rest
