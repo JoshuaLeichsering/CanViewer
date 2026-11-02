@@ -40,7 +40,7 @@ in the worker chunk, which is not used because `packageBaseUrl` is always set.
 Material redesign the script waits on the document title and the `[role=alert]` snackbar
 instead of the old toolbar's `.file-info`; the run quoted below predates that change.) Chromium was
 started with `--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE localhost`, so any other
-host would have failed to resolve. The run below is the build of commit `4af2d5c`.
+host would have failed to resolve. The run below is the build of the spike's branch (#5) at the time.
 
 ```sh
 npm run build

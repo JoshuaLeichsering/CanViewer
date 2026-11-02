@@ -104,6 +104,7 @@ const develop: DefaultTheme.SidebarItem[] = [
       { text: 'Tests and baselines', link: '/develop/testing' },
       { text: 'Documentation', link: '/develop/documentation' },
       { text: 'Release process', link: '/develop/release' },
+      { text: 'Going public', link: '/develop/go-public' },
       { text: 'The two ARXML readers', link: '/develop/arxml-readers' },
     ],
   },

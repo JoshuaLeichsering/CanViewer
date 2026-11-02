@@ -48,7 +48,7 @@ easy to drive on a CI runner. So the app tests itself:
 
 ## Results
 
-All from run 41313248134 (commit `6f74f1d`). The self-test reports are quoted from the
+All from run 41313248134 (the head of #10 at the time). The self-test reports are quoted from the
 job logs.
 
 | | Windows | macOS | Linux |
@@ -129,7 +129,7 @@ only for this check, whose window config adds the flag (`e2e/desktop-cdp.conf.js
 `--no-bundle`), and drives that one.
 
 In run [41314152587](https://github.com/JoshuaLeichsering/CanViewer/actions/runs/41314152587)
-(commit `af67d86`), all three jobs passed again, and the variant was driven over CDP:
+(a later head of #10), all three jobs passed again, and the variant was driven over CDP:
 
 ```
 app page: http://tauri.localhost/

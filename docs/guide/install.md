@@ -27,9 +27,9 @@ below expect them in your Downloads folder.
 
 | System | Package |
 |---|---|
-| Windows 10 and 11, 64-bit | `CanViewer_0.2.0-rc.1_x64-setup.exe` installs for your user account and needs no administrator rights. `CanViewer_0.2.0-rc.1_x64_en-US.msi` installs for all users of the computer, needs administrator rights, and suits IT departments. Take one of them. |
-| macOS, Apple silicon and Intel | `CanViewer_0.2.0-rc.1_universal.dmg` |
-| Linux: a `.deb`, built and tested on Ubuntu, 64-bit (x86-64) | `CanViewer_0.2.0-rc.1_amd64.deb` |
+| Windows 10 and 11, 64-bit | `CanViewer_0.2.0_x64-setup.exe` installs for your user account and needs no administrator rights. `CanViewer_0.2.0_x64_en-US.msi` installs for all users of the computer, needs administrator rights, and suits IT departments. Take one of them. |
+| macOS, Apple silicon and Intel | `CanViewer_0.2.0_universal.dmg` |
+| Linux: a `.deb`, built and tested on Ubuntu, 64-bit (x86-64) | `CanViewer_0.2.0_amd64.deb` |
 
 Each release also carries:
 - `SHA256SUMS`: the SHA-256 checksum of every file in the release, so that you can check
@@ -73,17 +73,17 @@ does not match, delete the file and download it again.
 
 ### 2. Install
 
-Double-click `CanViewer_0.2.0-rc.1_x64-setup.exe` (or the `.msi`).
+Double-click `CanViewer_0.2.0_x64-setup.exe` (or the `.msi`).
 
 Windows SmartScreen may show **Windows protected your PC**. Click **More info**, check
-that the app is `CanViewer_0.2.0-rc.1_x64-setup.exe`, then click **Run anyway**. The installer
+that the app is `CanViewer_0.2.0_x64-setup.exe`, then click **Run anyway**. The installer
 asks no questions beyond the usual ones; the `.msi` asks for administrator rights.
 
 Or install from PowerShell, without any dialog. For your user account:
 
 <!-- runbook: windows-nsis-install -->
 ```powershell
-$p = Start-Process .\CanViewer_0.2.0-rc.1_x64-setup.exe -ArgumentList '/S' -Wait -PassThru
+$p = Start-Process .\CanViewer_0.2.0_x64-setup.exe -ArgumentList '/S' -Wait -PassThru
 if ($p.ExitCode -ne 0) { throw "the installer exited with code $($p.ExitCode)" }
 ```
 
@@ -91,7 +91,7 @@ For all users, in a PowerShell started with **Run as administrator**:
 
 <!-- runbook: windows-msi-install -->
 ```powershell
-$msi = (Resolve-Path .\CanViewer_0.2.0-rc.1_x64_en-US.msi).Path
+$msi = (Resolve-Path .\CanViewer_0.2.0_x64_en-US.msi).Path
 $p = Start-Process msiexec.exe -ArgumentList "/i `"$msi`" /qn" -Wait -PassThru
 if ($p.ExitCode -ne 0) { throw "msiexec exited with code $($p.ExitCode)" }
 ```
@@ -159,7 +159,7 @@ If you installed with the `.msi` (as administrator, in the folder with the `.msi
 
 <!-- runbook: windows-msi-uninstall -->
 ```powershell
-$msi = (Resolve-Path .\CanViewer_0.2.0-rc.1_x64_en-US.msi).Path
+$msi = (Resolve-Path .\CanViewer_0.2.0_x64_en-US.msi).Path
 $p = Start-Process msiexec.exe -ArgumentList "/x `"$msi`" /qn" -Wait -PassThru
 if ($p.ExitCode -ne 0) { throw "msiexec exited with code $($p.ExitCode)" }
 ```
@@ -192,7 +192,7 @@ delete the file and download it again.
 
 ### 2. Install
 
-Double-click `CanViewer_0.2.0-rc.1_universal.dmg`, and drag **CanViewer** onto the
+Double-click `CanViewer_0.2.0_universal.dmg`, and drag **CanViewer** onto the
 **Applications** folder in the window that opens. Then eject the disk image (in Finder's
 sidebar, click ⏏ next to **CanViewer**).
 
@@ -201,7 +201,7 @@ Or in Terminal:
 <!-- runbook: macos-install -->
 ```zsh
 cd ~/Downloads
-hdiutil attach CanViewer_0.2.0-rc.1_universal.dmg -nobrowse -mountpoint /Volumes/CanViewer
+hdiutil attach CanViewer_0.2.0_universal.dmg -nobrowse -mountpoint /Volumes/CanViewer
 cp -R /Volumes/CanViewer/CanViewer.app /Applications/
 hdiutil detach /Volumes/CanViewer
 ```
@@ -304,7 +304,7 @@ delete the file and download it again.
 <!-- runbook: linux-install -->
 ```sh
 cd ~/Downloads
-sudo apt install ./CanViewer_0.2.0-rc.1_amd64.deb
+sudo apt install ./CanViewer_0.2.0_amd64.deb
 ```
 
 The `./` matters: it tells `apt` to install the file, not to look for a package of that
