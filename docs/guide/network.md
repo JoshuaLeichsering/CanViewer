@@ -4,6 +4,10 @@
 that sends or receives a message is a circle, and every sender-to-receiver relation is
 an arrow.
 
+The graph fits the window: it is as large as the space beside the details allows, in
+width and in height, and the details scroll on their own when they are longer. On a
+phone the graph keeps a readable size instead, and you swipe it sideways.
+
 ![The network of examples/demo.dbc, with the ECM selected](./images/network-en-light.webp#gh-light-mode-only)
 ![The network of examples/demo.dbc, with the ECM selected](./images/network-en-dark.webp#gh-dark-mode-only)
 

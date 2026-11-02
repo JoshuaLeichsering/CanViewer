@@ -174,114 +174,116 @@ export function NetworkGraph({
   });
 
   return (
-    <div>
+    <div className="network-view">
       {header}
       <div className="row">
         <div className="card graph-card" ref={cardRef}>
-          <div className="graph-wrap">
-            <svg
-              className="netgraph"
-              viewBox={`0 0 ${W} ${H}`}
-              onClick={() => {
-                setSelectedNode(null);
-                setSelectedEdge(null);
-              }}
-            >
-              {/* Arrowheads in graph units, so that they keep their size on thick lines. */}
-              <defs>
-                <marker id="ng-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
-                  <path d="M 0 0 L 10 5 L 0 10 z" className="ng-arrow" />
-                </marker>
-                <marker id="ng-arrow-hi" viewBox="0 0 10 10" refX="8" refY="5" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
-                  <path d="M 0 0 L 10 5 L 0 10 z" className="ng-arrow hi" />
-                </marker>
-              </defs>
-              {edges.map(({ link, geo, state, width }) => (
-                <g key={`${link.from}\u0000${link.to}`}>
-                  <path
-                    d={geo.d}
-                    className="ng-hit"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      selectEdge(link);
-                    }}
-                  >
-                    <title>
-                      {tn('edgeTitleOne', 'edgeTitleMany', link.messages.length, { from: link.from, to: link.to })}
-                    </title>
-                  </path>
-                  <path
-                    d={geo.d}
-                    className={`ng-edge ${state}`}
-                    strokeWidth={state === 'hi' ? Math.max(width, 2) : width}
-                    markerEnd={state === 'hi' ? 'url(#ng-arrow-hi)' : 'url(#ng-arrow)'}
-                  />
-                </g>
-              ))}
+          <div className="graph-area">
+            <div className="graph-wrap">
+              <svg
+                className="netgraph"
+                viewBox={`0 0 ${W} ${H}`}
+                onClick={() => {
+                  setSelectedNode(null);
+                  setSelectedEdge(null);
+                }}
+              >
+                {/* Arrowheads in graph units, so that they keep their size on thick lines. */}
+                <defs>
+                  <marker id="ng-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+                    <path d="M 0 0 L 10 5 L 0 10 z" className="ng-arrow" />
+                  </marker>
+                  <marker id="ng-arrow-hi" viewBox="0 0 10 10" refX="8" refY="5" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+                    <path d="M 0 0 L 10 5 L 0 10 z" className="ng-arrow hi" />
+                  </marker>
+                </defs>
+                {edges.map(({ link, geo, state, width }) => (
+                  <g key={`${link.from}\u0000${link.to}`}>
+                    <path
+                      d={geo.d}
+                      className="ng-hit"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        selectEdge(link);
+                      }}
+                    >
+                      <title>
+                        {tn('edgeTitleOne', 'edgeTitleMany', link.messages.length, { from: link.from, to: link.to })}
+                      </title>
+                    </path>
+                    <path
+                      d={geo.d}
+                      className={`ng-edge ${state}`}
+                      strokeWidth={state === 'hi' ? Math.max(width, 2) : width}
+                      markerEnd={state === 'hi' ? 'url(#ng-arrow-hi)' : 'url(#ng-arrow)'}
+                    />
+                  </g>
+                ))}
+                {graph.nodes.map((name) => {
+                  const p = positions.get(name)!;
+                  const select = () => {
+                    setSelectedNode(name);
+                    setSelectedEdge(null);
+                  };
+                  return (
+                    <g
+                      key={name}
+                      className={`ng-node ${nodeState(name)}`}
+                      tabIndex={0}
+                      role="button"
+                      aria-label={name}
+                      aria-pressed={selectedNode === name}
+                      onMouseEnter={() => setHovered(name)}
+                      onMouseLeave={() => setHovered(null)}
+                      onFocus={() => setHovered(name)}
+                      onBlur={() => setHovered(null)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        select();
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key !== 'Enter' && e.key !== ' ') return;
+                        e.preventDefault();
+                        select();
+                      }}
+                    >
+                      <circle cx={p.x} cy={p.y} r={NODE_R} />
+                      <title>{name}</title>
+                    </g>
+                  );
+                })}
+              </svg>
+              {/* Labels as HTML so they use the app font and stay crisp at any size. */}
               {graph.nodes.map((name) => {
                 const p = positions.get(name)!;
-                const select = () => {
-                  setSelectedNode(name);
-                  setSelectedEdge(null);
-                };
+                const cos = Math.cos(p.angle);
+                const sin = Math.sin(p.angle);
+                const anchor = cos > 0.25 ? 'start' : cos < -0.25 ? 'end' : 'middle';
+                const lx = p.x + (NODE_R + 9) * cos;
+                const ly = p.y + (NODE_R + 9) * sin + (anchor === 'middle' ? (sin > 0 ? 12 : -4) : 4);
+                const tx = anchor === 'start' ? '0' : anchor === 'end' ? '-100%' : '-50%';
                 return (
-                  <g
+                  <span
                     key={name}
-                    className={`ng-node ${nodeState(name)}`}
-                    tabIndex={0}
-                    role="button"
-                    aria-label={name}
-                    aria-pressed={selectedNode === name}
-                    onMouseEnter={() => setHovered(name)}
-                    onMouseLeave={() => setHovered(null)}
-                    onFocus={() => setHovered(name)}
-                    onBlur={() => setHovered(null)}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      select();
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key !== 'Enter' && e.key !== ' ') return;
-                      e.preventDefault();
-                      select();
-                    }}
+                    className={`ng-label ${nodeState(name) === 'dim' ? 'dim' : ''}`}
+                    style={{ left: pct(lx, W), top: pct(ly, H), transform: `translate(${tx}, -75%)` }}
                   >
-                    <circle cx={p.x} cy={p.y} r={NODE_R} />
-                    <title>{name}</title>
-                  </g>
+                    {name}
+                  </span>
                 );
               })}
-            </svg>
-            {/* Labels as HTML so they use the app font and stay crisp at any size. */}
-            {graph.nodes.map((name) => {
-              const p = positions.get(name)!;
-              const cos = Math.cos(p.angle);
-              const sin = Math.sin(p.angle);
-              const anchor = cos > 0.25 ? 'start' : cos < -0.25 ? 'end' : 'middle';
-              const lx = p.x + (NODE_R + 9) * cos;
-              const ly = p.y + (NODE_R + 9) * sin + (anchor === 'middle' ? (sin > 0 ? 12 : -4) : 4);
-              const tx = anchor === 'start' ? '0' : anchor === 'end' ? '-100%' : '-50%';
-              return (
-                <span
-                  key={name}
-                  className={`ng-label ${nodeState(name) === 'dim' ? 'dim' : ''}`}
-                  style={{ left: pct(lx, W), top: pct(ly, H), transform: `translate(${tx}, -75%)` }}
-                >
-                  {name}
-                </span>
-              );
-            })}
-            {edges
-              .filter((e) => e.state === 'hi')
-              .map(({ link, geo }) => (
-                <span
-                  key={`c${link.from}\u0000${link.to}`}
-                  className="ng-count"
-                  style={{ left: pct(geo.labelX, W), top: pct(geo.labelY, H) }}
-                >
-                  {link.messages.length}
-                </span>
-              ))}
+              {edges
+                .filter((e) => e.state === 'hi')
+                .map(({ link, geo }) => (
+                  <span
+                    key={`c${link.from}\u0000${link.to}`}
+                    className="ng-count"
+                    style={{ left: pct(geo.labelX, W), top: pct(geo.labelY, H) }}
+                  >
+                    {link.messages.length}
+                  </span>
+                ))}
+            </div>
           </div>
           {(graph.isolated.length > 0 || graph.unroutedMessages > 0) && (
             <div className="graph-note">
