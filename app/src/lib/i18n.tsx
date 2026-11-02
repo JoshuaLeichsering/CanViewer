@@ -430,6 +430,14 @@ const en = {
   prbCanmatrixWarning: 'canmatrix warning',
   prbCanmatrixLogged: 'canmatrix {level}',
   prbImportNote: 'import note',
+  prbNoteContainedPdus: 'NOTE canviewer_adapter: {where} holds {pdus} with {signals}, which CanViewer does not show',
+  prbNoteFrame: 'frame {frame}',
+  prbNoteFrameOfCluster: 'frame {frame} of cluster {cluster}',
+  prbNotePdusOne: '{n} contained PDU',
+  prbNotePdusMany: '{n} contained PDUs',
+  prbNoteSignalsOne: '{n} signal',
+  prbNoteSignalsMany: '{n} signals',
+  prbNoteNoFramesPerCluster: 'NOTE canviewer_adapter: no CAN frames found per cluster; read again with arxmlIgnoreClusterInfo=True',
 };
 
 export type MsgKey = keyof typeof en;
@@ -836,6 +844,14 @@ const de: Record<MsgKey, string> = {
   prbCanmatrixWarning: 'Warnung von canmatrix',
   prbCanmatrixLogged: 'Meldung von canmatrix ({level})',
   prbImportNote: 'Hinweis zum Import',
+  prbNoteContainedPdus: 'HINWEIS canviewer_adapter: {where} enthält {pdus} mit {signals}, die CanViewer nicht anzeigt',
+  prbNoteFrame: 'Frame {frame}',
+  prbNoteFrameOfCluster: 'Frame {frame} im Cluster {cluster}',
+  prbNotePdusOne: '{n} Contained PDU',
+  prbNotePdusMany: '{n} Contained PDUs',
+  prbNoteSignalsOne: '{n} Signal',
+  prbNoteSignalsMany: '{n} Signalen',
+  prbNoteNoFramesPerCluster: 'HINWEIS canviewer_adapter: keine CAN-Frames je Cluster gefunden; neu gelesen mit arxmlIgnoreClusterInfo=True',
 };
 
 const dictionaries: Record<Lang, Record<MsgKey, string>> = { en, de };

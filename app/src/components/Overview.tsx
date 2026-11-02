@@ -5,7 +5,7 @@ import { occurrenceOf } from '../lib/dbc/identity';
 import { isCanFd } from '../lib/dbc/canfd';
 import { decomposeJ1939Id, isJ1939Database, PGN_NAMES } from '../lib/dbc/j1939';
 import { useI18n } from '../lib/i18n';
-import { problemReasonText } from '../lib/problem-reasons';
+import { problemContentText, problemReasonText } from '../lib/problem-reasons';
 import { hexId } from '../lib/format';
 import { activateProps } from '../lib/keyboard';
 import { messagePageSize } from '../lib/pages';
@@ -108,7 +108,7 @@ export function Overview({
                     <td className="nowrap" style={{ color: 'var(--error)' }}>
                       {problemReasonText(p.reason, t)}
                     </td>
-                    <td className="mono wrap-anywhere">{p.text}</td>
+                    <td className="mono wrap-anywhere">{problemContentText(p, t)}</td>
                   </tr>
                 ))}
               </tbody>

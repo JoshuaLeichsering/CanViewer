@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { parseDbc } from './dbc/parser';
 import { translate as inLang, type MsgKey, type TParams } from './i18n';
-import { problemReasonKey, problemReasonText } from './problem-reasons';
+import { problemContentText, problemReasonKey, problemReasonText } from './problem-reasons';
 
 const translate = (lang: 'en' | 'de') => (key: MsgKey, params?: TParams) => inLang(lang, key, params);
 
@@ -102,5 +102,56 @@ describe('problem reasons', () => {
   it('shows a reason no pattern knows as it is', () => {
     expect(problemReasonKey('something new')).toBeNull();
     expect(problemReasonText('something new', translate('de'))).toBe('something new');
+  });
+});
+
+describe('the canmatrix adapter\'s notes', () => {
+  const adapter = readFileSync(new URL('./canmatrix/canviewer_adapter.py', import.meta.url), 'utf8');
+  const baseline = JSON.parse(readFileSync(new URL('./canmatrix/import-corpus-baseline.json', import.meta.url), 'utf8')) as {
+    reads: Record<string, { log: string[] }>;
+  };
+  // A read's log holds what canmatrix logged and then the adapter's notes, in full.
+  const notes = [...new Set(Object.values(baseline.reads).flatMap((r) => r.log.filter((line) => line.startsWith('NOTE canviewer_adapter: '))))];
+  const note = (text: string) => ({ reason: 'import note', text });
+
+  it('the adapter writes two kinds, and the corpus has both', () => {
+    expect([...adapter.matchAll(/"NOTE canviewer_adapter: /g)]).toHaveLength(2);
+    expect(notes.some((n) => n.includes(' contained PDU'))).toBe(true);
+    expect(notes.some((n) => n.includes('no CAN frames found per cluster'))).toBe(true);
+  });
+
+  it.each(notes)('"%s" reads the same in English, and is in German', (text) => {
+    expect(problemContentText(note(text), translate('en'))).toBe(text);
+    const de = problemContentText(note(text), translate('de'));
+    expect(de).not.toBe(text);
+    expect(de).toMatch(/^HINWEIS canviewer_adapter: /);
+  });
+
+  it('keeps the frame, the cluster and the counts, in the singular and the plural', () => {
+    const en = translate('en');
+    const de = translate('de');
+    const one = 'NOTE canviewer_adapter: frame F1 of cluster Body holds 1 contained PDU with 1 signal, which CanViewer does not show';
+    expect(problemContentText(note(one), en)).toBe(one);
+    expect(problemContentText(note(one), de)).toBe(
+      'HINWEIS canviewer_adapter: Frame F1 im Cluster Body enthält 1 Contained PDU mit 1 Signal, die CanViewer nicht anzeigt',
+    );
+    const many = 'NOTE canviewer_adapter: frame TestFrame holds 3 contained PDUs with 9 signals, which CanViewer does not show';
+    expect(problemContentText(note(many), de)).toBe(
+      'HINWEIS canviewer_adapter: Frame TestFrame enthält 3 Contained PDUs mit 9 Signalen, die CanViewer nicht anzeigt',
+    );
+    expect(problemContentText(note('NOTE canviewer_adapter: no CAN frames found per cluster; read again with arxmlIgnoreClusterInfo=True'), de)).toBe(
+      'HINWEIS canviewer_adapter: keine CAN-Frames je Cluster gefunden; neu gelesen mit arxmlIgnoreClusterInfo=True',
+    );
+  });
+
+  it('leaves the file\'s lines, what canmatrix wrote, and a note it does not know as they are', () => {
+    const de = translate('de');
+    const logged = 'ERROR canmatrix.formats.arxml: PDU X is a Container-sub-PDU with no header';
+    expect(problemContentText({ reason: 'canmatrix error', text: logged }, de)).toBe(logged);
+    expect(problemContentText({ reason: 'malformed BO_ message definition', text: 'BO_ nonsense' }, de)).toBe('BO_ nonsense');
+    // The same words outside an import note are the file's, not the adapter's.
+    const quoted = 'NOTE canviewer_adapter: no CAN frames found per cluster; read again with arxmlIgnoreClusterInfo=True';
+    expect(problemContentText({ reason: 'canmatrix printed', text: quoted }, de)).toBe(quoted);
+    expect(problemContentText(note('NOTE canviewer_adapter: something new'), de)).toBe('NOTE canviewer_adapter: something new');
   });
 });

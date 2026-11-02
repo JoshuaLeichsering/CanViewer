@@ -146,6 +146,25 @@ describe('Overview', () => {
     ]);
   });
 
+  it('gives the canmatrix adapter\'s own notes in German, and what canmatrix logged as it wrote it', () => {
+    localStorage.setItem('canviewer.lang', 'de');
+    const db = dbcOf('BU_: A');
+    const logged = 'ERROR canmatrix.formats.arxml: PDU P is a Container-sub-PDU with no header';
+    db.problems = [
+      { line: 0, reason: 'canmatrix error', text: logged },
+      {
+        line: 0,
+        reason: 'import note',
+        text: 'NOTE canviewer_adapter: frame TestFrame holds 3 contained PDUs with 9 signals, which CanViewer does not show',
+      },
+    ];
+    show(db, 'ARXMLContainerTest.arxml');
+    expect(rowsOf(card('Parse-Probleme (2)'))).toEqual([
+      ['0', 'Fehler von canmatrix', logged],
+      ['0', 'Hinweis zum Import', 'HINWEIS canviewer_adapter: Frame TestFrame enthält 3 Contained PDUs mit 9 Signalen, die CanViewer nicht anzeigt'],
+    ]);
+  });
+
   it('says "1 parse problem" for one', () => {
     show(dbcOf('BU_: A\nBO_ nonsense'), 'one.dbc');
     expect(within(document.querySelector('.banner.error') as HTMLElement).getByText('1 parse problem.')).toBeTruthy();

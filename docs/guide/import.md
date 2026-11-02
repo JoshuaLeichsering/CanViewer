@@ -28,7 +28,8 @@ with their first use and work offline from then on; try again once online). Erro
 canmatrix's own readers are shown as canmatrix wrote them. On the overview's list of
 parse problems, the reason column is in your language (for example *Warnung von
 canmatrix* for a warning canmatrix logged), and the line or message next to it stays as
-canmatrix wrote it.
+canmatrix wrote it. CanViewer's own notes about an import (*Hinweis zum Import*), such
+as a frame whose contained PDUs it does not show, are in your language too.
 
 ## What you get
 

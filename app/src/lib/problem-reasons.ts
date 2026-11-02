@@ -51,3 +51,43 @@ export function problemReasonText(reason: string, t: (key: MsgKey, params?: TPar
   const known = problemReasonKey(reason);
   return known ? t(known.key, known.params) : reason;
 }
+
+type T = (key: MsgKey, params?: TParams) => string;
+const count = (t: T, one: MsgKey, many: MsgKey, n: string) => t(Number(n) === 1 ? one : many, { n });
+
+/**
+ * The notes the canmatrix adapter writes as the text of an "import note"
+ * (canviewer_adapter.py). Unlike the lines canmatrix printed or logged, these
+ * sentences are CanViewer's own, so they are shown in the UI's language too.
+ * As with the reasons, the stored text stays English, and the English strings
+ * in i18n.tsx put together give exactly that text.
+ */
+const NOTE_PATTERNS: Array<[RegExp, (m: RegExpMatchArray, t: T) => string]> = [
+  [
+    /^NOTE canviewer_adapter: frame (.+?)(?: of cluster (.+))? holds (\d+) contained PDUs? with (\d+) signals?, which CanViewer does not show$/s,
+    (m, t) =>
+      t('prbNoteContainedPdus', {
+        where: m[2] === undefined ? t('prbNoteFrame', { frame: m[1] }) : t('prbNoteFrameOfCluster', { frame: m[1], cluster: m[2] }),
+        pdus: count(t, 'prbNotePdusOne', 'prbNotePdusMany', m[3]),
+        signals: count(t, 'prbNoteSignalsOne', 'prbNoteSignalsMany', m[4]),
+      }),
+  ],
+  [
+    /^NOTE canviewer_adapter: no CAN frames found per cluster; read again with arxmlIgnoreClusterInfo=True$/,
+    (_m, t) => t('prbNoteNoFramesPerCluster'),
+  ],
+];
+
+/**
+ * What the problem table shows in its content column: an adapter's note in
+ * the UI's language, and anything else (the file's line, what canmatrix
+ * printed or logged) as it is.
+ */
+export function problemContentText(problem: { reason: string; text: string }, t: T): string {
+  if (problem.reason !== 'import note') return problem.text;
+  for (const [pattern, render] of NOTE_PATTERNS) {
+    const m = problem.text.match(pattern);
+    if (m) return render(m, t);
+  }
+  return problem.text;
+}
