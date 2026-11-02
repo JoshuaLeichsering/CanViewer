@@ -57,12 +57,22 @@ script or `scripts/license-policy.mjs`, not this file.
 | [lxml](#lxml) | 6.1.3 | BSD-3-Clause AND PSF-2.0 AND MIT | web app, desktop app |
 | [libxml2 (compiled into lxml)](#libxml2-compiled-into-lxml) | – | MIT | web app, desktop app |
 | [libxslt and libexslt (compiled into lxml)](#libxslt-and-libexslt-compiled-into-lxml) | – | MIT | web app, desktop app |
+| [GNU libiconv (compiled into lxml)](#gnu-libiconv-compiled-into-lxml) | 1.16 | LGPL-2.0-or-later | web app, desktop app |
 | [openpyxl](#openpyxl) | 3.1.5 | MIT | web app, desktop app |
 | [PyYAML](#pyyaml) | 6.0.3 | MIT | web app, desktop app |
 | [libyaml (compiled into PyYAML)](#libyaml-compiled-into-pyyaml) | 0.2.1 | MIT | web app, desktop app |
 | [six](#six) | 1.17.0 | MIT | web app, desktop app |
 | [Rust crates](#rust-crates) | 406 crates | see the list | desktop app |
 | [Rust standard library](#rust-standard-library) | 1.97.0 | see the list | desktop app |
+| [WiX Toolset: WixUI and its custom actions](#wix-toolset-wixui-and-its-custom-actions) | 3.14.1 | MS-RL | Windows .msi |
+| [NSIS](#nsis) | 3.13 | Zlib | Windows -setup.exe |
+| [NSIS LZMA compression module](#nsis-lzma-compression-module) | 3.13 | CPL-1.0 | Windows -setup.exe |
+| [nsis_tauri_utils (NSIS plugin)](#nsis_tauri_utils-nsis-plugin) | 0.5.3 | MIT OR Apache-2.0 | Windows -setup.exe |
+| [nsis-plugin-api (in nsis_tauri_utils)](#nsis-plugin-api-in-nsis_tauri_utils) | 0.0.0, of nsis-tauri-utils 0.5.3 | MIT OR Apache-2.0 | Windows -setup.exe |
+| [semver (in nsis_tauri_utils)](#semver-in-nsis_tauri_utils) | 1.0.27 | MIT OR Apache-2.0 | Windows -setup.exe |
+| [windows-sys (in nsis_tauri_utils)](#windows-sys-in-nsis_tauri_utils) | 0.61.2 | MIT OR Apache-2.0 | Windows -setup.exe |
+| [windows-link (in nsis_tauri_utils)](#windows-link-in-nsis_tauri_utils) | 0.2.1 | MIT OR Apache-2.0 | Windows -setup.exe |
+| [Tauri bundler’s installer templates](#tauri-bundlers-installer-templates) | 2.10.4 | Apache-2.0 OR MIT | Windows .msi and -setup.exe |
 | [@docsearch/css](#docsearchcss) | 3.8.2 | MIT | documentation site |
 | [@vue/reactivity](#vuereactivity) | 3.5.44 | MIT | documentation site |
 | [@vue/runtime-core](#vueruntime-core) | 3.5.44 | MIT | documentation site |
@@ -362,6 +372,15 @@ Wheels in `pyodide/`, loaded into the Pyodide runtime when a file in a format ot
 - Source: <https://gitlab.gnome.org/GNOME/libxslt>
 - License text: [Text 35](#text-35)
 
+#### GNU libiconv (compiled into lxml)
+
+Copyright (C) 1999-2019 Free Software Foundation, Inc. The character-set conversion that libxml2 uses, linked statically into lxml’s `etree` module (`lxml/etree.cpython-314-wasm32-emscripten.so`) by Pyodide’s build: pyodide-recipes 314-20260911 builds libiconv 1.16 as a static library (packages/libiconv) and links it into lxml 6.1.3 (packages/lxml, `-liconv`). The library is under the GNU Library General Public License, version 2 or (at your option) any later version. The lxml wheel is a file of its own in `pyodide/`, which can be replaced with one rebuilt from these sources.
+
+- Version: 1.16
+- License: LGPL-2.0-or-later
+- Source: <https://ftp.gnu.org/gnu/libiconv/libiconv-1.16.tar.gz>, <https://github.com/pyodide/pyodide-recipes/tree/314-20260911/packages/libiconv>, <https://github.com/pyodide/pyodide-recipes/tree/314-20260911/packages/lxml>
+- License text: [Text 36](#text-36)
+
 #### openpyxl
 
 `openpyxl-3.1.5-py2.py3-none-any.whl`
@@ -378,14 +397,14 @@ Wheels in `pyodide/`, loaded into the Pyodide runtime when a file in a format ot
 - Version: 6.0.3
 - License: MIT
 - Source: <https://github.com/yaml/pyyaml>
-- License text: [Text 36](#text-36)
+- License text: [Text 37](#text-37)
 
 #### libyaml (compiled into PyYAML)
 
 - Version: 0.2.1
 - License: MIT
 - Source: <https://github.com/yaml/libyaml/tree/0.2.1>
-- License text: [Text 37](#text-37)
+- License text: [Text 38](#text-38)
 
 #### six
 
@@ -394,7 +413,7 @@ Wheels in `pyodide/`, loaded into the Pyodide runtime when a file in a format ot
 - Version: 1.17.0
 - License: MIT
 - Source: <https://github.com/benjaminp/six>
-- License text: [Text 38](#text-38)
+- License text: [Text 39](#text-39)
 
 ## Desktop app
 
@@ -405,412 +424,412 @@ Each crate’s license files are reproduced below as it ships them; for the few 
 
 | Crate | Version | License | License text |
 |---|---|---|---|
-| [adler2](https://github.com/oyvindln/adler2) | 2.0.1 | 0BSD OR MIT OR Apache-2.0 | [Text 39](#text-39), [Text 4](#text-4), [Text 40](#text-40), [Text 41](#text-41) |
-| [aho-corasick](https://github.com/BurntSushi/aho-corasick) | 1.1.5 | Unlicense OR MIT | [Text 42](#text-42), [Text 43](#text-43), [Text 44](#text-44) |
-| [alloc-no-stdlib](https://github.com/dropbox/rust-alloc-no-stdlib) | 3.0.0 | BSD-3-Clause | [Text 45](#text-45) |
-| [alloc-stdlib](https://github.com/dropbox/rust-alloc-no-stdlib) | 0.3.0 | BSD-3-Clause | [Text 46](#text-46) |
-| [android_system_properties](https://github.com/nical/android_system_properties) | 0.1.6 | MIT OR Apache-2.0 | [Text 47](#text-47), [Text 48](#text-48) |
-| [anyhow](https://github.com/dtolnay/anyhow) | 1.0.104 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 41](#text-41) |
-| [atk](https://github.com/gtk-rs/gtk3-rs) | 0.18.2 | MIT | [Text 49](#text-49), [Text 41](#text-41) |
-| [atk-sys](https://github.com/gtk-rs/gtk3-rs) | 0.18.2 | MIT | [Text 41](#text-41) |
-| [atomic-waker](https://github.com/smol-rs/atomic-waker) | 1.1.2 | Apache-2.0 OR MIT | [Text 4](#text-4), [Text 41](#text-41), [Text 50](#text-50) |
-| [autocfg](https://github.com/cuviper/autocfg) | 1.5.1 | Apache-2.0 OR MIT | [Text 4](#text-4), [Text 51](#text-51) |
-| [base64](https://github.com/marshallpierce/rust-base64) | 0.21.7 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 52](#text-52) |
-| [base64](https://github.com/marshallpierce/rust-base64) | 0.23.1 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 53](#text-53) |
-| [bit-set](https://github.com/contain-rs/bit-set) | 0.8.0 | Apache-2.0 OR MIT | [Text 4](#text-4), [Text 54](#text-54) |
-| [bit-vec](https://github.com/contain-rs/bit-vec) | 0.8.0 | Apache-2.0 OR MIT | [Text 4](#text-4), [Text 54](#text-54) |
-| [bitflags](https://github.com/bitflags/bitflags) | 1.3.2 | MIT/Apache-2.0 | [Text 4](#text-4), [Text 55](#text-55) |
-| [bitflags](https://github.com/bitflags/bitflags) | 2.13.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 55](#text-55) |
-| [block-buffer](https://github.com/RustCrypto/utils) | 0.10.4 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 56](#text-56) |
+| [adler2](https://github.com/oyvindln/adler2) | 2.0.1 | 0BSD OR MIT OR Apache-2.0 | [Text 40](#text-40), [Text 4](#text-4), [Text 41](#text-41), [Text 42](#text-42) |
+| [aho-corasick](https://github.com/BurntSushi/aho-corasick) | 1.1.5 | Unlicense OR MIT | [Text 43](#text-43), [Text 44](#text-44), [Text 45](#text-45) |
+| [alloc-no-stdlib](https://github.com/dropbox/rust-alloc-no-stdlib) | 3.0.0 | BSD-3-Clause | [Text 46](#text-46) |
+| [alloc-stdlib](https://github.com/dropbox/rust-alloc-no-stdlib) | 0.3.0 | BSD-3-Clause | [Text 47](#text-47) |
+| [android_system_properties](https://github.com/nical/android_system_properties) | 0.1.6 | MIT OR Apache-2.0 | [Text 48](#text-48), [Text 49](#text-49) |
+| [anyhow](https://github.com/dtolnay/anyhow) | 1.0.104 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 42](#text-42) |
+| [atk](https://github.com/gtk-rs/gtk3-rs) | 0.18.2 | MIT | [Text 50](#text-50), [Text 42](#text-42) |
+| [atk-sys](https://github.com/gtk-rs/gtk3-rs) | 0.18.2 | MIT | [Text 42](#text-42) |
+| [atomic-waker](https://github.com/smol-rs/atomic-waker) | 1.1.2 | Apache-2.0 OR MIT | [Text 4](#text-4), [Text 42](#text-42), [Text 51](#text-51) |
+| [autocfg](https://github.com/cuviper/autocfg) | 1.5.1 | Apache-2.0 OR MIT | [Text 4](#text-4), [Text 52](#text-52) |
+| [base64](https://github.com/marshallpierce/rust-base64) | 0.21.7 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 53](#text-53) |
+| [base64](https://github.com/marshallpierce/rust-base64) | 0.23.1 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 54](#text-54) |
+| [bit-set](https://github.com/contain-rs/bit-set) | 0.8.0 | Apache-2.0 OR MIT | [Text 4](#text-4), [Text 55](#text-55) |
+| [bit-vec](https://github.com/contain-rs/bit-vec) | 0.8.0 | Apache-2.0 OR MIT | [Text 4](#text-4), [Text 55](#text-55) |
+| [bitflags](https://github.com/bitflags/bitflags) | 1.3.2 | MIT/Apache-2.0 | [Text 4](#text-4), [Text 56](#text-56) |
+| [bitflags](https://github.com/bitflags/bitflags) | 2.13.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 56](#text-56) |
+| [block-buffer](https://github.com/RustCrypto/utils) | 0.10.4 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 57](#text-57) |
 | [block2](https://github.com/madsmtm/objc2) | 0.6.2 | MIT | [Text 12](#text-12) |
-| [brotli](https://github.com/dropbox/rust-brotli) | 9.1.1 | BSD-3-Clause AND MIT | [Text 45](#text-45), [Text 57](#text-57) |
-| [brotli-decompressor](https://github.com/dropbox/rust-brotli-decompressor) | 6.2.0 | BSD-3-Clause/MIT | [Text 45](#text-45) |
-| [bs58](https://github.com/Nullus157/bs58-rs) | 0.5.1 | MIT/Apache-2.0 | [Text 4](#text-4), [Text 58](#text-58) |
-| [bumpalo](https://github.com/fitzgen/bumpalo) | 3.20.3 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 59](#text-59) |
-| [bytemuck](https://github.com/Lokathor/bytemuck) | 1.25.2 | Zlib OR Apache-2.0 OR MIT | [Text 4](#text-4), [Text 60](#text-60), [Text 61](#text-61) |
-| [byteorder](https://github.com/BurntSushi/byteorder) | 1.5.0 | Unlicense OR MIT | [Text 42](#text-42), [Text 43](#text-43), [Text 44](#text-44) |
-| [bytes](https://github.com/tokio-rs/bytes) | 1.12.1 | MIT | [Text 62](#text-62) |
-| [cairo-rs](https://github.com/gtk-rs/gtk-rs-core) | 0.18.5 | MIT | [Text 49](#text-49), [Text 41](#text-41) |
-| [cairo-sys-rs](https://github.com/gtk-rs/gtk-rs-core) | 0.18.2 | MIT | [Text 41](#text-41) |
-| [camino](https://github.com/camino-rs/camino) | 1.2.6 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 41](#text-41) |
-| [cargo-platform](https://github.com/rust-lang/cargo) | 0.1.9 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 40](#text-40), [Text 41](#text-41) |
-| [cargo_metadata](https://github.com/oli-obk/cargo_metadata) | 0.19.2 | MIT | [Text 41](#text-41) |
-| [cargo_toml](https://gitlab.com/lib.rs/cargo_toml) | 1.0.1 | Apache-2.0 OR MIT | [Text 63](#text-63) |
-| [cc](https://github.com/rust-lang/cc-rs) | 1.10.0 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 64](#text-64) |
-| [cesu8](https://github.com/emk/cesu8-rs) | 1.1.0 | Apache-2.0/MIT | [Text 65](#text-65) |
-| [cfb](https://github.com/mdsteele/rust-cfb) | 0.14.0 | MIT | [Text 66](#text-66) |
-| [cfg-expr](https://github.com/EmbarkStudios/cfg-expr) | 0.15.8 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 67](#text-67) |
-| [cfg-if](https://github.com/rust-lang/cfg-if) | 1.0.5 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 64](#text-64) |
-| [chrono](https://github.com/chronotope/chrono) | 0.4.45 | MIT OR Apache-2.0 | [Text 68](#text-68) |
-| [combine](https://github.com/Marwes/combine) | 4.6.9 | MIT | [Text 69](#text-69) |
-| [cookie](https://github.com/SergioBenitez/cookie-rs) | 0.18.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 70](#text-70), [Text 71](#text-71) |
-| [core-foundation](https://github.com/servo/core-foundation-rs) | 0.10.1 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 72](#text-72) |
-| [core-foundation-sys](https://github.com/servo/core-foundation-rs) | 0.8.7 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 72](#text-72) |
-| [core-graphics](https://github.com/servo/core-foundation-rs) | 0.25.0 | MIT OR Apache-2.0 | [Text 73](#text-73), [Text 4](#text-4), [Text 72](#text-72) |
-| [core-graphics-types](https://github.com/servo/core-foundation-rs) | 0.2.0 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 72](#text-72) |
-| [cpufeatures](https://github.com/RustCrypto/utils) | 0.2.17 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 74](#text-74) |
-| [crc32fast](https://github.com/srijs/rust-crc32fast) | 1.5.3 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 75](#text-75) |
-| [crossbeam-channel](https://github.com/crossbeam-rs/crossbeam) | 0.5.17 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 76](#text-76), [Text 77](#text-77) |
-| [crossbeam-utils](https://github.com/crossbeam-rs/crossbeam) | 0.8.23 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 76](#text-76) |
-| [crypto-common](https://github.com/RustCrypto/traits) | 0.1.7 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 78](#text-78) |
+| [brotli](https://github.com/dropbox/rust-brotli) | 9.1.1 | BSD-3-Clause AND MIT | [Text 46](#text-46), [Text 58](#text-58) |
+| [brotli-decompressor](https://github.com/dropbox/rust-brotli-decompressor) | 6.2.0 | BSD-3-Clause/MIT | [Text 46](#text-46) |
+| [bs58](https://github.com/Nullus157/bs58-rs) | 0.5.1 | MIT/Apache-2.0 | [Text 4](#text-4), [Text 59](#text-59) |
+| [bumpalo](https://github.com/fitzgen/bumpalo) | 3.20.3 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 60](#text-60) |
+| [bytemuck](https://github.com/Lokathor/bytemuck) | 1.25.2 | Zlib OR Apache-2.0 OR MIT | [Text 4](#text-4), [Text 61](#text-61), [Text 62](#text-62) |
+| [byteorder](https://github.com/BurntSushi/byteorder) | 1.5.0 | Unlicense OR MIT | [Text 43](#text-43), [Text 44](#text-44), [Text 45](#text-45) |
+| [bytes](https://github.com/tokio-rs/bytes) | 1.12.1 | MIT | [Text 63](#text-63) |
+| [cairo-rs](https://github.com/gtk-rs/gtk-rs-core) | 0.18.5 | MIT | [Text 50](#text-50), [Text 42](#text-42) |
+| [cairo-sys-rs](https://github.com/gtk-rs/gtk-rs-core) | 0.18.2 | MIT | [Text 42](#text-42) |
+| [camino](https://github.com/camino-rs/camino) | 1.2.6 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 42](#text-42) |
+| [cargo-platform](https://github.com/rust-lang/cargo) | 0.1.9 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 41](#text-41), [Text 42](#text-42) |
+| [cargo_metadata](https://github.com/oli-obk/cargo_metadata) | 0.19.2 | MIT | [Text 42](#text-42) |
+| [cargo_toml](https://gitlab.com/lib.rs/cargo_toml) | 1.0.1 | Apache-2.0 OR MIT | [Text 64](#text-64) |
+| [cc](https://github.com/rust-lang/cc-rs) | 1.10.0 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 65](#text-65) |
+| [cesu8](https://github.com/emk/cesu8-rs) | 1.1.0 | Apache-2.0/MIT | [Text 66](#text-66) |
+| [cfb](https://github.com/mdsteele/rust-cfb) | 0.14.0 | MIT | [Text 67](#text-67) |
+| [cfg-expr](https://github.com/EmbarkStudios/cfg-expr) | 0.15.8 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 68](#text-68) |
+| [cfg-if](https://github.com/rust-lang/cfg-if) | 1.0.5 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 65](#text-65) |
+| [chrono](https://github.com/chronotope/chrono) | 0.4.45 | MIT OR Apache-2.0 | [Text 69](#text-69) |
+| [combine](https://github.com/Marwes/combine) | 4.6.9 | MIT | [Text 70](#text-70) |
+| [cookie](https://github.com/SergioBenitez/cookie-rs) | 0.18.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 71](#text-71), [Text 72](#text-72) |
+| [core-foundation](https://github.com/servo/core-foundation-rs) | 0.10.1 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 73](#text-73) |
+| [core-foundation-sys](https://github.com/servo/core-foundation-rs) | 0.8.7 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 73](#text-73) |
+| [core-graphics](https://github.com/servo/core-foundation-rs) | 0.25.0 | MIT OR Apache-2.0 | [Text 74](#text-74), [Text 4](#text-4), [Text 73](#text-73) |
+| [core-graphics-types](https://github.com/servo/core-foundation-rs) | 0.2.0 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 73](#text-73) |
+| [cpufeatures](https://github.com/RustCrypto/utils) | 0.2.17 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 75](#text-75) |
+| [crc32fast](https://github.com/srijs/rust-crc32fast) | 1.5.3 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 76](#text-76) |
+| [crossbeam-channel](https://github.com/crossbeam-rs/crossbeam) | 0.5.17 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 77](#text-77), [Text 78](#text-78) |
+| [crossbeam-utils](https://github.com/crossbeam-rs/crossbeam) | 0.8.23 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 77](#text-77) |
+| [crypto-common](https://github.com/RustCrypto/traits) | 0.1.7 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 79](#text-79) |
 | [cssparser](https://github.com/servo/rust-cssparser) | 0.37.0 | MPL-2.0 | [Text 7](#text-7) |
 | [cssparser-macros](https://github.com/servo/rust-cssparser) | 0.7.1 | MPL-2.0 | [Text 7](#text-7) |
-| [ctor](https://github.com/mmastrac/linktime) | 1.0.13 | Apache-2.0 OR MIT | [Text 4](#text-4), [Text 41](#text-41) |
-| [darling](https://github.com/TedDriggs/darling) | 0.24.1 | MIT | [Text 79](#text-79) |
-| [darling_core](https://github.com/TedDriggs/darling) | 0.24.1 | MIT | [Text 79](#text-79) |
-| [darling_macro](https://github.com/TedDriggs/darling) | 0.24.1 | MIT | [Text 79](#text-79) |
-| [dbus](https://github.com/diwic/dbus-rs) | 0.9.12 | Apache-2.0/MIT | [Text 4](#text-4), [Text 80](#text-80), [Text 81](#text-81) |
-| [defmt](https://github.com/knurling-rs/defmt) | 1.2.0 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 82](#text-82) |
-| [defmt-macros](https://github.com/knurling-rs/defmt) | 1.2.0 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 82](#text-82) |
-| [defmt-parser](https://github.com/knurling-rs/defmt) | 1.1.0 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 82](#text-82) |
-| [deranged](https://github.com/jhpratt/deranged) | 0.5.9 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 83](#text-83), [Text 84](#text-84) |
-| [derive_more](https://github.com/JelteF/derive_more) | 2.1.1 | MIT | [Text 85](#text-85) |
-| [derive_more-impl](https://github.com/JelteF/derive_more) | 2.1.1 | MIT | [Text 85](#text-85) |
-| [digest](https://github.com/RustCrypto/traits) | 0.10.7 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 86](#text-86) |
-| [dirs](https://codeberg.org/dirs/dirs-rs) | 7.0.0 | MIT OR Apache-2.0 | [Text 87](#text-87), [Text 88](#text-88) |
-| [dirs-sys](https://github.com/dirs-dev/dirs-sys-rs) | 0.5.0 | MIT OR Apache-2.0 | [Text 87](#text-87), [Text 88](#text-88) |
-| [dispatch2](https://github.com/madsmtm/objc2) | 0.3.1 | Zlib OR Apache-2.0 OR MIT | [Text 89](#text-89) |
-| [displaydoc](https://github.com/yaahc/displaydoc) | 0.2.7 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 41](#text-41) |
+| [ctor](https://github.com/mmastrac/linktime) | 1.0.13 | Apache-2.0 OR MIT | [Text 4](#text-4), [Text 42](#text-42) |
+| [darling](https://github.com/TedDriggs/darling) | 0.24.1 | MIT | [Text 80](#text-80) |
+| [darling_core](https://github.com/TedDriggs/darling) | 0.24.1 | MIT | [Text 80](#text-80) |
+| [darling_macro](https://github.com/TedDriggs/darling) | 0.24.1 | MIT | [Text 80](#text-80) |
+| [dbus](https://github.com/diwic/dbus-rs) | 0.9.12 | Apache-2.0/MIT | [Text 4](#text-4), [Text 81](#text-81), [Text 82](#text-82) |
+| [defmt](https://github.com/knurling-rs/defmt) | 1.2.0 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 83](#text-83) |
+| [defmt-macros](https://github.com/knurling-rs/defmt) | 1.2.0 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 83](#text-83) |
+| [defmt-parser](https://github.com/knurling-rs/defmt) | 1.1.0 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 83](#text-83) |
+| [deranged](https://github.com/jhpratt/deranged) | 0.5.9 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 84](#text-84), [Text 85](#text-85) |
+| [derive_more](https://github.com/JelteF/derive_more) | 2.1.1 | MIT | [Text 86](#text-86) |
+| [derive_more-impl](https://github.com/JelteF/derive_more) | 2.1.1 | MIT | [Text 86](#text-86) |
+| [digest](https://github.com/RustCrypto/traits) | 0.10.7 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 87](#text-87) |
+| [dirs](https://codeberg.org/dirs/dirs-rs) | 7.0.0 | MIT OR Apache-2.0 | [Text 88](#text-88), [Text 89](#text-89) |
+| [dirs-sys](https://github.com/dirs-dev/dirs-sys-rs) | 0.5.0 | MIT OR Apache-2.0 | [Text 88](#text-88), [Text 89](#text-89) |
+| [dispatch2](https://github.com/madsmtm/objc2) | 0.3.1 | Zlib OR Apache-2.0 OR MIT | [Text 90](#text-90) |
+| [displaydoc](https://github.com/yaahc/displaydoc) | 0.2.7 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 42](#text-42) |
 | [dlopen2](https://github.com/OpenByteDev/dlopen2) | 0.8.2 | MIT | [Text 12](#text-12) |
 | [dlopen2_derive](https://github.com/OpenByteDev/dlopen2) | 0.4.3 | MIT | [Text 12](#text-12) |
-| [dom_query](https://github.com/niklak/dom_query) | 0.28.0 | MIT | [Text 90](#text-90) |
-| [dpi](https://github.com/rust-windowing/winit) | 0.1.2 | Apache-2.0 AND MIT | [Text 4](#text-4), [Text 91](#text-91) |
-| [dtoa](https://github.com/dtolnay/dtoa) | 1.0.11 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 41](#text-41) |
+| [dom_query](https://github.com/niklak/dom_query) | 0.28.0 | MIT | [Text 91](#text-91) |
+| [dpi](https://github.com/rust-windowing/winit) | 0.1.2 | Apache-2.0 AND MIT | [Text 4](#text-4), [Text 92](#text-92) |
+| [dtoa](https://github.com/dtolnay/dtoa) | 1.0.11 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 42](#text-42) |
 | [dtoa-short](https://github.com/upsuper/dtoa-short) | 0.3.5 | MPL-2.0 | [Text 7](#text-7) |
-| [dunce](https://gitlab.com/kornelski/dunce) | 1.0.5 | CC0-1.0 OR MIT-0 OR Apache-2.0 | [Text 92](#text-92) |
-| [dyn-clone](https://github.com/dtolnay/dyn-clone) | 1.0.20 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 41](#text-41) |
-| [embed-resource](https://github.com/nabijaczleweli/rust-embed-resource) | 3.0.12 | MIT | [Text 93](#text-93) |
-| [embed_plist](https://github.com/nvzqz/embed-plist-rs) | 1.2.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 94](#text-94) |
-| [equivalent](https://github.com/indexmap-rs/equivalent) | 1.0.3 | Apache-2.0 OR MIT | [Text 4](#text-4), [Text 95](#text-95) |
-| [erased-serde](https://github.com/dtolnay/erased-serde) | 0.4.11 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 41](#text-41) |
-| [fastrand](https://github.com/smol-rs/fastrand) | 2.5.0 | Apache-2.0 OR MIT | [Text 4](#text-4), [Text 41](#text-41) |
-| [fdeflate](https://github.com/image-rs/fdeflate) | 0.3.7 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 96](#text-96) |
-| [field-offset](https://github.com/Diggsey/rust-field-offset) | 0.3.6 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 97](#text-97) |
-| [find-msvc-tools](https://github.com/rust-lang/cc-rs) | 0.1.15 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 64](#text-64) |
-| [flate2](https://github.com/rust-lang/flate2-rs) | 1.1.10 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 98](#text-98) |
-| [fnv](https://github.com/servo/rust-fnv) | 1.0.7 | Apache-2.0 / MIT | [Text 4](#text-4), [Text 99](#text-99) |
-| [foldhash](https://github.com/orlp/foldhash) | 0.2.0 | Zlib | [Text 100](#text-100) |
-| [foreign-types](https://github.com/sfackler/foreign-types) | 0.5.0 | MIT/Apache-2.0 | [Text 4](#text-4), [Text 101](#text-101) |
-| [foreign-types-macros](https://github.com/sfackler/foreign-types) | 0.2.4 | MIT/Apache-2.0 | [Text 4](#text-4), [Text 101](#text-101) |
-| [foreign-types-shared](https://github.com/sfackler/foreign-types) | 0.3.1 | MIT/Apache-2.0 | [Text 4](#text-4), [Text 101](#text-101) |
-| [form_urlencoded](https://github.com/servo/rust-url) | 1.2.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 102](#text-102) |
-| [futures-channel](https://github.com/rust-lang/futures-rs) | 0.3.34 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 103](#text-103), [Text 104](#text-104), [Text 105](#text-105) |
-| [futures-core](https://github.com/rust-lang/futures-rs) | 0.3.34 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 103](#text-103), [Text 104](#text-104) |
-| [futures-executor](https://github.com/rust-lang/futures-rs) | 0.3.34 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 103](#text-103), [Text 104](#text-104) |
-| [futures-io](https://github.com/rust-lang/futures-rs) | 0.3.34 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 103](#text-103), [Text 104](#text-104) |
-| [futures-macro](https://github.com/rust-lang/futures-rs) | 0.3.34 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 103](#text-103), [Text 104](#text-104) |
-| [futures-sink](https://github.com/rust-lang/futures-rs) | 0.3.34 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 103](#text-103), [Text 104](#text-104) |
-| [futures-task](https://github.com/rust-lang/futures-rs) | 0.3.34 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 103](#text-103), [Text 104](#text-104) |
-| [futures-util](https://github.com/rust-lang/futures-rs) | 0.3.34 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 103](#text-103), [Text 104](#text-104) |
-| [gdk](https://github.com/gtk-rs/gtk3-rs) | 0.18.2 | MIT | [Text 49](#text-49), [Text 41](#text-41) |
-| [gdk-pixbuf](https://github.com/gtk-rs/gtk-rs-core) | 0.18.5 | MIT | [Text 49](#text-49), [Text 41](#text-41) |
-| [gdk-pixbuf-sys](https://github.com/gtk-rs/gtk-rs-core) | 0.18.0 | MIT | [Text 41](#text-41) |
-| [gdk-sys](https://github.com/gtk-rs/gtk3-rs) | 0.18.2 | MIT | [Text 41](#text-41) |
-| [gdkwayland-sys](https://github.com/gtk-rs/gtk3-rs) | 0.18.2 | MIT | [Text 41](#text-41) |
-| [gdkx11](https://github.com/gtk-rs/gtk3-rs) | 0.18.2 | MIT | [Text 49](#text-49), [Text 41](#text-41) |
-| [gdkx11-sys](https://github.com/gtk-rs/gtk3-rs) | 0.18.2 | MIT | [Text 41](#text-41) |
-| [generic-array](https://github.com/fizyk20/generic-array.git) | 0.14.7 | MIT | [Text 106](#text-106) |
-| [getrandom](https://github.com/rust-random/getrandom) | 0.3.4 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 107](#text-107) |
-| [getrandom](https://github.com/rust-random/getrandom) | 0.4.3 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 108](#text-108) |
-| [gio](https://github.com/gtk-rs/gtk-rs-core) | 0.18.4 | MIT | [Text 49](#text-49), [Text 41](#text-41) |
-| [gio-sys](https://github.com/gtk-rs/gtk-rs-core) | 0.18.1 | MIT | [Text 41](#text-41) |
-| [glib](https://github.com/gtk-rs/gtk-rs-core) | 0.18.5 | MIT | [Text 49](#text-49), [Text 41](#text-41) |
-| [glib-macros](https://github.com/gtk-rs/gtk-rs-core) | 0.18.5 | MIT | [Text 49](#text-49), [Text 41](#text-41) |
-| [glib-sys](https://github.com/gtk-rs/gtk-rs-core) | 0.18.1 | MIT | [Text 41](#text-41) |
-| [glob](https://github.com/rust-lang/glob) | 0.3.4 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 55](#text-55) |
-| [gobject-sys](https://github.com/gtk-rs/gtk-rs-core) | 0.18.0 | MIT | [Text 41](#text-41) |
-| [gtk](https://github.com/gtk-rs/gtk3-rs) | 0.18.2 | MIT | [Text 49](#text-49), [Text 41](#text-41) |
-| [gtk-sys](https://github.com/gtk-rs/gtk3-rs) | 0.18.2 | MIT | [Text 41](#text-41) |
-| [gtk3-macros](https://github.com/gtk-rs/gtk3-rs) | 0.18.2 | MIT | [Text 49](#text-49), [Text 41](#text-41) |
-| [hashbrown](https://github.com/rust-lang/hashbrown) | 0.12.3 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 109](#text-109) |
-| [hashbrown](https://github.com/rust-lang/hashbrown) | 0.17.1 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 109](#text-109) |
-| [heck](https://github.com/withoutboats/heck) | 0.4.1 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 110](#text-110) |
-| [heck](https://github.com/withoutboats/heck) | 0.5.0 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 110](#text-110) |
-| [hex](https://github.com/KokaKiwi/rust-hex) | 0.4.3 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 111](#text-111) |
-| [html5ever](https://github.com/servo/html5ever) | 0.39.0 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 112](#text-112) |
-| [http](https://github.com/hyperium/http) | 1.5.0 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 113](#text-113), [Text 114](#text-114) |
-| [http-body](https://github.com/hyperium/http-body) | 1.1.0 | MIT | [Text 115](#text-115) |
-| [http-body-util](https://github.com/hyperium/http-body) | 0.1.5 | MIT | [Text 115](#text-115) |
-| [httparse](https://github.com/seanmonstar/httparse) | 1.10.1 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 116](#text-116) |
-| [hyper](https://github.com/hyperium/hyper) | 1.12.0 | MIT | [Text 117](#text-117) |
-| [hyper-util](https://github.com/hyperium/hyper-util) | 0.1.21 | MIT | [Text 118](#text-118) |
-| [iana-time-zone](https://github.com/strawlab/iana-time-zone) | 0.1.65 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 119](#text-119), [Text 120](#text-120) |
-| [iana-time-zone-haiku](https://github.com/strawlab/iana-time-zone) | 0.1.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 119](#text-119), [Text 120](#text-120) |
-| [ico](https://github.com/mdsteele/rust-ico) | 0.6.0 | MIT | [Text 121](#text-121) |
-| [icu_collections](https://github.com/unicode-org/icu4x) | 2.4.0 | Unicode-3.0 | [Text 122](#text-122) |
-| [icu_locale_core](https://github.com/unicode-org/icu4x) | 2.4.0 | Unicode-3.0 | [Text 122](#text-122) |
-| [icu_normalizer](https://github.com/unicode-org/icu4x) | 2.4.0 | Unicode-3.0 | [Text 122](#text-122) |
-| [icu_normalizer_data](https://github.com/unicode-org/icu4x) | 2.4.0 | Unicode-3.0 | [Text 122](#text-122) |
-| [icu_properties](https://github.com/unicode-org/icu4x) | 2.4.0 | Unicode-3.0 | [Text 122](#text-122) |
-| [icu_properties_data](https://github.com/unicode-org/icu4x) | 2.4.0 | Unicode-3.0 | [Text 122](#text-122) |
-| [icu_provider](https://github.com/unicode-org/icu4x) | 2.4.0 | Unicode-3.0 | [Text 122](#text-122) |
-| [ident_case](https://github.com/TedDriggs/ident_case) | 1.0.1 | MIT/Apache-2.0 | [Text 96](#text-96) |
-| [idna](https://github.com/servo/rust-url/) | 1.1.0 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 123](#text-123) |
-| [idna_adapter](https://github.com/hsivonen/idna_adapter) | 1.2.2 | Apache-2.0 OR MIT | [Text 4](#text-4), [Text 124](#text-124) |
-| [indexmap](https://github.com/bluss/indexmap) | 1.9.3 | Apache-2.0 OR MIT | [Text 4](#text-4), [Text 125](#text-125) |
-| [indexmap](https://github.com/indexmap-rs/indexmap) | 2.14.2 | Apache-2.0 OR MIT | [Text 4](#text-4), [Text 125](#text-125) |
-| [infer](https://github.com/bojand/infer) | 0.22.0 | MIT | [Text 126](#text-126) |
-| [ipnet](https://github.com/krisprice/ipnet) | 2.12.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 127](#text-127), [Text 128](#text-128) |
-| [itoa](https://github.com/dtolnay/itoa) | 1.0.18 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 41](#text-41) |
-| [javascriptcore-rs](https://github.com/tauri-apps/javascriptcore-rs) | 1.1.2 | MIT | [Text 129](#text-129) |
-| [javascriptcore-rs-sys](https://github.com/tauri-apps/javascriptcore-rs) | 1.1.1 | MIT | [Text 130](#text-130) |
-| [jiff](https://github.com/BurntSushi/jiff) | 0.2.38 | Unlicense OR MIT | [Text 42](#text-42), [Text 43](#text-43), [Text 44](#text-44) |
-| [jiff-core](https://github.com/BurntSushi/jiff) | 0.1.1 | Unlicense OR MIT | [Text 42](#text-42), [Text 43](#text-43), [Text 44](#text-44) |
-| [jiff-static](https://github.com/BurntSushi/jiff) | 0.2.38 | Unlicense OR MIT | [Text 42](#text-42), [Text 43](#text-43), [Text 44](#text-44) |
-| [jiff-tzdb](https://github.com/BurntSushi/jiff) | 0.1.9 | Unlicense OR MIT | [Text 42](#text-42), [Text 43](#text-43), [Text 44](#text-44) |
-| [jiff-tzdb-platform](https://github.com/BurntSushi/jiff) | 0.1.3 | Unlicense OR MIT | [Text 42](#text-42), [Text 43](#text-43), [Text 44](#text-44) |
-| [jni](https://github.com/jni-rs/jni-rs) | 0.21.1 | MIT/Apache-2.0 | [Text 4](#text-4), [Text 131](#text-131) |
-| [jni-sys](https://github.com/jni-rs/jni-sys) | 0.3.1 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 132](#text-132) |
-| [jni-sys](https://github.com/jni-rs/jni-sys) | 0.4.1 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 132](#text-132) |
+| [dunce](https://gitlab.com/kornelski/dunce) | 1.0.5 | CC0-1.0 OR MIT-0 OR Apache-2.0 | [Text 93](#text-93) |
+| [dyn-clone](https://github.com/dtolnay/dyn-clone) | 1.0.20 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 42](#text-42) |
+| [embed-resource](https://github.com/nabijaczleweli/rust-embed-resource) | 3.0.12 | MIT | [Text 94](#text-94) |
+| [embed_plist](https://github.com/nvzqz/embed-plist-rs) | 1.2.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 95](#text-95) |
+| [equivalent](https://github.com/indexmap-rs/equivalent) | 1.0.3 | Apache-2.0 OR MIT | [Text 4](#text-4), [Text 96](#text-96) |
+| [erased-serde](https://github.com/dtolnay/erased-serde) | 0.4.11 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 42](#text-42) |
+| [fastrand](https://github.com/smol-rs/fastrand) | 2.5.0 | Apache-2.0 OR MIT | [Text 4](#text-4), [Text 42](#text-42) |
+| [fdeflate](https://github.com/image-rs/fdeflate) | 0.3.7 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 97](#text-97) |
+| [field-offset](https://github.com/Diggsey/rust-field-offset) | 0.3.6 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 98](#text-98) |
+| [find-msvc-tools](https://github.com/rust-lang/cc-rs) | 0.1.15 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 65](#text-65) |
+| [flate2](https://github.com/rust-lang/flate2-rs) | 1.1.10 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 99](#text-99) |
+| [fnv](https://github.com/servo/rust-fnv) | 1.0.7 | Apache-2.0 / MIT | [Text 4](#text-4), [Text 100](#text-100) |
+| [foldhash](https://github.com/orlp/foldhash) | 0.2.0 | Zlib | [Text 101](#text-101) |
+| [foreign-types](https://github.com/sfackler/foreign-types) | 0.5.0 | MIT/Apache-2.0 | [Text 4](#text-4), [Text 102](#text-102) |
+| [foreign-types-macros](https://github.com/sfackler/foreign-types) | 0.2.4 | MIT/Apache-2.0 | [Text 4](#text-4), [Text 102](#text-102) |
+| [foreign-types-shared](https://github.com/sfackler/foreign-types) | 0.3.1 | MIT/Apache-2.0 | [Text 4](#text-4), [Text 102](#text-102) |
+| [form_urlencoded](https://github.com/servo/rust-url) | 1.2.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 103](#text-103) |
+| [futures-channel](https://github.com/rust-lang/futures-rs) | 0.3.34 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 104](#text-104), [Text 105](#text-105), [Text 106](#text-106) |
+| [futures-core](https://github.com/rust-lang/futures-rs) | 0.3.34 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 104](#text-104), [Text 105](#text-105) |
+| [futures-executor](https://github.com/rust-lang/futures-rs) | 0.3.34 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 104](#text-104), [Text 105](#text-105) |
+| [futures-io](https://github.com/rust-lang/futures-rs) | 0.3.34 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 104](#text-104), [Text 105](#text-105) |
+| [futures-macro](https://github.com/rust-lang/futures-rs) | 0.3.34 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 104](#text-104), [Text 105](#text-105) |
+| [futures-sink](https://github.com/rust-lang/futures-rs) | 0.3.34 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 104](#text-104), [Text 105](#text-105) |
+| [futures-task](https://github.com/rust-lang/futures-rs) | 0.3.34 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 104](#text-104), [Text 105](#text-105) |
+| [futures-util](https://github.com/rust-lang/futures-rs) | 0.3.34 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 104](#text-104), [Text 105](#text-105) |
+| [gdk](https://github.com/gtk-rs/gtk3-rs) | 0.18.2 | MIT | [Text 50](#text-50), [Text 42](#text-42) |
+| [gdk-pixbuf](https://github.com/gtk-rs/gtk-rs-core) | 0.18.5 | MIT | [Text 50](#text-50), [Text 42](#text-42) |
+| [gdk-pixbuf-sys](https://github.com/gtk-rs/gtk-rs-core) | 0.18.0 | MIT | [Text 42](#text-42) |
+| [gdk-sys](https://github.com/gtk-rs/gtk3-rs) | 0.18.2 | MIT | [Text 42](#text-42) |
+| [gdkwayland-sys](https://github.com/gtk-rs/gtk3-rs) | 0.18.2 | MIT | [Text 42](#text-42) |
+| [gdkx11](https://github.com/gtk-rs/gtk3-rs) | 0.18.2 | MIT | [Text 50](#text-50), [Text 42](#text-42) |
+| [gdkx11-sys](https://github.com/gtk-rs/gtk3-rs) | 0.18.2 | MIT | [Text 42](#text-42) |
+| [generic-array](https://github.com/fizyk20/generic-array.git) | 0.14.7 | MIT | [Text 107](#text-107) |
+| [getrandom](https://github.com/rust-random/getrandom) | 0.3.4 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 108](#text-108) |
+| [getrandom](https://github.com/rust-random/getrandom) | 0.4.3 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 109](#text-109) |
+| [gio](https://github.com/gtk-rs/gtk-rs-core) | 0.18.4 | MIT | [Text 50](#text-50), [Text 42](#text-42) |
+| [gio-sys](https://github.com/gtk-rs/gtk-rs-core) | 0.18.1 | MIT | [Text 42](#text-42) |
+| [glib](https://github.com/gtk-rs/gtk-rs-core) | 0.18.5 | MIT | [Text 50](#text-50), [Text 42](#text-42) |
+| [glib-macros](https://github.com/gtk-rs/gtk-rs-core) | 0.18.5 | MIT | [Text 50](#text-50), [Text 42](#text-42) |
+| [glib-sys](https://github.com/gtk-rs/gtk-rs-core) | 0.18.1 | MIT | [Text 42](#text-42) |
+| [glob](https://github.com/rust-lang/glob) | 0.3.4 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 56](#text-56) |
+| [gobject-sys](https://github.com/gtk-rs/gtk-rs-core) | 0.18.0 | MIT | [Text 42](#text-42) |
+| [gtk](https://github.com/gtk-rs/gtk3-rs) | 0.18.2 | MIT | [Text 50](#text-50), [Text 42](#text-42) |
+| [gtk-sys](https://github.com/gtk-rs/gtk3-rs) | 0.18.2 | MIT | [Text 42](#text-42) |
+| [gtk3-macros](https://github.com/gtk-rs/gtk3-rs) | 0.18.2 | MIT | [Text 50](#text-50), [Text 42](#text-42) |
+| [hashbrown](https://github.com/rust-lang/hashbrown) | 0.12.3 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 110](#text-110) |
+| [hashbrown](https://github.com/rust-lang/hashbrown) | 0.17.1 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 110](#text-110) |
+| [heck](https://github.com/withoutboats/heck) | 0.4.1 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 111](#text-111) |
+| [heck](https://github.com/withoutboats/heck) | 0.5.0 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 111](#text-111) |
+| [hex](https://github.com/KokaKiwi/rust-hex) | 0.4.3 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 112](#text-112) |
+| [html5ever](https://github.com/servo/html5ever) | 0.39.0 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 113](#text-113) |
+| [http](https://github.com/hyperium/http) | 1.5.0 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 114](#text-114), [Text 115](#text-115) |
+| [http-body](https://github.com/hyperium/http-body) | 1.1.0 | MIT | [Text 116](#text-116) |
+| [http-body-util](https://github.com/hyperium/http-body) | 0.1.5 | MIT | [Text 116](#text-116) |
+| [httparse](https://github.com/seanmonstar/httparse) | 1.10.1 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 117](#text-117) |
+| [hyper](https://github.com/hyperium/hyper) | 1.12.0 | MIT | [Text 118](#text-118) |
+| [hyper-util](https://github.com/hyperium/hyper-util) | 0.1.21 | MIT | [Text 119](#text-119) |
+| [iana-time-zone](https://github.com/strawlab/iana-time-zone) | 0.1.65 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 120](#text-120), [Text 121](#text-121) |
+| [iana-time-zone-haiku](https://github.com/strawlab/iana-time-zone) | 0.1.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 120](#text-120), [Text 121](#text-121) |
+| [ico](https://github.com/mdsteele/rust-ico) | 0.6.0 | MIT | [Text 122](#text-122) |
+| [icu_collections](https://github.com/unicode-org/icu4x) | 2.4.0 | Unicode-3.0 | [Text 123](#text-123) |
+| [icu_locale_core](https://github.com/unicode-org/icu4x) | 2.4.0 | Unicode-3.0 | [Text 123](#text-123) |
+| [icu_normalizer](https://github.com/unicode-org/icu4x) | 2.4.0 | Unicode-3.0 | [Text 123](#text-123) |
+| [icu_normalizer_data](https://github.com/unicode-org/icu4x) | 2.4.0 | Unicode-3.0 | [Text 123](#text-123) |
+| [icu_properties](https://github.com/unicode-org/icu4x) | 2.4.0 | Unicode-3.0 | [Text 123](#text-123) |
+| [icu_properties_data](https://github.com/unicode-org/icu4x) | 2.4.0 | Unicode-3.0 | [Text 123](#text-123) |
+| [icu_provider](https://github.com/unicode-org/icu4x) | 2.4.0 | Unicode-3.0 | [Text 123](#text-123) |
+| [ident_case](https://github.com/TedDriggs/ident_case) | 1.0.1 | MIT/Apache-2.0 | [Text 97](#text-97) |
+| [idna](https://github.com/servo/rust-url/) | 1.1.0 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 124](#text-124) |
+| [idna_adapter](https://github.com/hsivonen/idna_adapter) | 1.2.2 | Apache-2.0 OR MIT | [Text 4](#text-4), [Text 125](#text-125) |
+| [indexmap](https://github.com/bluss/indexmap) | 1.9.3 | Apache-2.0 OR MIT | [Text 4](#text-4), [Text 126](#text-126) |
+| [indexmap](https://github.com/indexmap-rs/indexmap) | 2.14.2 | Apache-2.0 OR MIT | [Text 4](#text-4), [Text 126](#text-126) |
+| [infer](https://github.com/bojand/infer) | 0.22.0 | MIT | [Text 127](#text-127) |
+| [ipnet](https://github.com/krisprice/ipnet) | 2.12.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 128](#text-128), [Text 129](#text-129) |
+| [itoa](https://github.com/dtolnay/itoa) | 1.0.18 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 42](#text-42) |
+| [javascriptcore-rs](https://github.com/tauri-apps/javascriptcore-rs) | 1.1.2 | MIT | [Text 130](#text-130) |
+| [javascriptcore-rs-sys](https://github.com/tauri-apps/javascriptcore-rs) | 1.1.1 | MIT | [Text 131](#text-131) |
+| [jiff](https://github.com/BurntSushi/jiff) | 0.2.38 | Unlicense OR MIT | [Text 43](#text-43), [Text 44](#text-44), [Text 45](#text-45) |
+| [jiff-core](https://github.com/BurntSushi/jiff) | 0.1.1 | Unlicense OR MIT | [Text 43](#text-43), [Text 44](#text-44), [Text 45](#text-45) |
+| [jiff-static](https://github.com/BurntSushi/jiff) | 0.2.38 | Unlicense OR MIT | [Text 43](#text-43), [Text 44](#text-44), [Text 45](#text-45) |
+| [jiff-tzdb](https://github.com/BurntSushi/jiff) | 0.1.9 | Unlicense OR MIT | [Text 43](#text-43), [Text 44](#text-44), [Text 45](#text-45) |
+| [jiff-tzdb-platform](https://github.com/BurntSushi/jiff) | 0.1.3 | Unlicense OR MIT | [Text 43](#text-43), [Text 44](#text-44), [Text 45](#text-45) |
+| [jni](https://github.com/jni-rs/jni-rs) | 0.21.1 | MIT/Apache-2.0 | [Text 4](#text-4), [Text 132](#text-132) |
+| [jni-sys](https://github.com/jni-rs/jni-sys) | 0.3.1 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 133](#text-133) |
+| [jni-sys](https://github.com/jni-rs/jni-sys) | 0.4.1 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 133](#text-133) |
 | [jni-sys-macros](https://github.com/jni-rs/jni-sys) | 0.4.1 | MIT OR Apache-2.0 | [Text 12](#text-12) |
-| [js-sys](https://github.com/wasm-bindgen/wasm-bindgen/tree/master/crates/js-sys) | 0.3.107 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 64](#text-64) |
-| [json-patch](https://github.com/idubrov/json-patch) | 4.2.0 | MIT/Apache-2.0 | [Text 4](#text-4), [Text 133](#text-133) |
-| [jsonptr](https://github.com/chanced/jsonptr) | 0.7.1 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 134](#text-134), [Text 135](#text-135) |
-| [keyboard-types](https://github.com/rust-windowing/keyboard-types) | 0.8.3 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 136](#text-136), [Text 137](#text-137) |
-| [libappindicator](https://crates.io/crates/libappindicator) | 0.9.0 | Apache-2.0 OR MIT | [Text 4](#text-4), [Text 138](#text-138) |
+| [js-sys](https://github.com/wasm-bindgen/wasm-bindgen/tree/master/crates/js-sys) | 0.3.107 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 65](#text-65) |
+| [json-patch](https://github.com/idubrov/json-patch) | 4.2.0 | MIT/Apache-2.0 | [Text 4](#text-4), [Text 134](#text-134) |
+| [jsonptr](https://github.com/chanced/jsonptr) | 0.7.1 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 135](#text-135), [Text 136](#text-136) |
+| [keyboard-types](https://github.com/rust-windowing/keyboard-types) | 0.8.3 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 137](#text-137), [Text 138](#text-138) |
+| [libappindicator](https://crates.io/crates/libappindicator) | 0.9.0 | Apache-2.0 OR MIT | [Text 4](#text-4), [Text 139](#text-139) |
 | [libappindicator-sys](https://crates.io/crates/libappindicator-sys) | 0.9.0 | Apache-2.0 OR MIT | [Text 4](#text-4) |
-| [libc](https://github.com/rust-lang/libc) | 0.2.191 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 139](#text-139) |
-| [libdbus-sys](https://github.com/diwic/dbus-rs) | 0.2.7 | Apache-2.0/MIT | [Text 4](#text-4), [Text 80](#text-80), [Text 81](#text-81) |
-| [libloading](https://github.com/nagisa/rust_libloading/) | 0.7.4 | ISC | [Text 140](#text-140) |
-| [libredox](https://gitlab.redox-os.org/redox-os/libredox.git) | 0.1.25 | MIT | [Text 141](#text-141) |
-| [litemap](https://github.com/unicode-org/icu4x) | 0.8.3 | Unicode-3.0 | [Text 122](#text-122) |
-| [lock_api](https://github.com/Amanieu/parking_lot) | 0.4.14 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 142](#text-142) |
-| [log](https://github.com/rust-lang/log) | 0.4.35 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 55](#text-55) |
-| [markup5ever](https://github.com/servo/html5ever) | 0.39.0 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 112](#text-112) |
-| [memchr](https://github.com/BurntSushi/memchr) | 2.8.3 | Unlicense OR MIT | [Text 42](#text-42), [Text 43](#text-43), [Text 44](#text-44) |
-| [memoffset](https://github.com/Gilnaa/memoffset) | 0.9.1 | MIT | [Text 143](#text-143) |
-| [mime](https://github.com/hyperium/mime) | 0.3.17 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 144](#text-144) |
-| [miniz_oxide](https://github.com/Frommi/miniz_oxide/tree/master/miniz_oxide) | 0.8.9 | MIT OR Zlib OR Apache-2.0 | [Text 145](#text-145), [Text 4](#text-4), [Text 146](#text-146) |
-| [miniz_oxide](https://github.com/Frommi/miniz_oxide/tree/master/miniz_oxide) | 0.9.1 | MIT OR Zlib OR Apache-2.0 | [Text 145](#text-145), [Text 4](#text-4), [Text 146](#text-146) |
-| [mio](https://github.com/tokio-rs/mio) | 1.2.4 | MIT | [Text 147](#text-147) |
-| [muda](https://github.com/tauri-apps/muda) | 0.20.0 | Apache-2.0 OR MIT | [Text 4](#text-4), [Text 148](#text-148), [Text 149](#text-149), [Text 150](#text-150) |
+| [libc](https://github.com/rust-lang/libc) | 0.2.191 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 140](#text-140) |
+| [libdbus-sys](https://github.com/diwic/dbus-rs) | 0.2.7 | Apache-2.0/MIT | [Text 4](#text-4), [Text 81](#text-81), [Text 82](#text-82) |
+| [libloading](https://github.com/nagisa/rust_libloading/) | 0.7.4 | ISC | [Text 141](#text-141) |
+| [libredox](https://gitlab.redox-os.org/redox-os/libredox.git) | 0.1.25 | MIT | [Text 142](#text-142) |
+| [litemap](https://github.com/unicode-org/icu4x) | 0.8.3 | Unicode-3.0 | [Text 123](#text-123) |
+| [lock_api](https://github.com/Amanieu/parking_lot) | 0.4.14 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 143](#text-143) |
+| [log](https://github.com/rust-lang/log) | 0.4.35 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 56](#text-56) |
+| [markup5ever](https://github.com/servo/html5ever) | 0.39.0 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 113](#text-113) |
+| [memchr](https://github.com/BurntSushi/memchr) | 2.8.3 | Unlicense OR MIT | [Text 43](#text-43), [Text 44](#text-44), [Text 45](#text-45) |
+| [memoffset](https://github.com/Gilnaa/memoffset) | 0.9.1 | MIT | [Text 144](#text-144) |
+| [mime](https://github.com/hyperium/mime) | 0.3.17 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 145](#text-145) |
+| [miniz_oxide](https://github.com/Frommi/miniz_oxide/tree/master/miniz_oxide) | 0.8.9 | MIT OR Zlib OR Apache-2.0 | [Text 146](#text-146), [Text 4](#text-4), [Text 147](#text-147) |
+| [miniz_oxide](https://github.com/Frommi/miniz_oxide/tree/master/miniz_oxide) | 0.9.1 | MIT OR Zlib OR Apache-2.0 | [Text 146](#text-146), [Text 4](#text-4), [Text 147](#text-147) |
+| [mio](https://github.com/tokio-rs/mio) | 1.2.4 | MIT | [Text 148](#text-148) |
+| [muda](https://github.com/tauri-apps/muda) | 0.20.0 | Apache-2.0 OR MIT | [Text 4](#text-4), [Text 149](#text-149), [Text 150](#text-150), [Text 151](#text-151) |
 | [ndk](https://github.com/rust-mobile/ndk) | 0.9.0 | MIT OR Apache-2.0 | [Text 12](#text-12) |
 | [ndk-context](https://github.com/rust-windowing/android-ndk-rs) | 0.1.1 | MIT OR Apache-2.0 | [Text 12](#text-12) |
 | [ndk-sys](https://github.com/rust-mobile/ndk) | 0.6.0+11769913 | MIT OR Apache-2.0 | [Text 12](#text-12) |
-| [new_debug_unreachable](https://github.com/mbrubeck/rust-debug-unreachable) | 1.0.6 | MIT | [Text 151](#text-151) |
-| [num-conv](https://github.com/jhpratt/num-conv) | 0.2.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 152](#text-152) |
-| [num-traits](https://github.com/rust-num/num-traits) | 0.2.19 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 55](#text-55) |
-| [num_enum](https://github.com/illicitonion/num_enum) | 0.7.6 | BSD-3-Clause OR MIT OR Apache-2.0 | [Text 4](#text-4), [Text 153](#text-153), [Text 41](#text-41) |
-| [num_enum_derive](https://github.com/illicitonion/num_enum) | 0.7.6 | BSD-3-Clause OR MIT OR Apache-2.0 | [Text 4](#text-4), [Text 153](#text-153), [Text 41](#text-41) |
+| [new_debug_unreachable](https://github.com/mbrubeck/rust-debug-unreachable) | 1.0.6 | MIT | [Text 152](#text-152) |
+| [num-conv](https://github.com/jhpratt/num-conv) | 0.2.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 153](#text-153) |
+| [num-traits](https://github.com/rust-num/num-traits) | 0.2.19 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 56](#text-56) |
+| [num_enum](https://github.com/illicitonion/num_enum) | 0.7.6 | BSD-3-Clause OR MIT OR Apache-2.0 | [Text 4](#text-4), [Text 154](#text-154), [Text 42](#text-42) |
+| [num_enum_derive](https://github.com/illicitonion/num_enum) | 0.7.6 | BSD-3-Clause OR MIT OR Apache-2.0 | [Text 4](#text-4), [Text 154](#text-154), [Text 42](#text-42) |
 | [objc2](https://github.com/madsmtm/objc2) | 0.6.5 | MIT | [Text 12](#text-12) |
-| [objc2-app-kit](https://github.com/madsmtm/objc2) | 0.3.2 | Zlib OR Apache-2.0 OR MIT | [Text 89](#text-89) |
-| [objc2-cloud-kit](https://github.com/madsmtm/objc2) | 0.3.2 | Zlib OR Apache-2.0 OR MIT | [Text 89](#text-89) |
-| [objc2-core-data](https://github.com/madsmtm/objc2) | 0.3.2 | Zlib OR Apache-2.0 OR MIT | [Text 89](#text-89) |
-| [objc2-core-foundation](https://github.com/madsmtm/objc2) | 0.3.2 | Zlib OR Apache-2.0 OR MIT | [Text 89](#text-89) |
-| [objc2-core-graphics](https://github.com/madsmtm/objc2) | 0.3.2 | Zlib OR Apache-2.0 OR MIT | [Text 89](#text-89) |
-| [objc2-core-image](https://github.com/madsmtm/objc2) | 0.3.2 | Zlib OR Apache-2.0 OR MIT | [Text 89](#text-89) |
-| [objc2-core-location](https://github.com/madsmtm/objc2) | 0.3.2 | Zlib OR Apache-2.0 OR MIT | [Text 89](#text-89) |
-| [objc2-core-text](https://github.com/madsmtm/objc2) | 0.3.2 | Zlib OR Apache-2.0 OR MIT | [Text 89](#text-89) |
+| [objc2-app-kit](https://github.com/madsmtm/objc2) | 0.3.2 | Zlib OR Apache-2.0 OR MIT | [Text 90](#text-90) |
+| [objc2-cloud-kit](https://github.com/madsmtm/objc2) | 0.3.2 | Zlib OR Apache-2.0 OR MIT | [Text 90](#text-90) |
+| [objc2-core-data](https://github.com/madsmtm/objc2) | 0.3.2 | Zlib OR Apache-2.0 OR MIT | [Text 90](#text-90) |
+| [objc2-core-foundation](https://github.com/madsmtm/objc2) | 0.3.2 | Zlib OR Apache-2.0 OR MIT | [Text 90](#text-90) |
+| [objc2-core-graphics](https://github.com/madsmtm/objc2) | 0.3.2 | Zlib OR Apache-2.0 OR MIT | [Text 90](#text-90) |
+| [objc2-core-image](https://github.com/madsmtm/objc2) | 0.3.2 | Zlib OR Apache-2.0 OR MIT | [Text 90](#text-90) |
+| [objc2-core-location](https://github.com/madsmtm/objc2) | 0.3.2 | Zlib OR Apache-2.0 OR MIT | [Text 90](#text-90) |
+| [objc2-core-text](https://github.com/madsmtm/objc2) | 0.3.2 | Zlib OR Apache-2.0 OR MIT | [Text 90](#text-90) |
 | [objc2-encode](https://github.com/madsmtm/objc2) | 4.1.0 | MIT | [Text 12](#text-12) |
-| [objc2-exception-helper](https://github.com/madsmtm/objc2) | 0.1.1 | Zlib OR Apache-2.0 OR MIT | [Text 89](#text-89) |
+| [objc2-exception-helper](https://github.com/madsmtm/objc2) | 0.1.1 | Zlib OR Apache-2.0 OR MIT | [Text 90](#text-90) |
 | [objc2-foundation](https://github.com/madsmtm/objc2) | 0.3.2 | MIT | [Text 12](#text-12) |
-| [objc2-io-surface](https://github.com/madsmtm/objc2) | 0.3.2 | Zlib OR Apache-2.0 OR MIT | [Text 89](#text-89) |
-| [objc2-quartz-core](https://github.com/madsmtm/objc2) | 0.3.2 | Zlib OR Apache-2.0 OR MIT | [Text 89](#text-89) |
-| [objc2-ui-kit](https://github.com/madsmtm/objc2) | 0.3.2 | Zlib OR Apache-2.0 OR MIT | [Text 89](#text-89) |
-| [objc2-user-notifications](https://github.com/madsmtm/objc2) | 0.3.2 | Zlib OR Apache-2.0 OR MIT | [Text 89](#text-89) |
-| [objc2-web-kit](https://github.com/madsmtm/objc2) | 0.3.2 | Zlib OR Apache-2.0 OR MIT | [Text 89](#text-89) |
-| [once_cell](https://github.com/matklad/once_cell) | 1.21.4 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 41](#text-41) |
-| [option-ext](https://github.com/soc/option-ext.git) | 0.2.0 | MPL-2.0 | [Text 154](#text-154) |
-| [pango](https://github.com/gtk-rs/gtk-rs-core) | 0.18.3 | MIT | [Text 49](#text-49), [Text 41](#text-41) |
-| [pango-sys](https://github.com/gtk-rs/gtk-rs-core) | 0.18.0 | MIT | [Text 41](#text-41) |
-| [parking_lot](https://github.com/Amanieu/parking_lot) | 0.12.5 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 142](#text-142) |
-| [parking_lot_core](https://github.com/Amanieu/parking_lot) | 0.9.12 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 142](#text-142) |
-| [percent-encoding](https://github.com/servo/rust-url/) | 2.3.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 123](#text-123) |
-| [phf](https://github.com/rust-phf/rust-phf) | 0.13.1 | MIT | [Text 155](#text-155) |
-| [phf_codegen](https://github.com/rust-phf/rust-phf) | 0.13.1 | MIT | [Text 155](#text-155) |
-| [phf_generator](https://github.com/rust-phf/rust-phf) | 0.13.1 | MIT | [Text 155](#text-155) |
-| [phf_macros](https://github.com/rust-phf/rust-phf) | 0.13.1 | MIT | [Text 155](#text-155) |
-| [phf_shared](https://github.com/rust-phf/rust-phf) | 0.13.1 | MIT | [Text 155](#text-155) |
-| [pin-project-lite](https://github.com/taiki-e/pin-project-lite) | 0.2.17 | Apache-2.0 OR MIT | [Text 4](#text-4), [Text 41](#text-41) |
-| [pkg-config](https://github.com/rust-lang/pkg-config-rs) | 0.3.34 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 64](#text-64) |
-| [plist](https://github.com/ebarnard/rust-plist/) | 1.10.3 | MIT | [Text 156](#text-156) |
-| [png](https://github.com/image-rs/image-png) | 0.18.1 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 157](#text-157) |
-| [portable-atomic](https://github.com/taiki-e/portable-atomic) | 1.15.0 | Apache-2.0 OR MIT | [Text 4](#text-4), [Text 41](#text-41) |
-| [portable-atomic-util](https://github.com/taiki-e/portable-atomic-util) | 0.2.8 | Apache-2.0 OR MIT | [Text 4](#text-4), [Text 41](#text-41) |
-| [potential_utf](https://github.com/unicode-org/icu4x) | 0.1.6 | Unicode-3.0 | [Text 122](#text-122) |
-| [powerfmt](https://github.com/jhpratt/powerfmt) | 0.2.1 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 158](#text-158), [Text 159](#text-159) |
-| [precomputed-hash](https://github.com/emilio/precomputed-hash) | 0.1.1 | MIT | [Text 160](#text-160) |
-| [proc-macro-crate](https://github.com/bkchr/proc-macro-crate) | 1.3.1 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 40](#text-40), [Text 41](#text-41) |
-| [proc-macro-crate](https://github.com/bkchr/proc-macro-crate) | 2.0.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 40](#text-40), [Text 41](#text-41) |
-| [proc-macro-crate](https://github.com/bkchr/proc-macro-crate) | 3.5.0 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 40](#text-40), [Text 41](#text-41) |
-| [proc-macro-error](https://gitlab.com/CreepySkeleton/proc-macro-error) | 1.0.4 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 161](#text-161), [Text 162](#text-162) |
-| [proc-macro-error-attr](https://gitlab.com/CreepySkeleton/proc-macro-error) | 1.0.4 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 161](#text-161), [Text 162](#text-162) |
-| [proc-macro2](https://github.com/dtolnay/proc-macro2) | 1.0.107 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 41](#text-41) |
-| [quick-xml](https://github.com/tafia/quick-xml) | 0.42.0 | MIT | [Text 163](#text-163) |
-| [quote](https://github.com/dtolnay/quote) | 1.0.47 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 41](#text-41) |
+| [objc2-io-surface](https://github.com/madsmtm/objc2) | 0.3.2 | Zlib OR Apache-2.0 OR MIT | [Text 90](#text-90) |
+| [objc2-quartz-core](https://github.com/madsmtm/objc2) | 0.3.2 | Zlib OR Apache-2.0 OR MIT | [Text 90](#text-90) |
+| [objc2-ui-kit](https://github.com/madsmtm/objc2) | 0.3.2 | Zlib OR Apache-2.0 OR MIT | [Text 90](#text-90) |
+| [objc2-user-notifications](https://github.com/madsmtm/objc2) | 0.3.2 | Zlib OR Apache-2.0 OR MIT | [Text 90](#text-90) |
+| [objc2-web-kit](https://github.com/madsmtm/objc2) | 0.3.2 | Zlib OR Apache-2.0 OR MIT | [Text 90](#text-90) |
+| [once_cell](https://github.com/matklad/once_cell) | 1.21.4 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 42](#text-42) |
+| [option-ext](https://github.com/soc/option-ext.git) | 0.2.0 | MPL-2.0 | [Text 155](#text-155) |
+| [pango](https://github.com/gtk-rs/gtk-rs-core) | 0.18.3 | MIT | [Text 50](#text-50), [Text 42](#text-42) |
+| [pango-sys](https://github.com/gtk-rs/gtk-rs-core) | 0.18.0 | MIT | [Text 42](#text-42) |
+| [parking_lot](https://github.com/Amanieu/parking_lot) | 0.12.5 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 143](#text-143) |
+| [parking_lot_core](https://github.com/Amanieu/parking_lot) | 0.9.12 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 143](#text-143) |
+| [percent-encoding](https://github.com/servo/rust-url/) | 2.3.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 124](#text-124) |
+| [phf](https://github.com/rust-phf/rust-phf) | 0.13.1 | MIT | [Text 156](#text-156) |
+| [phf_codegen](https://github.com/rust-phf/rust-phf) | 0.13.1 | MIT | [Text 156](#text-156) |
+| [phf_generator](https://github.com/rust-phf/rust-phf) | 0.13.1 | MIT | [Text 156](#text-156) |
+| [phf_macros](https://github.com/rust-phf/rust-phf) | 0.13.1 | MIT | [Text 156](#text-156) |
+| [phf_shared](https://github.com/rust-phf/rust-phf) | 0.13.1 | MIT | [Text 156](#text-156) |
+| [pin-project-lite](https://github.com/taiki-e/pin-project-lite) | 0.2.17 | Apache-2.0 OR MIT | [Text 4](#text-4), [Text 42](#text-42) |
+| [pkg-config](https://github.com/rust-lang/pkg-config-rs) | 0.3.34 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 65](#text-65) |
+| [plist](https://github.com/ebarnard/rust-plist/) | 1.10.3 | MIT | [Text 157](#text-157) |
+| [png](https://github.com/image-rs/image-png) | 0.18.1 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 158](#text-158) |
+| [portable-atomic](https://github.com/taiki-e/portable-atomic) | 1.15.0 | Apache-2.0 OR MIT | [Text 4](#text-4), [Text 42](#text-42) |
+| [portable-atomic-util](https://github.com/taiki-e/portable-atomic-util) | 0.2.8 | Apache-2.0 OR MIT | [Text 4](#text-4), [Text 42](#text-42) |
+| [potential_utf](https://github.com/unicode-org/icu4x) | 0.1.6 | Unicode-3.0 | [Text 123](#text-123) |
+| [powerfmt](https://github.com/jhpratt/powerfmt) | 0.2.1 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 159](#text-159), [Text 160](#text-160) |
+| [precomputed-hash](https://github.com/emilio/precomputed-hash) | 0.1.1 | MIT | [Text 161](#text-161) |
+| [proc-macro-crate](https://github.com/bkchr/proc-macro-crate) | 1.3.1 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 41](#text-41), [Text 42](#text-42) |
+| [proc-macro-crate](https://github.com/bkchr/proc-macro-crate) | 2.0.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 41](#text-41), [Text 42](#text-42) |
+| [proc-macro-crate](https://github.com/bkchr/proc-macro-crate) | 3.5.0 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 41](#text-41), [Text 42](#text-42) |
+| [proc-macro-error](https://gitlab.com/CreepySkeleton/proc-macro-error) | 1.0.4 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 162](#text-162), [Text 163](#text-163) |
+| [proc-macro-error-attr](https://gitlab.com/CreepySkeleton/proc-macro-error) | 1.0.4 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 162](#text-162), [Text 163](#text-163) |
+| [proc-macro2](https://github.com/dtolnay/proc-macro2) | 1.0.107 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 42](#text-42) |
+| [quick-xml](https://github.com/tafia/quick-xml) | 0.42.0 | MIT | [Text 164](#text-164) |
+| [quote](https://github.com/dtolnay/quote) | 1.0.47 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 42](#text-42) |
 | [r-efi](https://github.com/r-efi/r-efi) | 5.3.0 | MIT OR Apache-2.0 OR LGPL-2.1-or-later | [Text 12](#text-12) |
 | [r-efi](https://github.com/r-efi/r-efi) | 6.0.0 | MIT OR Apache-2.0 OR LGPL-2.1-or-later | [Text 12](#text-12) |
-| [raw-window-handle](https://github.com/rust-windowing/raw-window-handle) | 0.6.2 | MIT OR Apache-2.0 OR Zlib | [Text 4](#text-4), [Text 164](#text-164), [Text 165](#text-165) |
-| [redox_syscall](https://gitlab.redox-os.org/redox-os/syscall) | 0.5.18 | MIT | [Text 166](#text-166) |
-| [redox_users](https://gitlab.redox-os.org/redox-os/users) | 0.5.3 | MIT | [Text 167](#text-167) |
-| [ref-cast](https://github.com/dtolnay/ref-cast) | 1.0.27 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 41](#text-41) |
-| [ref-cast-impl](https://github.com/dtolnay/ref-cast) | 1.0.27 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 41](#text-41) |
-| [regex](https://github.com/rust-lang/regex) | 1.13.1 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 55](#text-55) |
-| [regex-automata](https://github.com/rust-lang/regex) | 0.4.18 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 55](#text-55) |
-| [regex-syntax](https://github.com/rust-lang/regex) | 0.8.11 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 55](#text-55) |
-| [reqwest](https://github.com/seanmonstar/reqwest) | 0.13.5 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 168](#text-168), [Text 169](#text-169) |
-| [rustc-hash](https://github.com/rust-lang/rustc-hash) | 2.1.3 | Apache-2.0 OR MIT | [Text 4](#text-4), [Text 41](#text-41) |
-| [rustc_version](https://github.com/djc/rustc-version-rs) | 0.4.1 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 142](#text-142) |
-| [rustversion](https://github.com/dtolnay/rustversion) | 1.0.23 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 41](#text-41) |
-| [same-file](https://github.com/BurntSushi/same-file) | 1.0.6 | Unlicense/MIT | [Text 42](#text-42), [Text 170](#text-170), [Text 44](#text-44) |
-| [schemars](https://github.com/GREsau/schemars) | 0.8.22 | MIT | [Text 171](#text-171) |
-| [schemars](https://github.com/GREsau/schemars) | 0.9.0 | MIT | [Text 171](#text-171) |
-| [schemars](https://github.com/GREsau/schemars) | 1.2.3 | MIT | [Text 171](#text-171) |
-| [schemars_derive](https://github.com/GREsau/schemars) | 0.8.22 | MIT | [Text 171](#text-171) |
-| [scopeguard](https://github.com/bluss/scopeguard) | 1.2.0 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 172](#text-172) |
+| [raw-window-handle](https://github.com/rust-windowing/raw-window-handle) | 0.6.2 | MIT OR Apache-2.0 OR Zlib | [Text 4](#text-4), [Text 165](#text-165), [Text 166](#text-166) |
+| [redox_syscall](https://gitlab.redox-os.org/redox-os/syscall) | 0.5.18 | MIT | [Text 167](#text-167) |
+| [redox_users](https://gitlab.redox-os.org/redox-os/users) | 0.5.3 | MIT | [Text 168](#text-168) |
+| [ref-cast](https://github.com/dtolnay/ref-cast) | 1.0.27 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 42](#text-42) |
+| [ref-cast-impl](https://github.com/dtolnay/ref-cast) | 1.0.27 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 42](#text-42) |
+| [regex](https://github.com/rust-lang/regex) | 1.13.1 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 56](#text-56) |
+| [regex-automata](https://github.com/rust-lang/regex) | 0.4.18 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 56](#text-56) |
+| [regex-syntax](https://github.com/rust-lang/regex) | 0.8.11 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 56](#text-56) |
+| [reqwest](https://github.com/seanmonstar/reqwest) | 0.13.5 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 169](#text-169), [Text 170](#text-170) |
+| [rustc-hash](https://github.com/rust-lang/rustc-hash) | 2.1.3 | Apache-2.0 OR MIT | [Text 4](#text-4), [Text 42](#text-42) |
+| [rustc_version](https://github.com/djc/rustc-version-rs) | 0.4.1 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 143](#text-143) |
+| [rustversion](https://github.com/dtolnay/rustversion) | 1.0.23 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 42](#text-42) |
+| [same-file](https://github.com/BurntSushi/same-file) | 1.0.6 | Unlicense/MIT | [Text 43](#text-43), [Text 171](#text-171), [Text 45](#text-45) |
+| [schemars](https://github.com/GREsau/schemars) | 0.8.22 | MIT | [Text 172](#text-172) |
+| [schemars](https://github.com/GREsau/schemars) | 0.9.0 | MIT | [Text 172](#text-172) |
+| [schemars](https://github.com/GREsau/schemars) | 1.2.3 | MIT | [Text 172](#text-172) |
+| [schemars_derive](https://github.com/GREsau/schemars) | 0.8.22 | MIT | [Text 172](#text-172) |
+| [scopeguard](https://github.com/bluss/scopeguard) | 1.2.0 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 173](#text-173) |
 | [selectors](https://github.com/servo/stylo) | 0.38.0 | MPL-2.0 | [Text 7](#text-7) |
-| [semver](https://github.com/dtolnay/semver) | 1.0.28 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 41](#text-41) |
-| [serde](https://github.com/serde-rs/serde) | 1.0.229 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 41](#text-41) |
-| [serde-untagged](https://github.com/dtolnay/serde-untagged) | 0.1.9 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 41](#text-41) |
-| [serde_core](https://github.com/serde-rs/serde) | 1.0.229 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 41](#text-41) |
-| [serde_derive](https://github.com/serde-rs/serde) | 1.0.229 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 41](#text-41) |
-| [serde_derive_internals](https://github.com/serde-rs/serde) | 0.29.1 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 41](#text-41) |
-| [serde_json](https://github.com/serde-rs/json) | 1.0.154 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 41](#text-41) |
-| [serde_repr](https://github.com/dtolnay/serde-repr) | 0.1.21 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 41](#text-41) |
-| [serde_spanned](https://github.com/toml-rs/toml) | 0.6.9 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 173](#text-173) |
-| [serde_spanned](https://github.com/toml-rs/toml) | 1.1.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 174](#text-174), [Text 173](#text-173) |
-| [serde_with](https://github.com/jonasbb/serde_with/) | 3.24.0 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 175](#text-175) |
-| [serde_with_macros](https://github.com/jonasbb/serde_with/) | 3.24.0 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 175](#text-175) |
-| [serialize-to-javascript](https://github.com/chippers/serialize-to-javascript) | 0.1.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 176](#text-176) |
-| [serialize-to-javascript-impl](https://github.com/chippers/serialize-to-javascript) | 0.1.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 176](#text-176) |
-| [servo_arc](https://github.com/servo/stylo) | 0.4.3 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 41](#text-41) |
-| [sha2](https://github.com/RustCrypto/hashes) | 0.10.9 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 177](#text-177) |
-| [shlex](https://github.com/comex/rust-shlex) | 2.0.1 | MIT OR Apache-2.0 | [Text 178](#text-178), [Text 179](#text-179) |
-| [simd-adler32](https://github.com/mcountryman/simd-adler32) | 0.3.10 | MIT | [Text 180](#text-180) |
-| [siphasher](https://github.com/jedisct1/rust-siphash) | 1.0.4 | MIT OR Apache-2.0 | [Text 181](#text-181), [Text 4](#text-4), [Text 41](#text-41) |
-| [slab](https://github.com/tokio-rs/slab) | 0.4.12 | MIT | [Text 182](#text-182) |
-| [smallvec](https://github.com/servo/rust-smallvec) | 1.16.4 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 183](#text-183) |
-| [socket2](https://github.com/rust-lang/socket2) | 0.6.5 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 64](#text-64) |
-| [softbuffer](https://github.com/rust-windowing/softbuffer) | 0.4.8 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 184](#text-184), [Text 185](#text-185) |
-| [soup3](https://gitlab.gnome.org/World/Rust/soup3-rs) | 0.5.0 | MIT | [Text 130](#text-130) |
-| [soup3-sys](https://gitlab.gnome.org/World/Rust/soup3-rs) | 0.5.0 | MIT | [Text 130](#text-130) |
-| [stable_deref_trait](https://github.com/storyyeller/stable_deref_trait) | 1.2.1 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 186](#text-186) |
-| [static_vcruntime](https://github.com/ChrisDenton/static_vcruntime) | 3.0.0 | MIT OR Apache-2.0 OR Zlib | [Text 187](#text-187), [Text 4](#text-4), [Text 188](#text-188), [Text 189](#text-189) |
-| [string_cache](https://github.com/servo/string-cache) | 0.9.0 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 72](#text-72) |
-| [string_cache_codegen](https://github.com/servo/string-cache) | 0.6.1 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 72](#text-72) |
-| [strsim](https://github.com/rapidfuzz/strsim-rs) | 0.11.1 | MIT | [Text 190](#text-190) |
-| [swift-rs](https://github.com/Brendonovich/swift-rs) | 1.0.9 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 191](#text-191), [Text 192](#text-192) |
-| [syn](https://github.com/dtolnay/syn) | 1.0.109 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 41](#text-41) |
-| [syn](https://github.com/dtolnay/syn) | 2.0.119 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 41](#text-41) |
-| [syn](https://github.com/dtolnay/syn) | 3.0.9 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 41](#text-41) |
+| [semver](https://github.com/dtolnay/semver) | 1.0.28 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 42](#text-42) |
+| [serde](https://github.com/serde-rs/serde) | 1.0.229 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 42](#text-42) |
+| [serde-untagged](https://github.com/dtolnay/serde-untagged) | 0.1.9 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 42](#text-42) |
+| [serde_core](https://github.com/serde-rs/serde) | 1.0.229 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 42](#text-42) |
+| [serde_derive](https://github.com/serde-rs/serde) | 1.0.229 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 42](#text-42) |
+| [serde_derive_internals](https://github.com/serde-rs/serde) | 0.29.1 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 42](#text-42) |
+| [serde_json](https://github.com/serde-rs/json) | 1.0.154 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 42](#text-42) |
+| [serde_repr](https://github.com/dtolnay/serde-repr) | 0.1.21 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 42](#text-42) |
+| [serde_spanned](https://github.com/toml-rs/toml) | 0.6.9 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 174](#text-174) |
+| [serde_spanned](https://github.com/toml-rs/toml) | 1.1.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 175](#text-175), [Text 174](#text-174) |
+| [serde_with](https://github.com/jonasbb/serde_with/) | 3.24.0 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 176](#text-176) |
+| [serde_with_macros](https://github.com/jonasbb/serde_with/) | 3.24.0 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 176](#text-176) |
+| [serialize-to-javascript](https://github.com/chippers/serialize-to-javascript) | 0.1.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 177](#text-177) |
+| [serialize-to-javascript-impl](https://github.com/chippers/serialize-to-javascript) | 0.1.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 177](#text-177) |
+| [servo_arc](https://github.com/servo/stylo) | 0.4.3 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 42](#text-42) |
+| [sha2](https://github.com/RustCrypto/hashes) | 0.10.9 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 178](#text-178) |
+| [shlex](https://github.com/comex/rust-shlex) | 2.0.1 | MIT OR Apache-2.0 | [Text 179](#text-179), [Text 180](#text-180) |
+| [simd-adler32](https://github.com/mcountryman/simd-adler32) | 0.3.10 | MIT | [Text 181](#text-181) |
+| [siphasher](https://github.com/jedisct1/rust-siphash) | 1.0.4 | MIT OR Apache-2.0 | [Text 182](#text-182), [Text 4](#text-4), [Text 42](#text-42) |
+| [slab](https://github.com/tokio-rs/slab) | 0.4.12 | MIT | [Text 183](#text-183) |
+| [smallvec](https://github.com/servo/rust-smallvec) | 1.16.4 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 184](#text-184) |
+| [socket2](https://github.com/rust-lang/socket2) | 0.6.5 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 65](#text-65) |
+| [softbuffer](https://github.com/rust-windowing/softbuffer) | 0.4.8 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 185](#text-185), [Text 186](#text-186) |
+| [soup3](https://gitlab.gnome.org/World/Rust/soup3-rs) | 0.5.0 | MIT | [Text 131](#text-131) |
+| [soup3-sys](https://gitlab.gnome.org/World/Rust/soup3-rs) | 0.5.0 | MIT | [Text 131](#text-131) |
+| [stable_deref_trait](https://github.com/storyyeller/stable_deref_trait) | 1.2.1 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 187](#text-187) |
+| [static_vcruntime](https://github.com/ChrisDenton/static_vcruntime) | 3.0.0 | MIT OR Apache-2.0 OR Zlib | [Text 188](#text-188), [Text 4](#text-4), [Text 189](#text-189), [Text 190](#text-190) |
+| [string_cache](https://github.com/servo/string-cache) | 0.9.0 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 73](#text-73) |
+| [string_cache_codegen](https://github.com/servo/string-cache) | 0.6.1 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 73](#text-73) |
+| [strsim](https://github.com/rapidfuzz/strsim-rs) | 0.11.1 | MIT | [Text 191](#text-191) |
+| [swift-rs](https://github.com/Brendonovich/swift-rs) | 1.0.9 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 192](#text-192), [Text 193](#text-193) |
+| [syn](https://github.com/dtolnay/syn) | 1.0.109 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 42](#text-42) |
+| [syn](https://github.com/dtolnay/syn) | 2.0.119 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 42](#text-42) |
+| [syn](https://github.com/dtolnay/syn) | 3.0.9 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 42](#text-42) |
 | [sync_wrapper](https://github.com/Actyx/sync_wrapper) | 1.0.2 | Apache-2.0 | [Text 4](#text-4) |
-| [synstructure](https://github.com/mystor/synstructure) | 0.14.0 | MIT | [Text 193](#text-193) |
-| [system-deps](https://github.com/gdesmott/system-deps) | 6.2.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 41](#text-41) |
-| [tao](https://github.com/tauri-apps/tao) | 0.37.2 | Apache-2.0 | [Text 4](#text-4), [Text 194](#text-194), [Text 195](#text-195) |
-| [tao-macros](https://github.com/tauri-apps/tao) | 0.1.4 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 196](#text-196), [Text 197](#text-197) |
+| [synstructure](https://github.com/mystor/synstructure) | 0.14.0 | MIT | [Text 194](#text-194) |
+| [system-deps](https://github.com/gdesmott/system-deps) | 6.2.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 42](#text-42) |
+| [tao](https://github.com/tauri-apps/tao) | 0.37.2 | Apache-2.0 | [Text 4](#text-4), [Text 195](#text-195), [Text 196](#text-196) |
+| [tao-macros](https://github.com/tauri-apps/tao) | 0.1.4 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 197](#text-197), [Text 198](#text-198) |
 | [target-lexicon](https://github.com/bytecodealliance/target-lexicon) | 0.12.16 | Apache-2.0 WITH LLVM-exception | [Text 4](#text-4) |
-| [tauri](https://github.com/tauri-apps/tauri) | 2.12.5 | Apache-2.0 OR MIT | [Text 4](#text-4), [Text 198](#text-198), [Text 199](#text-199) |
-| [tauri-build](https://github.com/tauri-apps/tauri) | 2.7.4 | Apache-2.0 OR MIT | [Text 4](#text-4), [Text 198](#text-198) |
-| [tauri-codegen](https://github.com/tauri-apps/tauri) | 2.7.4 | Apache-2.0 OR MIT | [Text 4](#text-4), [Text 198](#text-198) |
-| [tauri-macros](https://github.com/tauri-apps/tauri) | 2.7.4 | Apache-2.0 OR MIT | [Text 4](#text-4), [Text 198](#text-198) |
-| [tauri-runtime](https://github.com/tauri-apps/tauri) | 2.12.2 | Apache-2.0 OR MIT | [Text 4](#text-4), [Text 198](#text-198) |
-| [tauri-runtime-wry](https://github.com/tauri-apps/tauri) | 2.12.3 | Apache-2.0 OR MIT | [Text 4](#text-4), [Text 198](#text-198) |
-| [tauri-utils](https://github.com/tauri-apps/tauri) | 2.10.2 | Apache-2.0 OR MIT | [Text 4](#text-4), [Text 198](#text-198) |
-| [tauri-winres](https://github.com/tauri-apps/winres) | 0.3.7 | MIT | [Text 200](#text-200) |
-| [tendril](https://github.com/servo/html5ever) | 0.5.1 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 201](#text-201) |
-| [thiserror](https://github.com/dtolnay/thiserror) | 1.0.69 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 41](#text-41) |
-| [thiserror](https://github.com/dtolnay/thiserror) | 2.0.21 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 41](#text-41) |
-| [thiserror-impl](https://github.com/dtolnay/thiserror) | 1.0.69 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 41](#text-41) |
-| [thiserror-impl](https://github.com/dtolnay/thiserror) | 2.0.21 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 41](#text-41) |
-| [time](https://github.com/time-rs/time) | 0.3.55 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 202](#text-202) |
-| [time-core](https://github.com/time-rs/time) | 0.1.9 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 202](#text-202) |
-| [time-macros](https://github.com/time-rs/time) | 0.2.32 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 202](#text-202) |
-| [tinystr](https://github.com/unicode-org/icu4x) | 0.8.5 | Unicode-3.0 | [Text 122](#text-122) |
-| [tinyvec](https://github.com/Lokathor/tinyvec) | 1.13.3 | Zlib OR Apache-2.0 OR MIT | [Text 4](#text-4), [Text 41](#text-41), [Text 61](#text-61) |
-| [tokio](https://github.com/tokio-rs/tokio) | 1.54.1 | MIT | [Text 203](#text-203) |
-| [tokio-util](https://github.com/tokio-rs/tokio) | 0.7.20 | MIT | [Text 203](#text-203) |
-| [toml](https://github.com/toml-rs/toml) | 0.8.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 173](#text-173) |
-| [toml](https://github.com/toml-rs/toml) | 1.1.8+spec-1.1.0 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 174](#text-174), [Text 173](#text-173) |
-| [toml_datetime](https://github.com/toml-rs/toml) | 0.6.3 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 64](#text-64) |
-| [toml_datetime](https://github.com/toml-rs/toml) | 1.1.2+spec-1.1.0 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 174](#text-174), [Text 173](#text-173) |
-| [toml_edit](https://github.com/toml-rs/toml) | 0.19.15 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 173](#text-173) |
-| [toml_edit](https://github.com/toml-rs/toml) | 0.20.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 173](#text-173) |
-| [toml_edit](https://github.com/toml-rs/toml) | 0.25.17+spec-1.1.0 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 174](#text-174), [Text 173](#text-173) |
-| [toml_parser](https://github.com/toml-rs/toml) | 1.1.5+spec-1.1.0 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 174](#text-174), [Text 173](#text-173) |
-| [toml_writer](https://github.com/toml-rs/toml) | 1.1.3+spec-1.1.0 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 174](#text-174), [Text 173](#text-173) |
-| [tower](https://github.com/tower-rs/tower) | 0.5.3 | MIT | [Text 204](#text-204) |
-| [tower-http](https://github.com/tower-rs/tower-http) | 0.6.11 | MIT | [Text 205](#text-205) |
-| [tower-layer](https://github.com/tower-rs/tower) | 0.3.3 | MIT | [Text 204](#text-204) |
-| [tower-service](https://github.com/tower-rs/tower) | 0.3.3 | MIT | [Text 204](#text-204) |
-| [tracing](https://github.com/tokio-rs/tracing) | 0.1.44 | MIT | [Text 206](#text-206) |
-| [tracing-core](https://github.com/tokio-rs/tracing) | 0.1.36 | MIT | [Text 206](#text-206) |
-| [tray-icon](https://github.com/tauri-apps/tray-icon) | 0.25.1 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 148](#text-148), [Text 207](#text-207) |
-| [try-lock](https://github.com/seanmonstar/try-lock) | 0.2.5 | MIT | [Text 208](#text-208) |
-| [typeid](https://github.com/dtolnay/typeid) | 1.0.3 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 41](#text-41) |
-| [typenum](https://github.com/paholg/typenum) | 1.20.1 | MIT OR Apache-2.0 | [Text 209](#text-209), [Text 4](#text-4), [Text 210](#text-210), [Text 211](#text-211) |
-| [unicode-ident](https://github.com/dtolnay/unicode-ident) | 1.0.27 | (MIT OR Apache-2.0) AND Unicode-3.0 | [Text 4](#text-4), [Text 41](#text-41), [Text 212](#text-212) |
-| [unicode-segmentation](https://github.com/unicode-rs/unicode-segmentation) | 1.13.3 | MIT OR Apache-2.0 | [Text 73](#text-73), [Text 4](#text-4), [Text 110](#text-110) |
-| [url](https://github.com/servo/rust-url) | 2.5.8 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 123](#text-123) |
-| [urlpattern](https://github.com/denoland/rust-urlpattern) | 0.6.0 | MIT | [Text 213](#text-213) |
-| [utf8_iter](https://github.com/hsivonen/utf8_iter) | 1.1.0 | Apache-2.0 OR MIT | [Text 214](#text-214), [Text 4](#text-4), [Text 215](#text-215) |
-| [utf_types](https://github.com/hsivonen/utf_types) | 1.0.0 | Apache-2.0 OR MIT | [Text 216](#text-216), [Text 4](#text-4), [Text 215](#text-215) |
-| [uuid](https://github.com/uuid-rs/uuid) | 1.29.0 | Apache-2.0 OR MIT | [Text 4](#text-4), [Text 217](#text-217) |
-| [version-compare](https://gitlab.com/timvisee/version-compare) | 0.2.1 | MIT | [Text 218](#text-218) |
-| [version_check](https://github.com/SergioBenitez/version_check) | 0.9.5 | MIT/Apache-2.0 | [Text 4](#text-4), [Text 219](#text-219) |
-| [vswhom](https://github.com/nabijaczleweli/vswhom.rs) | 0.1.0 | MIT | [Text 220](#text-220) |
-| [vswhom-sys](https://github.com/nabijaczleweli/vswhom-sys.rs) | 0.1.3 | MIT | [Text 220](#text-220) |
-| [walkdir](https://github.com/BurntSushi/walkdir) | 2.5.0 | Unlicense/MIT | [Text 42](#text-42), [Text 43](#text-43), [Text 44](#text-44) |
-| [want](https://github.com/seanmonstar/want) | 0.3.2 | MIT | [Text 221](#text-221) |
-| [wasi](https://github.com/bytecodealliance/wasi) | 0.11.1+wasi-snapshot-preview1 | Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT | [Text 4](#text-4), [Text 41](#text-41) |
-| [wasip2](https://github.com/bytecodealliance/wasi-rs) | 1.0.4+wasi-0.2.12 | Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT | [Text 4](#text-4), [Text 41](#text-41) |
-| [wasm-bindgen](https://github.com/wasm-bindgen/wasm-bindgen) | 0.2.130 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 64](#text-64) |
-| [wasm-bindgen-futures](https://github.com/wasm-bindgen/wasm-bindgen/tree/master/crates/futures) | 0.4.80 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 64](#text-64) |
-| [wasm-bindgen-macro](https://github.com/wasm-bindgen/wasm-bindgen/tree/master/crates/macro) | 0.2.130 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 64](#text-64) |
-| [wasm-bindgen-macro-support](https://github.com/wasm-bindgen/wasm-bindgen/tree/main/crates/macro-support) | 0.2.130 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 64](#text-64) |
-| [wasm-bindgen-shared](https://github.com/wasm-bindgen/wasm-bindgen/tree/master/crates/shared) | 0.2.130 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 64](#text-64) |
-| [wasm-streams](https://github.com/MattiasBuelens/wasm-streams/) | 0.5.0 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 41](#text-41) |
-| [web-sys](https://github.com/wasm-bindgen/wasm-bindgen/tree/master/crates/web-sys) | 0.3.107 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 64](#text-64) |
-| [web-time](https://github.com/daxpedda/web-time) | 1.1.0 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 222](#text-222), [Text 223](#text-223) |
-| [web_atoms](https://github.com/servo/html5ever) | 0.2.6 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 112](#text-112) |
-| [webkit2gtk](https://github.com/tauri-apps/webkit2gtk-rs) | 2.0.2 | MIT | [Text 224](#text-224) |
-| [webkit2gtk-sys](https://github.com/tauri-apps/webkit2gtk-rs) | 2.0.2 | MIT | [Text 225](#text-225) |
+| [tauri](https://github.com/tauri-apps/tauri) | 2.12.5 | Apache-2.0 OR MIT | [Text 4](#text-4), [Text 199](#text-199), [Text 200](#text-200) |
+| [tauri-build](https://github.com/tauri-apps/tauri) | 2.7.4 | Apache-2.0 OR MIT | [Text 4](#text-4), [Text 199](#text-199) |
+| [tauri-codegen](https://github.com/tauri-apps/tauri) | 2.7.4 | Apache-2.0 OR MIT | [Text 4](#text-4), [Text 199](#text-199) |
+| [tauri-macros](https://github.com/tauri-apps/tauri) | 2.7.4 | Apache-2.0 OR MIT | [Text 4](#text-4), [Text 199](#text-199) |
+| [tauri-runtime](https://github.com/tauri-apps/tauri) | 2.12.2 | Apache-2.0 OR MIT | [Text 4](#text-4), [Text 199](#text-199) |
+| [tauri-runtime-wry](https://github.com/tauri-apps/tauri) | 2.12.3 | Apache-2.0 OR MIT | [Text 4](#text-4), [Text 199](#text-199) |
+| [tauri-utils](https://github.com/tauri-apps/tauri) | 2.10.2 | Apache-2.0 OR MIT | [Text 4](#text-4), [Text 199](#text-199) |
+| [tauri-winres](https://github.com/tauri-apps/winres) | 0.3.7 | MIT | [Text 201](#text-201) |
+| [tendril](https://github.com/servo/html5ever) | 0.5.1 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 202](#text-202) |
+| [thiserror](https://github.com/dtolnay/thiserror) | 1.0.69 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 42](#text-42) |
+| [thiserror](https://github.com/dtolnay/thiserror) | 2.0.21 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 42](#text-42) |
+| [thiserror-impl](https://github.com/dtolnay/thiserror) | 1.0.69 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 42](#text-42) |
+| [thiserror-impl](https://github.com/dtolnay/thiserror) | 2.0.21 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 42](#text-42) |
+| [time](https://github.com/time-rs/time) | 0.3.55 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 203](#text-203) |
+| [time-core](https://github.com/time-rs/time) | 0.1.9 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 203](#text-203) |
+| [time-macros](https://github.com/time-rs/time) | 0.2.32 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 203](#text-203) |
+| [tinystr](https://github.com/unicode-org/icu4x) | 0.8.5 | Unicode-3.0 | [Text 123](#text-123) |
+| [tinyvec](https://github.com/Lokathor/tinyvec) | 1.13.3 | Zlib OR Apache-2.0 OR MIT | [Text 4](#text-4), [Text 42](#text-42), [Text 62](#text-62) |
+| [tokio](https://github.com/tokio-rs/tokio) | 1.54.1 | MIT | [Text 204](#text-204) |
+| [tokio-util](https://github.com/tokio-rs/tokio) | 0.7.20 | MIT | [Text 204](#text-204) |
+| [toml](https://github.com/toml-rs/toml) | 0.8.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 174](#text-174) |
+| [toml](https://github.com/toml-rs/toml) | 1.1.8+spec-1.1.0 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 175](#text-175), [Text 174](#text-174) |
+| [toml_datetime](https://github.com/toml-rs/toml) | 0.6.3 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 65](#text-65) |
+| [toml_datetime](https://github.com/toml-rs/toml) | 1.1.2+spec-1.1.0 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 175](#text-175), [Text 174](#text-174) |
+| [toml_edit](https://github.com/toml-rs/toml) | 0.19.15 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 174](#text-174) |
+| [toml_edit](https://github.com/toml-rs/toml) | 0.20.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 174](#text-174) |
+| [toml_edit](https://github.com/toml-rs/toml) | 0.25.17+spec-1.1.0 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 175](#text-175), [Text 174](#text-174) |
+| [toml_parser](https://github.com/toml-rs/toml) | 1.1.5+spec-1.1.0 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 175](#text-175), [Text 174](#text-174) |
+| [toml_writer](https://github.com/toml-rs/toml) | 1.1.3+spec-1.1.0 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 175](#text-175), [Text 174](#text-174) |
+| [tower](https://github.com/tower-rs/tower) | 0.5.3 | MIT | [Text 205](#text-205) |
+| [tower-http](https://github.com/tower-rs/tower-http) | 0.6.11 | MIT | [Text 206](#text-206) |
+| [tower-layer](https://github.com/tower-rs/tower) | 0.3.3 | MIT | [Text 205](#text-205) |
+| [tower-service](https://github.com/tower-rs/tower) | 0.3.3 | MIT | [Text 205](#text-205) |
+| [tracing](https://github.com/tokio-rs/tracing) | 0.1.44 | MIT | [Text 207](#text-207) |
+| [tracing-core](https://github.com/tokio-rs/tracing) | 0.1.36 | MIT | [Text 207](#text-207) |
+| [tray-icon](https://github.com/tauri-apps/tray-icon) | 0.25.1 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 149](#text-149), [Text 208](#text-208) |
+| [try-lock](https://github.com/seanmonstar/try-lock) | 0.2.5 | MIT | [Text 209](#text-209) |
+| [typeid](https://github.com/dtolnay/typeid) | 1.0.3 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 42](#text-42) |
+| [typenum](https://github.com/paholg/typenum) | 1.20.1 | MIT OR Apache-2.0 | [Text 210](#text-210), [Text 4](#text-4), [Text 211](#text-211), [Text 212](#text-212) |
+| [unicode-ident](https://github.com/dtolnay/unicode-ident) | 1.0.27 | (MIT OR Apache-2.0) AND Unicode-3.0 | [Text 4](#text-4), [Text 42](#text-42), [Text 213](#text-213) |
+| [unicode-segmentation](https://github.com/unicode-rs/unicode-segmentation) | 1.13.3 | MIT OR Apache-2.0 | [Text 74](#text-74), [Text 4](#text-4), [Text 111](#text-111) |
+| [url](https://github.com/servo/rust-url) | 2.5.8 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 124](#text-124) |
+| [urlpattern](https://github.com/denoland/rust-urlpattern) | 0.6.0 | MIT | [Text 214](#text-214) |
+| [utf8_iter](https://github.com/hsivonen/utf8_iter) | 1.1.0 | Apache-2.0 OR MIT | [Text 215](#text-215), [Text 4](#text-4), [Text 216](#text-216) |
+| [utf_types](https://github.com/hsivonen/utf_types) | 1.0.0 | Apache-2.0 OR MIT | [Text 217](#text-217), [Text 4](#text-4), [Text 216](#text-216) |
+| [uuid](https://github.com/uuid-rs/uuid) | 1.29.0 | Apache-2.0 OR MIT | [Text 4](#text-4), [Text 218](#text-218) |
+| [version-compare](https://gitlab.com/timvisee/version-compare) | 0.2.1 | MIT | [Text 219](#text-219) |
+| [version_check](https://github.com/SergioBenitez/version_check) | 0.9.5 | MIT/Apache-2.0 | [Text 4](#text-4), [Text 220](#text-220) |
+| [vswhom](https://github.com/nabijaczleweli/vswhom.rs) | 0.1.0 | MIT | [Text 221](#text-221) |
+| [vswhom-sys](https://github.com/nabijaczleweli/vswhom-sys.rs) | 0.1.3 | MIT | [Text 221](#text-221) |
+| [walkdir](https://github.com/BurntSushi/walkdir) | 2.5.0 | Unlicense/MIT | [Text 43](#text-43), [Text 44](#text-44), [Text 45](#text-45) |
+| [want](https://github.com/seanmonstar/want) | 0.3.2 | MIT | [Text 222](#text-222) |
+| [wasi](https://github.com/bytecodealliance/wasi) | 0.11.1+wasi-snapshot-preview1 | Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT | [Text 4](#text-4), [Text 42](#text-42) |
+| [wasip2](https://github.com/bytecodealliance/wasi-rs) | 1.0.4+wasi-0.2.12 | Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT | [Text 4](#text-4), [Text 42](#text-42) |
+| [wasm-bindgen](https://github.com/wasm-bindgen/wasm-bindgen) | 0.2.130 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 65](#text-65) |
+| [wasm-bindgen-futures](https://github.com/wasm-bindgen/wasm-bindgen/tree/master/crates/futures) | 0.4.80 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 65](#text-65) |
+| [wasm-bindgen-macro](https://github.com/wasm-bindgen/wasm-bindgen/tree/master/crates/macro) | 0.2.130 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 65](#text-65) |
+| [wasm-bindgen-macro-support](https://github.com/wasm-bindgen/wasm-bindgen/tree/main/crates/macro-support) | 0.2.130 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 65](#text-65) |
+| [wasm-bindgen-shared](https://github.com/wasm-bindgen/wasm-bindgen/tree/master/crates/shared) | 0.2.130 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 65](#text-65) |
+| [wasm-streams](https://github.com/MattiasBuelens/wasm-streams/) | 0.5.0 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 42](#text-42) |
+| [web-sys](https://github.com/wasm-bindgen/wasm-bindgen/tree/master/crates/web-sys) | 0.3.107 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 65](#text-65) |
+| [web-time](https://github.com/daxpedda/web-time) | 1.1.0 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 223](#text-223), [Text 224](#text-224) |
+| [web_atoms](https://github.com/servo/html5ever) | 0.2.6 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 113](#text-113) |
+| [webkit2gtk](https://github.com/tauri-apps/webkit2gtk-rs) | 2.0.2 | MIT | [Text 225](#text-225) |
+| [webkit2gtk-sys](https://github.com/tauri-apps/webkit2gtk-rs) | 2.0.2 | MIT | [Text 226](#text-226) |
 | [webview2-com](https://github.com/wravery/webview2-rs) | 0.39.1 | MIT | [Text 12](#text-12) |
 | [webview2-com-macros](https://github.com/wravery/webview2-rs) | 0.8.1 | MIT | [Text 12](#text-12) |
-| [webview2-com-sys](https://github.com/wravery/webview2-rs) | 0.39.1 | MIT | [Text 12](#text-12), [Text 226](#text-226) |
-| [winapi](https://github.com/retep998/winapi-rs) | 0.3.9 | MIT/Apache-2.0 | [Text 4](#text-4), [Text 227](#text-227) |
+| [webview2-com-sys](https://github.com/wravery/webview2-rs) | 0.39.1 | MIT | [Text 12](#text-12), [Text 227](#text-227) |
+| [winapi](https://github.com/retep998/winapi-rs) | 0.3.9 | MIT/Apache-2.0 | [Text 4](#text-4), [Text 228](#text-228) |
 | [winapi-i686-pc-windows-gnu](https://github.com/retep998/winapi-rs) | 0.4.0 | MIT/Apache-2.0 | [Text 12](#text-12) |
-| [winapi-util](https://github.com/BurntSushi/winapi-util) | 0.1.11 | Unlicense OR MIT | [Text 42](#text-42), [Text 170](#text-170), [Text 44](#text-44) |
+| [winapi-util](https://github.com/BurntSushi/winapi-util) | 0.1.11 | Unlicense OR MIT | [Text 43](#text-43), [Text 171](#text-171), [Text 45](#text-45) |
 | [winapi-x86_64-pc-windows-gnu](https://github.com/retep998/winapi-rs) | 0.4.0 | MIT/Apache-2.0 | [Text 12](#text-12) |
-| [window-vibrancy](https://github.com/tauri-apps/tauri-plugin-vibrancy) | 0.8.1 | Apache-2.0 OR MIT | [Text 4](#text-4), [Text 228](#text-228), [Text 229](#text-229) |
-| [windows](https://github.com/microsoft/windows-rs) | 0.62.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 230](#text-230), [Text 231](#text-231) |
-| [windows-collections](https://github.com/microsoft/windows-rs) | 0.3.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 230](#text-230), [Text 231](#text-231) |
-| [windows-core](https://github.com/microsoft/windows-rs) | 0.62.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 230](#text-230), [Text 231](#text-231) |
-| [windows-future](https://github.com/microsoft/windows-rs) | 0.3.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 230](#text-230), [Text 231](#text-231) |
-| [windows-implement](https://github.com/microsoft/windows-rs) | 0.60.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 230](#text-230), [Text 231](#text-231) |
-| [windows-interface](https://github.com/microsoft/windows-rs) | 0.59.3 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 230](#text-230), [Text 231](#text-231) |
-| [windows-link](https://github.com/microsoft/windows-rs) | 0.2.1 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 230](#text-230), [Text 231](#text-231) |
-| [windows-numerics](https://github.com/microsoft/windows-rs) | 0.3.1 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 230](#text-230), [Text 231](#text-231) |
-| [windows-result](https://github.com/microsoft/windows-rs) | 0.4.1 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 230](#text-230), [Text 231](#text-231) |
-| [windows-strings](https://github.com/microsoft/windows-rs) | 0.5.1 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 230](#text-230), [Text 231](#text-231) |
-| [windows-sys](https://github.com/microsoft/windows-rs) | 0.45.0 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 230](#text-230), [Text 231](#text-231) |
-| [windows-sys](https://github.com/microsoft/windows-rs) | 0.61.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 230](#text-230), [Text 231](#text-231) |
-| [windows-targets](https://github.com/microsoft/windows-rs) | 0.42.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 230](#text-230), [Text 231](#text-231) |
-| [windows-threading](https://github.com/microsoft/windows-rs) | 0.2.1 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 230](#text-230), [Text 231](#text-231) |
-| [windows-version](https://github.com/microsoft/windows-rs) | 0.1.7 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 230](#text-230), [Text 231](#text-231) |
-| [windows_aarch64_gnullvm](https://github.com/microsoft/windows-rs) | 0.42.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 230](#text-230), [Text 231](#text-231) |
-| [windows_aarch64_msvc](https://github.com/microsoft/windows-rs) | 0.42.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 230](#text-230), [Text 231](#text-231) |
-| [windows_i686_gnu](https://github.com/microsoft/windows-rs) | 0.42.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 230](#text-230), [Text 231](#text-231) |
-| [windows_i686_msvc](https://github.com/microsoft/windows-rs) | 0.42.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 230](#text-230), [Text 231](#text-231) |
-| [windows_x86_64_gnu](https://github.com/microsoft/windows-rs) | 0.42.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 230](#text-230), [Text 231](#text-231) |
-| [windows_x86_64_gnullvm](https://github.com/microsoft/windows-rs) | 0.42.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 230](#text-230), [Text 231](#text-231) |
-| [windows_x86_64_msvc](https://github.com/microsoft/windows-rs) | 0.42.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 230](#text-230), [Text 231](#text-231) |
-| [winnow](https://github.com/winnow-rs/winnow) | 0.5.40 | MIT | [Text 41](#text-41) |
-| [winnow](https://github.com/winnow-rs/winnow) | 1.0.4 | MIT | [Text 41](#text-41) |
-| [winreg](https://github.com/gentoo90/winreg-rs) | 0.56.0 | MIT | [Text 232](#text-232) |
-| [wit-bindgen](https://github.com/bytecodealliance/wit-bindgen) | 0.57.1 | Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT | [Text 4](#text-4), [Text 41](#text-41) |
-| [writeable](https://github.com/unicode-org/icu4x) | 0.6.4 | Unicode-3.0 | [Text 122](#text-122) |
-| [wry](https://github.com/tauri-apps/wry) | 0.57.1 | Apache-2.0 OR MIT | [Text 4](#text-4), [Text 233](#text-233), [Text 234](#text-234) |
-| [x11](https://github.com/AltF02/x11-rs.git) | 2.21.0 | MIT | [Text 41](#text-41) |
-| [x11-dl](https://github.com/AltF02/x11-rs.git) | 2.21.0 | MIT | [Text 41](#text-41) |
-| [yoke](https://github.com/unicode-org/icu4x) | 0.8.4 | Unicode-3.0 | [Text 122](#text-122) |
-| [yoke-derive](https://github.com/unicode-org/icu4x) | 0.8.4 | Unicode-3.0 | [Text 122](#text-122) |
-| [zerofrom](https://github.com/unicode-org/icu4x) | 0.1.8 | Unicode-3.0 | [Text 122](#text-122) |
-| [zerofrom-derive](https://github.com/unicode-org/icu4x) | 0.1.8 | Unicode-3.0 | [Text 122](#text-122) |
-| [zerotrie](https://github.com/unicode-org/icu4x) | 0.2.5 | Unicode-3.0 | [Text 122](#text-122) |
-| [zerovec](https://github.com/unicode-org/icu4x) | 0.11.9 | Unicode-3.0 | [Text 122](#text-122) |
-| [zerovec-derive](https://github.com/unicode-org/icu4x) | 0.11.7 | Unicode-3.0 | [Text 122](#text-122) |
-| [zlib-rs](https://github.com/trifectatechfoundation/zlib-rs) | 0.6.8 | Zlib | [Text 235](#text-235) |
-| [zmij](https://github.com/dtolnay/zmij) | 1.0.23 | MIT | [Text 41](#text-41) |
+| [window-vibrancy](https://github.com/tauri-apps/tauri-plugin-vibrancy) | 0.8.1 | Apache-2.0 OR MIT | [Text 4](#text-4), [Text 229](#text-229), [Text 230](#text-230) |
+| [windows](https://github.com/microsoft/windows-rs) | 0.62.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 231](#text-231), [Text 232](#text-232) |
+| [windows-collections](https://github.com/microsoft/windows-rs) | 0.3.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 231](#text-231), [Text 232](#text-232) |
+| [windows-core](https://github.com/microsoft/windows-rs) | 0.62.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 231](#text-231), [Text 232](#text-232) |
+| [windows-future](https://github.com/microsoft/windows-rs) | 0.3.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 231](#text-231), [Text 232](#text-232) |
+| [windows-implement](https://github.com/microsoft/windows-rs) | 0.60.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 231](#text-231), [Text 232](#text-232) |
+| [windows-interface](https://github.com/microsoft/windows-rs) | 0.59.3 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 231](#text-231), [Text 232](#text-232) |
+| [windows-link](https://github.com/microsoft/windows-rs) | 0.2.1 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 231](#text-231), [Text 232](#text-232) |
+| [windows-numerics](https://github.com/microsoft/windows-rs) | 0.3.1 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 231](#text-231), [Text 232](#text-232) |
+| [windows-result](https://github.com/microsoft/windows-rs) | 0.4.1 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 231](#text-231), [Text 232](#text-232) |
+| [windows-strings](https://github.com/microsoft/windows-rs) | 0.5.1 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 231](#text-231), [Text 232](#text-232) |
+| [windows-sys](https://github.com/microsoft/windows-rs) | 0.45.0 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 231](#text-231), [Text 232](#text-232) |
+| [windows-sys](https://github.com/microsoft/windows-rs) | 0.61.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 231](#text-231), [Text 232](#text-232) |
+| [windows-targets](https://github.com/microsoft/windows-rs) | 0.42.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 231](#text-231), [Text 232](#text-232) |
+| [windows-threading](https://github.com/microsoft/windows-rs) | 0.2.1 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 231](#text-231), [Text 232](#text-232) |
+| [windows-version](https://github.com/microsoft/windows-rs) | 0.1.7 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 231](#text-231), [Text 232](#text-232) |
+| [windows_aarch64_gnullvm](https://github.com/microsoft/windows-rs) | 0.42.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 231](#text-231), [Text 232](#text-232) |
+| [windows_aarch64_msvc](https://github.com/microsoft/windows-rs) | 0.42.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 231](#text-231), [Text 232](#text-232) |
+| [windows_i686_gnu](https://github.com/microsoft/windows-rs) | 0.42.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 231](#text-231), [Text 232](#text-232) |
+| [windows_i686_msvc](https://github.com/microsoft/windows-rs) | 0.42.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 231](#text-231), [Text 232](#text-232) |
+| [windows_x86_64_gnu](https://github.com/microsoft/windows-rs) | 0.42.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 231](#text-231), [Text 232](#text-232) |
+| [windows_x86_64_gnullvm](https://github.com/microsoft/windows-rs) | 0.42.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 231](#text-231), [Text 232](#text-232) |
+| [windows_x86_64_msvc](https://github.com/microsoft/windows-rs) | 0.42.2 | MIT OR Apache-2.0 | [Text 4](#text-4), [Text 231](#text-231), [Text 232](#text-232) |
+| [winnow](https://github.com/winnow-rs/winnow) | 0.5.40 | MIT | [Text 42](#text-42) |
+| [winnow](https://github.com/winnow-rs/winnow) | 1.0.4 | MIT | [Text 42](#text-42) |
+| [winreg](https://github.com/gentoo90/winreg-rs) | 0.56.0 | MIT | [Text 233](#text-233) |
+| [wit-bindgen](https://github.com/bytecodealliance/wit-bindgen) | 0.57.1 | Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT | [Text 4](#text-4), [Text 42](#text-42) |
+| [writeable](https://github.com/unicode-org/icu4x) | 0.6.4 | Unicode-3.0 | [Text 123](#text-123) |
+| [wry](https://github.com/tauri-apps/wry) | 0.57.1 | Apache-2.0 OR MIT | [Text 4](#text-4), [Text 234](#text-234), [Text 235](#text-235) |
+| [x11](https://github.com/AltF02/x11-rs.git) | 2.21.0 | MIT | [Text 42](#text-42) |
+| [x11-dl](https://github.com/AltF02/x11-rs.git) | 2.21.0 | MIT | [Text 42](#text-42) |
+| [yoke](https://github.com/unicode-org/icu4x) | 0.8.4 | Unicode-3.0 | [Text 123](#text-123) |
+| [yoke-derive](https://github.com/unicode-org/icu4x) | 0.8.4 | Unicode-3.0 | [Text 123](#text-123) |
+| [zerofrom](https://github.com/unicode-org/icu4x) | 0.1.8 | Unicode-3.0 | [Text 123](#text-123) |
+| [zerofrom-derive](https://github.com/unicode-org/icu4x) | 0.1.8 | Unicode-3.0 | [Text 123](#text-123) |
+| [zerotrie](https://github.com/unicode-org/icu4x) | 0.2.5 | Unicode-3.0 | [Text 123](#text-123) |
+| [zerovec](https://github.com/unicode-org/icu4x) | 0.11.9 | Unicode-3.0 | [Text 123](#text-123) |
+| [zerovec-derive](https://github.com/unicode-org/icu4x) | 0.11.7 | Unicode-3.0 | [Text 123](#text-123) |
+| [zlib-rs](https://github.com/trifectatechfoundation/zlib-rs) | 0.6.8 | Zlib | [Text 236](#text-236) |
+| [zmij](https://github.com/dtolnay/zmij) | 1.0.23 | MIT | [Text 42](#text-42) |
 
 #### Notices in the crates’ source files
 
@@ -818,12 +837,12 @@ Some crates hold code with notices of its own, in the files below, which their l
 
 | Crate | File | What | Text |
 |---|---|---|---|
-| futures-channel 0.3.34 | `src/mpsc/queue.rs` | The queue of the channel, under a BSD-2-Clause-Views license. | [Text 105](#text-105) |
-| keyboard-types 0.8.3 | `README.md` | src/named_key.rs and src/code.rs are derived from W3C documents; the W3C license reproduced with tao’s src/keyboard.rs applies to them too. | [Text 137](#text-137) |
-| muda 0.20.0 | `src/platform_impl/gtk/icon.rs` | The winit copyright of the files derived from winit (also src/platform_impl/gtk4/icon.rs; src/icon.rs and src/platform_impl/windows/ name the winit file they are taken from). | [Text 150](#text-150) |
-| tao 0.37.2 | `src/keyboard.rs` | The winit copyright that tao’s files derived from winit carry, and the W3C license and short notice for the `Key` and `KeyCode` enums, which the license asks to show where users can see them. | [Text 195](#text-195) |
-| tauri 2.12.5 | `src/resources/mod.rs` | Code derived from Deno, under the MIT license. | [Text 199](#text-199) |
-| webview2-com-sys 0.39.1 | `x64/WebView2Loader.dll` | The WebView2 loader from Microsoft’s WebView2 SDK 1.0.3800.47, which the crate bundles (Windows). The text is the SDK’s license, as its NuGet package states it. | [Text 226](#text-226) |
+| futures-channel 0.3.34 | `src/mpsc/queue.rs` | The queue of the channel, under a BSD-2-Clause-Views license. | [Text 106](#text-106) |
+| keyboard-types 0.8.3 | `README.md` | src/named_key.rs and src/code.rs are derived from W3C documents; the W3C license reproduced with tao’s src/keyboard.rs applies to them too. | [Text 138](#text-138) |
+| muda 0.20.0 | `src/platform_impl/gtk/icon.rs` | The winit copyright of the files derived from winit (also src/platform_impl/gtk4/icon.rs; src/icon.rs and src/platform_impl/windows/ name the winit file they are taken from). | [Text 151](#text-151) |
+| tao 0.37.2 | `src/keyboard.rs` | The winit copyright that tao’s files derived from winit carry, and the W3C license and short notice for the `Key` and `KeyCode` enums, which the license asks to show where users can see them. | [Text 196](#text-196) |
+| tauri 2.12.5 | `src/resources/mod.rs` | Code derived from Deno, under the MIT license. | [Text 200](#text-200) |
+| webview2-com-sys 0.39.1 | `x64/WebView2Loader.dll` | The WebView2 loader from Microsoft’s WebView2 SDK 1.0.3800.47, which the crate bundles (Windows). The text is the SDK’s license, as its NuGet package states it. | [Text 227](#text-227) |
 
 ### Rust standard library
 
@@ -833,18 +852,101 @@ Linked statically into the desktop binary on all three systems, from the Rust to
 
 | Part | Version | License | License text |
 |---|---|---|---|
-| core, alloc, std and the other in-tree libraries | 1.97.0 | MIT OR Apache-2.0 | [Text 236](#text-236), [Text 12](#text-12), [Text 4](#text-4), [Text 237](#text-237) |
-| compiler_builtins, with libm | 0.1.160 | MIT AND Apache-2.0 WITH LLVM-exception AND (MIT OR Apache-2.0) | [Text 238](#text-238), [Text 239](#text-239), [Text 4](#text-4), [Text 16](#text-16) |
-| addr2line | 0.25.1 | Apache-2.0 OR MIT | [Text 240](#text-240) |
-| adler2 | 2.0.1 | 0BSD OR MIT OR Apache-2.0 | [Text 41](#text-41) |
-| cfg-if | 1.0.4 | MIT OR Apache-2.0 | [Text 64](#text-64) |
-| gimli | 0.32.3 | MIT OR Apache-2.0 | [Text 110](#text-110) |
-| hashbrown | 0.17.1 | MIT OR Apache-2.0 | [Text 109](#text-109) |
-| libc | 0.2.185 | MIT OR Apache-2.0 | [Text 139](#text-139) |
-| memchr | 2.7.6 | Unlicense OR MIT | [Text 43](#text-43) |
-| miniz_oxide | 0.8.9 | MIT OR Zlib OR Apache-2.0 | [Text 145](#text-145) |
-| object | 0.37.3 | Apache-2.0 OR MIT | [Text 241](#text-241) |
-| rustc-demangle | 0.1.27 | MIT/Apache-2.0 | [Text 64](#text-64) |
+| core, alloc, std and the other in-tree libraries | 1.97.0 | MIT OR Apache-2.0 | [Text 237](#text-237), [Text 12](#text-12), [Text 4](#text-4), [Text 238](#text-238) |
+| compiler_builtins, with libm | 0.1.160 | MIT AND Apache-2.0 WITH LLVM-exception AND (MIT OR Apache-2.0) | [Text 239](#text-239), [Text 240](#text-240), [Text 4](#text-4), [Text 16](#text-16) |
+| addr2line | 0.25.1 | Apache-2.0 OR MIT | [Text 241](#text-241) |
+| adler2 | 2.0.1 | 0BSD OR MIT OR Apache-2.0 | [Text 42](#text-42) |
+| cfg-if | 1.0.4 | MIT OR Apache-2.0 | [Text 65](#text-65) |
+| gimli | 0.32.3 | MIT OR Apache-2.0 | [Text 111](#text-111) |
+| hashbrown | 0.17.1 | MIT OR Apache-2.0 | [Text 110](#text-110) |
+| libc | 0.2.185 | MIT OR Apache-2.0 | [Text 140](#text-140) |
+| memchr | 2.7.6 | Unlicense OR MIT | [Text 44](#text-44) |
+| miniz_oxide | 0.8.9 | MIT OR Zlib OR Apache-2.0 | [Text 146](#text-146) |
+| object | 0.37.3 | Apache-2.0 OR MIT | [Text 242](#text-242) |
+| rustc-demangle | 0.1.27 | MIT/Apache-2.0 | [Text 65](#text-65) |
+
+### Windows installers
+
+This section applies to the two Windows installers only, the `.msi` and the `-setup.exe`; no other package holds these parts. Tauri’s bundler builds the `.msi` with the WiX Toolset and the `-setup.exe` with NSIS, and each installer keeps parts of the tool that made it. These parts make up the installer program, which installs and removes CanViewer and comes in the same file; they are not part of the app. Neither holds the WebView2 installer: they download Microsoft’s bootstrapper at install time when WebView2 is missing.
+
+#### WiX Toolset: WixUI and its custom actions
+
+In the `.msi`: the dialogs of WixUI_InstallDir with their bitmaps, icons and strings (src/ext/UIExtension/wixlib), and uica.dll, the custom actions with which those dialogs check the chosen folder and print the license (src/ext/UIExtension/ca, linked with the libraries in src/libs/dutil and src/libs/wcautil). The source code of each of these files is in WiX’s v3.14.1 release (tag wix3141rtm), at the address below, under the Microsoft Reciprocal License (WiX’s LICENSE.TXT, the license text below).
+
+- Version: 3.14.1
+- License: MS-RL
+- Source: <https://github.com/wixtoolset/wix3/tree/wix3141rtm>
+- License text: [Text 243](#text-243)
+
+#### NSIS
+
+In the `-setup.exe`: the installer stub and the uninstaller it writes, the plugins the installer calls (System, nsDialogs, StartMenu and NSISdl), the Modern UI 2, the include headers (StrFunc among them), the language files and the default graphics. NSIS’s COPYING (the license text below) puts them under the zlib/libpng license. The address below is NSIS’s 3.13 source release; NSIS’s repository has the same source as the tag [v313](https://github.com/kichik/nsis/tree/v313).
+
+- Version: 3.13
+- License: Zlib
+- Source: <https://sourceforge.net/projects/nsis/files/NSIS%203/3.13/nsis-3.13-src.tar.bz2>
+- License text: [Text 244](#text-244)
+
+#### NSIS LZMA compression module
+
+In the `-setup.exe`: the LZMA decompressor in the installer stub, which the uninstaller shares, and which unpacks the installer’s data (Tauri’s bundler compresses it with LZMA, its default for `bundle.windows.nsis.compression`, which CanViewer does not change). It is under the Common Public License 1.0, with the special exception for the LZMA compression module at the end of NSIS’s COPYING. The source code of the LZMA compression module is available in the NSIS 3.13 source release, `nsis-3.13-src.tar.bz2`, at the address below, in its directory `Source/7zip/`.
+
+- Version: 3.13
+- License: CPL-1.0
+- Source: <https://sourceforge.net/projects/nsis/files/NSIS%203/3.13/nsis-3.13-src.tar.bz2>
+- License text: [Text 244](#text-244)
+
+#### nsis_tauri_utils (NSIS plugin)
+
+In the `-setup.exe`: `nsis_tauri_utils.dll`, Tauri’s plugin with which the installer compares versions, replaces text in strings and starts the app as the user, built from the crate crates/nsis-tauri-utils. The crates it links follow. It also holds parts of the Rust standard library (core, alloc and compiler_builtins; the plugin is built without std), under the licenses that the section on the Rust standard library gives for them.
+
+- Version: 0.5.3
+- License: MIT OR Apache-2.0
+- Source: <https://github.com/tauri-apps/nsis-tauri-utils/tree/nsis_tauri_utils-v0.5.3>
+- License text: [Text 245](#text-245), [Text 4](#text-4)
+
+#### nsis-plugin-api (in nsis_tauri_utils)
+
+The interface to NSIS, a crate of the same repository, under its license.
+
+- Version: 0.0.0, of nsis-tauri-utils 0.5.3
+- License: MIT OR Apache-2.0
+- Source: <https://github.com/tauri-apps/nsis-tauri-utils/tree/nsis_tauri_utils-v0.5.3/crates/nsis-plugin-api>
+- License text: [Text 245](#text-245), [Text 4](#text-4)
+
+#### semver (in nsis_tauri_utils)
+
+nsis-tauri-utils asks for semver 1.0 and keeps no Cargo.lock; 1.0.27 was the latest 1.0 release when the plugin was built (its release file is dated 26 January 2026).
+
+- Version: 1.0.27
+- License: MIT OR Apache-2.0
+- Source: <https://crates.io/crates/semver/1.0.27>
+- License text: [Text 42](#text-42), [Text 4](#text-4)
+
+#### windows-sys (in nsis_tauri_utils)
+
+- Version: 0.61.2
+- License: MIT OR Apache-2.0
+- Source: <https://crates.io/crates/windows-sys/0.61.2>
+- License text: [Text 232](#text-232), [Text 4](#text-4)
+
+#### windows-link (in nsis_tauri_utils)
+
+Used by windows-sys. Its license file is the same as windows-sys’s.
+
+- Version: 0.2.1
+- License: MIT OR Apache-2.0
+- Source: <https://crates.io/crates/windows-link/0.2.1>
+- License text: [Text 232](#text-232), [Text 4](#text-4)
+
+#### Tauri bundler’s installer templates
+
+In both installers: the WiX source (msi/main.wxs) and the NSIS script (nsis/installer.nsi, with its .nsh files and language strings) from which tauri-bundler, in @tauri-apps/cli, makes them.
+
+- Version: 2.10.4
+- License: Apache-2.0 OR MIT
+- Source: <https://github.com/tauri-apps/tauri/tree/tauri-bundler-v2.10.4/crates/tauri-bundler/src/bundle/windows>
+- License text: [Text 246](#text-246), [Text 4](#text-4)
 
 ## Documentation site
 
@@ -859,98 +961,98 @@ Bundled into the site’s JavaScript and CSS.
 - Version: 3.8.2
 - License: MIT
 - Source: <https://github.com/algolia/docsearch>
-- License text: [Text 242](#text-242), [Text 12](#text-12)
+- License text: [Text 247](#text-247), [Text 12](#text-12)
 
 #### @vue/reactivity
 
 - Version: 3.5.44
 - License: MIT
 - Source: <https://github.com/vuejs/core>
-- License text: [Text 243](#text-243)
+- License text: [Text 248](#text-248)
 
 #### @vue/runtime-core
 
 - Version: 3.5.44
 - License: MIT
 - Source: <https://github.com/vuejs/core>
-- License text: [Text 243](#text-243)
+- License text: [Text 248](#text-248)
 
 #### @vue/runtime-dom
 
 - Version: 3.5.44
 - License: MIT
 - Source: <https://github.com/vuejs/core>
-- License text: [Text 243](#text-243)
+- License text: [Text 248](#text-248)
 
 #### @vue/shared
 
 - Version: 3.5.44
 - License: MIT
 - Source: <https://github.com/vuejs/core>
-- License text: [Text 243](#text-243)
+- License text: [Text 248](#text-248)
 
 #### @vueuse/core
 
 - Version: 12.8.2
 - License: MIT
 - Source: <https://github.com/vueuse/vueuse>
-- License text: [Text 244](#text-244)
+- License text: [Text 249](#text-249)
 
 #### @vueuse/integrations
 
 - Version: 12.8.2
 - License: MIT
 - Source: <https://github.com/vueuse/vueuse>
-- License text: [Text 244](#text-244)
+- License text: [Text 249](#text-249)
 
 #### @vueuse/shared
 
 - Version: 12.8.2
 - License: MIT
 - Source: <https://github.com/vueuse/vueuse>
-- License text: [Text 244](#text-244)
+- License text: [Text 249](#text-249)
 
 #### focus-trap
 
 - Version: 7.8.0
 - License: MIT
 - Source: <https://github.com/focus-trap/focus-trap>
-- License text: [Text 245](#text-245)
+- License text: [Text 250](#text-250)
 
 #### mark.js
 
 - Version: 8.11.1
 - License: MIT
 - Source: <https://github.com/julmot/mark.js>
-- License text: [Text 246](#text-246)
+- License text: [Text 251](#text-251)
 
 #### minisearch
 
 - Version: 7.2.0
 - License: MIT
 - Source: <https://github.com/lucaong/minisearch>
-- License text: [Text 247](#text-247)
+- License text: [Text 252](#text-252)
 
 #### tabbable
 
 - Version: 6.5.1
 - License: MIT
 - Source: <https://github.com/focus-trap/tabbable>
-- License text: [Text 248](#text-248)
+- License text: [Text 253](#text-253)
 
 #### vitepress
 
 - Version: 1.6.4
 - License: MIT
 - Source: <https://github.com/vuejs/vitepress>
-- License text: [Text 249](#text-249)
+- License text: [Text 254](#text-254)
 
 #### vue
 
 - Version: 3.5.44
 - License: MIT
 - Source: <https://github.com/vuejs/core>
-- License text: [Text 243](#text-243)
+- License text: [Text 248](#text-248)
 
 ### Build tool helpers
 
@@ -972,7 +1074,7 @@ The helper with which the plugin attaches the render functions of the theme’s 
 - Version: 5.2.4
 - License: MIT
 - Source: <https://github.com/vitejs/vite-plugin-vue>
-- License text: [Text 250](#text-250)
+- License text: [Text 255](#text-255)
 
 ## License texts
 
@@ -1206,7 +1308,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 
 ### Text 4
 
-Used by: Material Symbols (icon paths), KaRaMeL krmllib (in CPython’s HACL* copy), LLVM libc++abi and compiler-rt (as Emscripten’s runtime libraries), adler2 2.0.1, anyhow 1.0.104, atomic-waker 1.1.2, autocfg 1.5.1, base64 0.21.7, base64 0.23.1, bit-set 0.8.0, bit-vec 0.8.0, bitflags 1.3.2 and 228 more.
+Used by: Material Symbols (icon paths), KaRaMeL krmllib (in CPython’s HACL* copy), LLVM libc++abi and compiler-rt (as Emscripten’s runtime libraries), adler2 2.0.1, anyhow 1.0.104, atomic-waker 1.1.2, autocfg 1.5.1, base64 0.21.7, base64 0.23.1, bit-set 0.8.0, bit-vec 0.8.0, bitflags 1.3.2 and 234 more.
 
 ```text
 Apache License
@@ -4322,6 +4424,494 @@ ings in this Software without prior written authorization from him.
 
 ### Text 36
 
+Used by: GNU libiconv (compiled into lxml).
+
+```text
+GNU LIBRARY GENERAL PUBLIC LICENSE
+                       Version 2, June 1991
+
+ Copyright (C) 1991 Free Software Foundation, Inc.
+ 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ Everyone is permitted to copy and distribute verbatim copies
+ of this license document, but changing it is not allowed.
+
+[This is the first released version of the library GPL.  It is
+ numbered 2 because it goes with version 2 of the ordinary GPL.]
+
+                            Preamble
+
+  The licenses for most software are designed to take away your
+freedom to share and change it.  By contrast, the GNU General Public
+Licenses are intended to guarantee your freedom to share and change
+free software--to make sure the software is free for all its users.
+
+  This license, the Library General Public License, applies to some
+specially designated Free Software Foundation software, and to any
+other libraries whose authors decide to use it.  You can use it for
+your libraries, too.
+
+  When we speak of free software, we are referring to freedom, not
+price.  Our General Public Licenses are designed to make sure that you
+have the freedom to distribute copies of free software (and charge for
+this service if you wish), that you receive source code or can get it
+if you want it, that you can change the software or use pieces of it
+in new free programs; and that you know you can do these things.
+
+  To protect your rights, we need to make restrictions that forbid
+anyone to deny you these rights or to ask you to surrender the rights.
+These restrictions translate to certain responsibilities for you if
+you distribute copies of the library, or if you modify it.
+
+  For example, if you distribute copies of the library, whether gratis
+or for a fee, you must give the recipients all the rights that we gave
+you.  You must make sure that they, too, receive or can get the source
+code.  If you link a program with the library, you must provide
+complete object files to the recipients so that they can relink them
+with the library, after making changes to the library and recompiling
+it.  And you must show them these terms so they know their rights.
+
+  Our method of protecting your rights has two steps: (1) copyright
+the library, and (2) offer you this license which gives you legal
+permission to copy, distribute and/or modify the library.
+
+  Also, for each distributor's protection, we want to make certain
+that everyone understands that there is no warranty for this free
+library.  If the library is modified by someone else and passed on, we
+want its recipients to know that what they have is not the original
+version, so that any problems introduced by others will not reflect on
+the original authors' reputations.
+
+  Finally, any free program is threatened constantly by software
+patents.  We wish to avoid the danger that companies distributing free
+software will individually obtain patent licenses, thus in effect
+transforming the program into proprietary software.  To prevent this,
+we have made it clear that any patent must be licensed for everyone's
+free use or not licensed at all.
+
+  Most GNU software, including some libraries, is covered by the ordinary
+GNU General Public License, which was designed for utility programs.  This
+license, the GNU Library General Public License, applies to certain
+designated libraries.  This license is quite different from the ordinary
+one; be sure to read it in full, and don't assume that anything in it is
+the same as in the ordinary license.
+
+  The reason we have a separate public license for some libraries is that
+they blur the distinction we usually make between modifying or adding to a
+program and simply using it.  Linking a program with a library, without
+changing the library, is in some sense simply using the library, and is
+analogous to running a utility program or application program.  However, in
+a textual and legal sense, the linked executable is a combined work, a
+derivative of the original library, and the ordinary General Public License
+treats it as such.
+
+  Because of this blurred distinction, using the ordinary General
+Public License for libraries did not effectively promote software
+sharing, because most developers did not use the libraries.  We
+concluded that weaker conditions might promote sharing better.
+
+  However, unrestricted linking of non-free programs would deprive the
+users of those programs of all benefit from the free status of the
+libraries themselves.  This Library General Public License is intended to
+permit developers of non-free programs to use free libraries, while
+preserving your freedom as a user of such programs to change the free
+libraries that are incorporated in them.  (We have not seen how to achieve
+this as regards changes in header files, but we have achieved it as regards
+changes in the actual functions of the Library.)  The hope is that this
+will lead to faster development of free libraries.
+
+  The precise terms and conditions for copying, distribution and
+modification follow.  Pay close attention to the difference between a
+"work based on the library" and a "work that uses the library".  The
+former contains code derived from the library, while the latter only
+works together with the library.
+
+  Note that it is possible for a library to be covered by the ordinary
+General Public License rather than by this special one.
+
+                  GNU LIBRARY GENERAL PUBLIC LICENSE
+   TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
+
+  0. This License Agreement applies to any software library which
+contains a notice placed by the copyright holder or other authorized
+party saying it may be distributed under the terms of this Library
+General Public License (also called "this License").  Each licensee is
+addressed as "you".
+
+  A "library" means a collection of software functions and/or data
+prepared so as to be conveniently linked with application programs
+(which use some of those functions and data) to form executables.
+
+  The "Library", below, refers to any such software library or work
+which has been distributed under these terms.  A "work based on the
+Library" means either the Library or any derivative work under
+copyright law: that is to say, a work containing the Library or a
+portion of it, either verbatim or with modifications and/or translated
+straightforwardly into another language.  (Hereinafter, translation is
+included without limitation in the term "modification".)
+
+  "Source code" for a work means the preferred form of the work for
+making modifications to it.  For a library, complete source code means
+all the source code for all modules it contains, plus any associated
+interface definition files, plus the scripts used to control compilation
+and installation of the library.
+
+  Activities other than copying, distribution and modification are not
+covered by this License; they are outside its scope.  The act of
+running a program using the Library is not restricted, and output from
+such a program is covered only if its contents constitute a work based
+on the Library (independent of the use of the Library in a tool for
+writing it).  Whether that is true depends on what the Library does
+and what the program that uses the Library does.
+
+  1. You may copy and distribute verbatim copies of the Library's
+complete source code as you receive it, in any medium, provided that
+you conspicuously and appropriately publish on each copy an
+appropriate copyright notice and disclaimer of warranty; keep intact
+all the notices that refer to this License and to the absence of any
+warranty; and distribute a copy of this License along with the
+Library.
+
+  You may charge a fee for the physical act of transferring a copy,
+and you may at your option offer warranty protection in exchange for a
+fee.
+
+  2. You may modify your copy or copies of the Library or any portion
+of it, thus forming a work based on the Library, and copy and
+distribute such modifications or work under the terms of Section 1
+above, provided that you also meet all of these conditions:
+
+    a) The modified work must itself be a software library.
+
+    b) You must cause the files modified to carry prominent notices
+    stating that you changed the files and the date of any change.
+
+    c) You must cause the whole of the work to be licensed at no
+    charge to all third parties under the terms of this License.
+
+    d) If a facility in the modified Library refers to a function or a
+    table of data to be supplied by an application program that uses
+    the facility, other than as an argument passed when the facility
+    is invoked, then you must make a good faith effort to ensure that,
+    in the event an application does not supply such function or
+    table, the facility still operates, and performs whatever part of
+    its purpose remains meaningful.
+
+    (For example, a function in a library to compute square roots has
+    a purpose that is entirely well-defined independent of the
+    application.  Therefore, Subsection 2d requires that any
+    application-supplied function or table used by this function must
+    be optional: if the application does not supply it, the square
+    root function must still compute square roots.)
+
+These requirements apply to the modified work as a whole.  If
+identifiable sections of that work are not derived from the Library,
+and can be reasonably considered independent and separate works in
+themselves, then this License, and its terms, do not apply to those
+sections when you distribute them as separate works.  But when you
+distribute the same sections as part of a whole which is a work based
+on the Library, the distribution of the whole must be on the terms of
+this License, whose permissions for other licensees extend to the
+entire whole, and thus to each and every part regardless of who wrote
+it.
+
+Thus, it is not the intent of this section to claim rights or contest
+your rights to work written entirely by you; rather, the intent is to
+exercise the right to control the distribution of derivative or
+collective works based on the Library.
+
+In addition, mere aggregation of another work not based on the Library
+with the Library (or with a work based on the Library) on a volume of
+a storage or distribution medium does not bring the other work under
+the scope of this License.
+
+  3. You may opt to apply the terms of the ordinary GNU General Public
+License instead of this License to a given copy of the Library.  To do
+this, you must alter all the notices that refer to this License, so
+that they refer to the ordinary GNU General Public License, version 2,
+instead of to this License.  (If a newer version than version 2 of the
+ordinary GNU General Public License has appeared, then you can specify
+that version instead if you wish.)  Do not make any other change in
+these notices.
+
+  Once this change is made in a given copy, it is irreversible for
+that copy, so the ordinary GNU General Public License applies to all
+subsequent copies and derivative works made from that copy.
+
+  This option is useful when you wish to copy part of the code of
+the Library into a program that is not a library.
+
+  4. You may copy and distribute the Library (or a portion or
+derivative of it, under Section 2) in object code or executable form
+under the terms of Sections 1 and 2 above provided that you accompany
+it with the complete corresponding machine-readable source code, which
+must be distributed under the terms of Sections 1 and 2 above on a
+medium customarily used for software interchange.
+
+  If distribution of object code is made by offering access to copy
+from a designated place, then offering equivalent access to copy the
+source code from the same place satisfies the requirement to
+distribute the source code, even though third parties are not
+compelled to copy the source along with the object code.
+
+  5. A program that contains no derivative of any portion of the
+Library, but is designed to work with the Library by being compiled or
+linked with it, is called a "work that uses the Library".  Such a
+work, in isolation, is not a derivative work of the Library, and
+therefore falls outside the scope of this License.
+
+  However, linking a "work that uses the Library" with the Library
+creates an executable that is a derivative of the Library (because it
+contains portions of the Library), rather than a "work that uses the
+library".  The executable is therefore covered by this License.
+Section 6 states terms for distribution of such executables.
+
+  When a "work that uses the Library" uses material from a header file
+that is part of the Library, the object code for the work may be a
+derivative work of the Library even though the source code is not.
+Whether this is true is especially significant if the work can be
+linked without the Library, or if the work is itself a library.  The
+threshold for this to be true is not precisely defined by law.
+
+  If such an object file uses only numerical parameters, data
+structure layouts and accessors, and small macros and small inline
+functions (ten lines or less in length), then the use of the object
+file is unrestricted, regardless of whether it is legally a derivative
+work.  (Executables containing this object code plus portions of the
+Library will still fall under Section 6.)
+
+  Otherwise, if the work is a derivative of the Library, you may
+distribute the object code for the work under the terms of Section 6.
+Any executables containing that work also fall under Section 6,
+whether or not they are linked directly with the Library itself.
+
+  6. As an exception to the Sections above, you may also compile or
+link a "work that uses the Library" with the Library to produce a
+work containing portions of the Library, and distribute that work
+under terms of your choice, provided that the terms permit
+modification of the work for the customer's own use and reverse
+engineering for debugging such modifications.
+
+  You must give prominent notice with each copy of the work that the
+Library is used in it and that the Library and its use are covered by
+this License.  You must supply a copy of this License.  If the work
+during execution displays copyright notices, you must include the
+copyright notice for the Library among them, as well as a reference
+directing the user to the copy of this License.  Also, you must do one
+of these things:
+
+    a) Accompany the work with the complete corresponding
+    machine-readable source code for the Library including whatever
+    changes were used in the work (which must be distributed under
+    Sections 1 and 2 above); and, if the work is an executable linked
+    with the Library, with the complete machine-readable "work that
+    uses the Library", as object code and/or source code, so that the
+    user can modify the Library and then relink to produce a modified
+    executable containing the modified Library.  (It is understood
+    that the user who changes the contents of definitions files in the
+    Library will not necessarily be able to recompile the application
+    to use the modified definitions.)
+
+    b) Accompany the work with a written offer, valid for at
+    least three years, to give the same user the materials
+    specified in Subsection 6a, above, for a charge no more
+    than the cost of performing this distribution.
+
+    c) If distribution of the work is made by offering access to copy
+    from a designated place, offer equivalent access to copy the above
+    specified materials from the same place.
+
+    d) Verify that the user has already received a copy of these
+    materials or that you have already sent this user a copy.
+
+  For an executable, the required form of the "work that uses the
+Library" must include any data and utility programs needed for
+reproducing the executable from it.  However, as a special exception,
+the source code distributed need not include anything that is normally
+distributed (in either source or binary form) with the major
+components (compiler, kernel, and so on) of the operating system on
+which the executable runs, unless that component itself accompanies
+the executable.
+
+  It may happen that this requirement contradicts the license
+restrictions of other proprietary libraries that do not normally
+accompany the operating system.  Such a contradiction means you cannot
+use both them and the Library together in an executable that you
+distribute.
+
+  7. You may place library facilities that are a work based on the
+Library side-by-side in a single library together with other library
+facilities not covered by this License, and distribute such a combined
+library, provided that the separate distribution of the work based on
+the Library and of the other library facilities is otherwise
+permitted, and provided that you do these two things:
+
+    a) Accompany the combined library with a copy of the same work
+    based on the Library, uncombined with any other library
+    facilities.  This must be distributed under the terms of the
+    Sections above.
+
+    b) Give prominent notice with the combined library of the fact
+    that part of it is a work based on the Library, and explaining
+    where to find the accompanying uncombined form of the same work.
+
+  8. You may not copy, modify, sublicense, link with, or distribute
+the Library except as expressly provided under this License.  Any
+attempt otherwise to copy, modify, sublicense, link with, or
+distribute the Library is void, and will automatically terminate your
+rights under this License.  However, parties who have received copies,
+or rights, from you under this License will not have their licenses
+terminated so long as such parties remain in full compliance.
+
+  9. You are not required to accept this License, since you have not
+signed it.  However, nothing else grants you permission to modify or
+distribute the Library or its derivative works.  These actions are
+prohibited by law if you do not accept this License.  Therefore, by
+modifying or distributing the Library (or any work based on the
+Library), you indicate your acceptance of this License to do so, and
+all its terms and conditions for copying, distributing or modifying
+the Library or works based on it.
+
+  10. Each time you redistribute the Library (or any work based on the
+Library), the recipient automatically receives a license from the
+original licensor to copy, distribute, link with or modify the Library
+subject to these terms and conditions.  You may not impose any further
+restrictions on the recipients' exercise of the rights granted herein.
+You are not responsible for enforcing compliance by third parties to
+this License.
+
+  11. If, as a consequence of a court judgment or allegation of patent
+infringement or for any other reason (not limited to patent issues),
+conditions are imposed on you (whether by court order, agreement or
+otherwise) that contradict the conditions of this License, they do not
+excuse you from the conditions of this License.  If you cannot
+distribute so as to satisfy simultaneously your obligations under this
+License and any other pertinent obligations, then as a consequence you
+may not distribute the Library at all.  For example, if a patent
+license would not permit royalty-free redistribution of the Library by
+all those who receive copies directly or indirectly through you, then
+the only way you could satisfy both it and this License would be to
+refrain entirely from distribution of the Library.
+
+If any portion of this section is held invalid or unenforceable under any
+particular circumstance, the balance of the section is intended to apply,
+and the section as a whole is intended to apply in other circumstances.
+
+It is not the purpose of this section to induce you to infringe any
+patents or other property right claims or to contest validity of any
+such claims; this section has the sole purpose of protecting the
+integrity of the free software distribution system which is
+implemented by public license practices.  Many people have made
+generous contributions to the wide range of software distributed
+through that system in reliance on consistent application of that
+system; it is up to the author/donor to decide if he or she is willing
+to distribute software through any other system and a licensee cannot
+impose that choice.
+
+This section is intended to make thoroughly clear what is believed to
+be a consequence of the rest of this License.
+
+  12. If the distribution and/or use of the Library is restricted in
+certain countries either by patents or by copyrighted interfaces, the
+original copyright holder who places the Library under this License may add
+an explicit geographical distribution limitation excluding those countries,
+so that distribution is permitted only in or among countries not thus
+excluded.  In such case, this License incorporates the limitation as if
+written in the body of this License.
+
+  13. The Free Software Foundation may publish revised and/or new
+versions of the Library General Public License from time to time.
+Such new versions will be similar in spirit to the present version,
+but may differ in detail to address new problems or concerns.
+
+Each version is given a distinguishing version number.  If the Library
+specifies a version number of this License which applies to it and
+"any later version", you have the option of following the terms and
+conditions either of that version or of any later version published by
+the Free Software Foundation.  If the Library does not specify a
+license version number, you may choose any version ever published by
+the Free Software Foundation.
+
+  14. If you wish to incorporate parts of the Library into other free
+programs whose distribution conditions are incompatible with these,
+write to the author to ask for permission.  For software which is
+copyrighted by the Free Software Foundation, write to the Free
+Software Foundation; we sometimes make exceptions for this.  Our
+decision will be guided by the two goals of preserving the free status
+of all derivatives of our free software and of promoting the sharing
+and reuse of software generally.
+
+                            NO WARRANTY
+
+  15. BECAUSE THE LIBRARY IS LICENSED FREE OF CHARGE, THERE IS NO
+WARRANTY FOR THE LIBRARY, TO THE EXTENT PERMITTED BY APPLICABLE LAW.
+EXCEPT WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT HOLDERS AND/OR
+OTHER PARTIES PROVIDE THE LIBRARY "AS IS" WITHOUT WARRANTY OF ANY
+KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+PURPOSE.  THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE
+LIBRARY IS WITH YOU.  SHOULD THE LIBRARY PROVE DEFECTIVE, YOU ASSUME
+THE COST OF ALL NECESSARY SERVICING, REPAIR OR CORRECTION.
+
+  16. IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN
+WRITING WILL ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MAY MODIFY
+AND/OR REDISTRIBUTE THE LIBRARY AS PERMITTED ABOVE, BE LIABLE TO YOU
+FOR DAMAGES, INCLUDING ANY GENERAL, SPECIAL, INCIDENTAL OR
+CONSEQUENTIAL DAMAGES ARISING OUT OF THE USE OR INABILITY TO USE THE
+LIBRARY (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR DATA BEING
+RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES OR A
+FAILURE OF THE LIBRARY TO OPERATE WITH ANY OTHER SOFTWARE), EVEN IF
+SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH
+DAMAGES.
+
+                     END OF TERMS AND CONDITIONS
+
+           How to Apply These Terms to Your New Libraries
+
+  If you develop a new library, and you want it to be of the greatest
+possible use to the public, we recommend making it free software that
+everyone can redistribute and change.  You can do so by permitting
+redistribution under these terms (or, alternatively, under the terms of the
+ordinary General Public License).
+
+  To apply these terms, attach the following notices to the library.  It is
+safest to attach them to the start of each source file to most effectively
+convey the exclusion of warranty; and each file should have at least the
+"copyright" line and a pointer to where the full notice is found.
+
+    <one line to give the library's name and a brief idea of what it does.>
+    Copyright (C) <year>  <name of author>
+
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Library General Public
+    License as published by the Free Software Foundation; either
+    version 2 of the License, or (at your option) any later version.
+
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Library General Public License for more details.
+
+    You should have received a copy of the GNU Library General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+
+Also add information on how to contact you by electronic and paper mail.
+
+You should also get your employer (if you work as a programmer) or your
+school, if any, to sign a "copyright disclaimer" for the library, if
+necessary.  Here is a sample; alter the names:
+
+  Yoyodyne, Inc., hereby disclaims all copyright interest in the
+  library `Frob' (a library for tweaking knobs) written by James Random Hacker.
+
+  <signature of Ty Coon>, 1 April 1990
+  Ty Coon, President of Vice
+
+That's all there is to it!
+```
+
+### Text 37
+
 Used by: PyYAML.
 
 ```text
@@ -4347,7 +4937,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 37
+### Text 38
 
 Used by: libyaml (compiled into PyYAML).
 
@@ -4374,7 +4964,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 38
+### Text 39
 
 Used by: six.
 
@@ -4399,7 +4989,7 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 39
+### Text 40
 
 Used by: adler2 2.0.1.
 
@@ -4418,7 +5008,7 @@ AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
 OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ```
 
-### Text 40
+### Text 41
 
 Used by: adler2 2.0.1, cargo-platform 0.1.9, proc-macro-crate 1.3.1, proc-macro-crate 2.0.2, proc-macro-crate 3.5.0.
 
@@ -4426,9 +5016,9 @@ Used by: adler2 2.0.1, cargo-platform 0.1.9, proc-macro-crate 1.3.1, proc-macro-
 LICENSE-2.0
 ```
 
-### Text 41
+### Text 42
 
-Used by: adler2 2.0.1, anyhow 1.0.104, atk 0.18.2, atk-sys 0.18.2, atomic-waker 1.1.2, cairo-rs 0.18.5, cairo-sys-rs 0.18.2, camino 1.2.6, cargo-platform 0.1.9, cargo_metadata 0.19.2, ctor 1.0.13, displaydoc 0.2.7 and 69 more.
+Used by: adler2 2.0.1, anyhow 1.0.104, atk 0.18.2, atk-sys 0.18.2, atomic-waker 1.1.2, cairo-rs 0.18.5, cairo-sys-rs 0.18.2, camino 1.2.6, cargo-platform 0.1.9, cargo_metadata 0.19.2, ctor 1.0.13, displaydoc 0.2.7 and 70 more.
 
 ```text
 Permission is hereby granted, free of charge, to any
@@ -4456,7 +5046,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 42
+### Text 43
 
 Used by: aho-corasick 1.1.5, byteorder 1.5.0, jiff 0.2.38, jiff-core 0.1.1, jiff-static 0.2.38, jiff-tzdb 0.1.9, jiff-tzdb-platform 0.1.3, memchr 2.8.3, same-file 1.0.6, walkdir 2.5.0, winapi-util 0.1.11.
 
@@ -4466,7 +5056,7 @@ This project is dual-licensed under the Unlicense and MIT licenses.
 You may use this code under the terms of either license.
 ```
 
-### Text 43
+### Text 44
 
 Used by: aho-corasick 1.1.5, byteorder 1.5.0, jiff 0.2.38, jiff-core 0.1.1, jiff-static 0.2.38, jiff-tzdb 0.1.9, jiff-tzdb-platform 0.1.3, memchr 2.8.3, walkdir 2.5.0, Rust standard library: memchr.
 
@@ -4494,7 +5084,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
 
-### Text 44
+### Text 45
 
 Used by: aho-corasick 1.1.5, byteorder 1.5.0, jiff 0.2.38, jiff-core 0.1.1, jiff-static 0.2.38, jiff-tzdb 0.1.9, jiff-tzdb-platform 0.1.3, memchr 2.8.3, same-file 1.0.6, walkdir 2.5.0, winapi-util 0.1.11.
 
@@ -4525,7 +5115,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 ```
 
-### Text 45
+### Text 46
 
 Used by: alloc-no-stdlib 3.0.0, brotli 9.1.1, brotli-decompressor 6.2.0.
 
@@ -4544,7 +5134,7 @@ Redistribution and use in source and binary forms, with or without modification,
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-### Text 46
+### Text 47
 
 Used by: alloc-stdlib 0.3.0.
 
@@ -4562,7 +5152,7 @@ Redistribution and use in source and binary forms, with or without modification,
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-### Text 47
+### Text 48
 
 Used by: android_system_properties 0.1.6.
 
@@ -4582,7 +5172,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ```
 
-### Text 48
+### Text 49
 
 Used by: android_system_properties 0.1.6.
 
@@ -4609,7 +5199,7 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 49
+### Text 50
 
 Used by: atk 0.18.2, cairo-rs 0.18.5, gdk 0.18.2, gdk-pixbuf 0.18.5, gdkx11 0.18.2, gio 0.18.4, glib 0.18.5, glib-macros 0.18.5, gtk 0.18.2, gtk3-macros 0.18.2, pango 0.18.3.
 
@@ -4630,7 +5220,7 @@ LGPL or other licenses. For more information check the license of each GNOME
 library.
 ```
 
-### Text 50
+### Text 51
 
 Used by: atomic-waker 1.1.2.
 
@@ -4682,7 +5272,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 51
+### Text 52
 
 Used by: autocfg 1.5.1.
 
@@ -4714,7 +5304,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 52
+### Text 53
 
 Used by: base64 0.21.7.
 
@@ -4742,7 +5332,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
 
-### Text 53
+### Text 54
 
 Used by: base64 0.23.1.
 
@@ -4770,7 +5360,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
 
-### Text 54
+### Text 55
 
 Used by: bit-set 0.8.0, bit-vec 0.8.0.
 
@@ -4802,7 +5392,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 55
+### Text 56
 
 Used by: bitflags 1.3.2, bitflags 2.13.2, glob 0.3.4, log 0.4.35, num-traits 0.2.19, regex 1.13.1, regex-automata 0.4.18, regex-syntax 0.8.11.
 
@@ -4834,7 +5424,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 56
+### Text 57
 
 Used by: block-buffer 0.10.4.
 
@@ -4866,7 +5456,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 57
+### Text 58
 
 Used by: brotli 9.1.1.
 
@@ -4892,7 +5482,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
 
-### Text 58
+### Text 59
 
 Used by: bs58 0.5.1.
 
@@ -4919,7 +5509,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 59
+### Text 60
 
 Used by: bumpalo 3.20.3.
 
@@ -4951,7 +5541,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 60
+### Text 61
 
 Used by: bytemuck 1.25.2.
 
@@ -4967,7 +5557,7 @@ The above copyright notice and this permission notice (including the next paragr
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 61
+### Text 62
 
 Used by: bytemuck 1.25.2, tinyvec 1.13.3.
 
@@ -4985,7 +5575,7 @@ Permission is granted to anyone to use this software for any purpose, including 
 3. This notice may not be removed or altered from any source distribution.
 ```
 
-### Text 62
+### Text 63
 
 Used by: bytes 1.12.1.
 
@@ -5017,7 +5607,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 63
+### Text 64
 
 Used by: cargo_toml 1.0.1.
 
@@ -5226,7 +5816,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 64
+### Text 65
 
 Used by: cc 1.10.0, cfg-if 1.0.5, find-msvc-tools 0.1.15, js-sys 0.3.107, pkg-config 0.3.34, socket2 0.6.5, toml_datetime 0.6.3, wasm-bindgen 0.2.130, wasm-bindgen-futures 0.4.80, wasm-bindgen-macro 0.2.130, wasm-bindgen-macro-support 0.2.130, wasm-bindgen-shared 0.2.130 and 3 more.
 
@@ -5258,7 +5848,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 65
+### Text 66
 
 Used by: cesu8 1.1.0.
 
@@ -5687,7 +6277,7 @@ their own copyright notices and license terms:
   copyright itself, held by the contributor.
 ```
 
-### Text 66
+### Text 67
 
 Used by: cfb 0.14.0.
 
@@ -5715,7 +6305,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 67
+### Text 68
 
 Used by: cfg-expr 0.15.8.
 
@@ -5747,7 +6337,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 68
+### Text 69
 
 Used by: chrono 0.4.45.
 
@@ -5993,7 +6583,7 @@ limitations under the License.
 ~~~~
 ```
 
-### Text 69
+### Text 70
 
 Used by: combine 4.6.9.
 
@@ -6021,7 +6611,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
 
-### Text 70
+### Text 71
 
 Used by: cookie 0.18.2.
 
@@ -6053,7 +6643,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ```
 
-### Text 71
+### Text 72
 
 Used by: cookie 0.18.2.
 
@@ -6086,7 +6676,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 72
+### Text 73
 
 Used by: core-foundation 0.10.1, core-foundation-sys 0.8.7, core-graphics 0.25.0, core-graphics-types 0.2.0, string_cache 0.9.0, string_cache_codegen 0.6.1.
 
@@ -6118,7 +6708,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 73
+### Text 74
 
 Used by: core-graphics 0.25.0, unicode-segmentation 1.13.3.
 
@@ -6130,7 +6720,7 @@ option. All files in the project carrying such notice may not be
 copied, modified, or distributed except according to those terms.
 ```
 
-### Text 74
+### Text 75
 
 Used by: cpufeatures 0.2.17.
 
@@ -6162,7 +6752,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 75
+### Text 76
 
 Used by: crc32fast 1.5.3.
 
@@ -6190,7 +6780,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 76
+### Text 77
 
 Used by: crossbeam-channel 0.5.17, crossbeam-utils 0.8.23.
 
@@ -6224,7 +6814,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 77
+### Text 78
 
 Used by: crossbeam-channel 0.5.17.
 
@@ -6824,7 +7414,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ```
 
-### Text 78
+### Text 79
 
 Used by: crypto-common 0.1.7.
 
@@ -6856,7 +7446,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 79
+### Text 80
 
 Used by: darling 0.24.1, darling_core 0.24.1, darling_macro 0.24.1.
 
@@ -6884,7 +7474,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 80
+### Text 81
 
 Used by: dbus 0.9.12, libdbus-sys 0.2.7.
 
@@ -6915,7 +7505,7 @@ APPENDIX: How to apply the Apache License to your work.
    limitations under the License.
 ```
 
-### Text 81
+### Text 82
 
 Used by: dbus 0.9.12, libdbus-sys 0.2.7.
 
@@ -6941,7 +7531,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 82
+### Text 83
 
 Used by: defmt 1.2.0, defmt-macros 1.2.0, defmt-parser 1.1.0.
 
@@ -6973,7 +7563,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 83
+### Text 84
 
 Used by: deranged 0.5.9.
 
@@ -7004,7 +7594,7 @@ APPENDIX: How to apply the Apache License to your work.
    limitations under the License.
 ```
 
-### Text 84
+### Text 85
 
 Used by: deranged 0.5.9.
 
@@ -7030,7 +7620,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 85
+### Text 86
 
 Used by: derive_more 2.1.1, derive_more-impl 2.1.1.
 
@@ -7058,7 +7648,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 86
+### Text 87
 
 Used by: digest 0.10.7.
 
@@ -7090,7 +7680,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 87
+### Text 88
 
 Used by: dirs 7.0.0, dirs-sys 0.5.0.
 
@@ -7271,7 +7861,7 @@ TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
    of your accepting any such warranty or additional liability.
 ```
 
-### Text 88
+### Text 89
 
 Used by: dirs 7.0.0, dirs-sys 0.5.0.
 
@@ -7297,7 +7887,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 89
+### Text 90
 
 Used by: dispatch2 0.3.1, objc2-app-kit 0.3.2, objc2-cloud-kit 0.3.2, objc2-core-data 0.3.2, objc2-core-foundation 0.3.2, objc2-core-graphics 0.3.2, objc2-core-image 0.3.2, objc2-core-location 0.3.2, objc2-core-text 0.3.2, objc2-exception-helper 0.1.1, objc2-io-surface 0.3.2, objc2-quartz-core 0.3.2 and 3 more.
 
@@ -7315,7 +7905,7 @@ Permission is granted to anyone to use this software for any purpose, including 
      3. This notice may not be removed or altered from any source distribution.
 ```
 
-### Text 90
+### Text 91
 
 Used by: dom_query 0.28.0.
 
@@ -7349,7 +7939,7 @@ derived from the "nipper" project (https://github.com/importcjj/nipper),
 developed by Chen Jiaju, licensed under the MIT License and the Apache License 2.0 (dual licensed).
 ```
 
-### Text 91
+### Text 92
 
 Used by: dpi 0.1.2.
 
@@ -7407,7 +7997,7 @@ have been licensed under extremely permissive terms.
 ------------------------------------------------------------------------------
 ```
 
-### Text 92
+### Text 93
 
 Used by: dunce 1.0.5.
 
@@ -7535,7 +8125,7 @@ express Statement of Purpose.
     this CC0 or use of the Work.
 ```
 
-### Text 93
+### Text 94
 
 Used by: embed-resource 3.0.12.
 
@@ -7563,7 +8153,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 94
+### Text 95
 
 Used by: embed_plist 1.2.2.
 
@@ -7591,7 +8181,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 95
+### Text 96
 
 Used by: equivalent 1.0.3.
 
@@ -7623,7 +8213,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 96
+### Text 97
 
 Used by: fdeflate 0.3.7, ident_case 1.0.1.
 
@@ -7655,7 +8245,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 97
+### Text 98
 
 Used by: field-offset 0.3.6.
 
@@ -7683,7 +8273,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 98
+### Text 99
 
 Used by: flate2 1.1.10.
 
@@ -7715,7 +8305,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 99
+### Text 100
 
 Used by: fnv 1.0.7.
 
@@ -7747,7 +8337,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 100
+### Text 101
 
 Used by: foldhash 0.2.0.
 
@@ -7773,7 +8363,7 @@ the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 ```
 
-### Text 101
+### Text 102
 
 Used by: foreign-types 0.5.0, foreign-types-macros 0.2.4, foreign-types-shared 0.3.1.
 
@@ -7799,7 +8389,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 102
+### Text 103
 
 Used by: form_urlencoded 1.2.2.
 
@@ -7831,7 +8421,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 103
+### Text 104
 
 Used by: futures-channel 0.3.34, futures-core 0.3.34, futures-executor 0.3.34, futures-io 0.3.34, futures-macro 0.3.34, futures-sink 0.3.34, futures-task 0.3.34, futures-util 0.3.34.
 
@@ -7863,7 +8453,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ```
 
-### Text 104
+### Text 105
 
 Used by: futures-channel 0.3.34, futures-core 0.3.34, futures-executor 0.3.34, futures-io 0.3.34, futures-macro 0.3.34, futures-sink 0.3.34, futures-task 0.3.34, futures-util 0.3.34.
 
@@ -7896,7 +8486,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 105
+### Text 106
 
 Used by: futures-channel 0.3.34.
 
@@ -7930,7 +8520,7 @@ those of the authors and should not be interpreted as representing official
 policies, either expressed or implied, of Dmitry Vyukov.
 ```
 
-### Text 106
+### Text 107
 
 Used by: generic-array 0.14.7.
 
@@ -7958,7 +8548,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 107
+### Text 108
 
 Used by: getrandom 0.3.4.
 
@@ -7991,7 +8581,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 108
+### Text 109
 
 Used by: getrandom 0.4.3.
 
@@ -8024,7 +8614,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 109
+### Text 110
 
 Used by: hashbrown 0.12.3, hashbrown 0.17.1, Rust standard library: hashbrown.
 
@@ -8056,7 +8646,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 110
+### Text 111
 
 Used by: heck 0.4.1, heck 0.5.0, unicode-segmentation 1.13.3, Rust standard library: gimli.
 
@@ -8088,7 +8678,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 111
+### Text 112
 
 Used by: hex 0.4.3.
 
@@ -8115,7 +8705,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 112
+### Text 113
 
 Used by: html5ever 0.39.0, markup5ever 0.39.0, web_atoms 0.2.6.
 
@@ -8147,7 +8737,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 113
+### Text 114
 
 Used by: http 1.5.0.
 
@@ -8178,7 +8768,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ```
 
-### Text 114
+### Text 115
 
 Used by: http 1.5.0.
 
@@ -8210,7 +8800,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 115
+### Text 116
 
 Used by: http-body 1.1.0, http-body-util 0.1.5.
 
@@ -8242,7 +8832,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 116
+### Text 117
 
 Used by: httparse 1.10.1.
 
@@ -8268,7 +8858,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
 
-### Text 117
+### Text 118
 
 Used by: hyper 1.12.0.
 
@@ -8294,7 +8884,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
 
-### Text 118
+### Text 119
 
 Used by: hyper-util 0.1.21.
 
@@ -8320,7 +8910,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
 
-### Text 119
+### Text 120
 
 Used by: iana-time-zone 0.1.65, iana-time-zone-haiku 0.1.2.
 
@@ -8351,7 +8941,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ```
 
-### Text 120
+### Text 121
 
 Used by: iana-time-zone 0.1.65, iana-time-zone-haiku 0.1.2.
 
@@ -8383,7 +8973,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 121
+### Text 122
 
 Used by: ico 0.6.0.
 
@@ -8411,7 +9001,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 122
+### Text 123
 
 Used by: icu_collections 2.4.0, icu_locale_core 2.4.0, icu_normalizer 2.4.0, icu_normalizer_data 2.4.0, icu_properties 2.4.0, icu_properties_data 2.4.0, icu_provider 2.4.0, litemap 0.8.3, potential_utf 0.1.6, tinystr 0.8.5, writeable 0.6.4, yoke 0.8.4 and 6 more.
 
@@ -8464,7 +9054,7 @@ Portions of ICU4X may have been adapted from ICU4C and/or ICU4J.
 ICU 1.8.1 to ICU 57.1 © 1995-2016 International Business Machines Corporation and others.
 ```
 
-### Text 123
+### Text 124
 
 Used by: idna 1.1.0, percent-encoding 2.3.2, url 2.5.8.
 
@@ -8496,7 +9086,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 124
+### Text 125
 
 Used by: idna_adapter 1.2.2.
 
@@ -8528,7 +9118,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 125
+### Text 126
 
 Used by: indexmap 1.9.3, indexmap 2.14.2.
 
@@ -8560,7 +9150,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 126
+### Text 127
 
 Used by: infer 0.22.0.
 
@@ -8588,7 +9178,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 127
+### Text 128
 
 Used by: ipnet 2.12.2.
 
@@ -8619,7 +9209,7 @@ APPENDIX: How to apply the Apache License to your work.
    limitations under the License.
 ```
 
-### Text 128
+### Text 129
 
 Used by: ipnet 2.12.2.
 
@@ -8633,7 +9223,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 129
+### Text 130
 
 Used by: javascriptcore-rs 1.1.2.
 
@@ -8662,7 +9252,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 130
+### Text 131
 
 Used by: javascriptcore-rs-sys 1.1.1, soup3 0.5.0, soup3-sys 0.5.0.
 
@@ -8690,7 +9280,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 131
+### Text 132
 
 Used by: jni 0.21.1.
 
@@ -8718,7 +9308,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 132
+### Text 133
 
 Used by: jni-sys 0.3.1, jni-sys 0.4.1.
 
@@ -8744,7 +9334,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 133
+### Text 134
 
 Used by: json-patch 4.2.0.
 
@@ -8772,7 +9362,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 134
+### Text 135
 
 Used by: jsonptr 0.7.1.
 
@@ -8803,7 +9393,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ```
 
-### Text 135
+### Text 136
 
 Used by: jsonptr 0.7.1.
 
@@ -8831,7 +9421,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 136
+### Text 137
 
 Used by: keyboard-types 0.8.3.
 
@@ -8857,7 +9447,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
 
-### Text 137
+### Text 138
 
 Used by: keyboard-types 0.8.3.
 
@@ -8871,7 +9461,7 @@ drafts:
 * [UI Events KeyboardEvent code Values](https://w3c.github.io/uievents-code/)
 ```
 
-### Text 138
+### Text 139
 
 Used by: libappindicator 0.9.0.
 
@@ -8900,7 +9490,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 139
+### Text 140
 
 Used by: libc 0.2.191, Rust standard library: libc.
 
@@ -8932,7 +9522,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 140
+### Text 141
 
 Used by: libloading 0.7.4.
 
@@ -8951,7 +9541,7 @@ NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE US
 THIS SOFTWARE.
 ```
 
-### Text 141
+### Text 142
 
 Used by: libredox 0.1.25.
 
@@ -8979,7 +9569,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 142
+### Text 143
 
 Used by: lock_api 0.4.14, parking_lot 0.12.5, parking_lot_core 0.9.12, rustc_version 0.4.1.
 
@@ -9011,7 +9601,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 143
+### Text 144
 
 Used by: memoffset 0.9.1.
 
@@ -9037,7 +9627,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 144
+### Text 145
 
 Used by: mime 0.3.17.
 
@@ -9063,7 +9653,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
 
-### Text 145
+### Text 146
 
 Used by: miniz_oxide 0.8.9, miniz_oxide 0.9.1, Rust standard library: miniz_oxide.
 
@@ -9095,7 +9685,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 146
+### Text 147
 
 Used by: miniz_oxide 0.8.9, miniz_oxide 0.9.1.
 
@@ -9116,7 +9706,7 @@ Permission is granted to anyone to use this software for any purpose, including 
 3. This notice may not be removed or altered from any source distribution.
 ```
 
-### Text 147
+### Text 148
 
 Used by: mio 1.2.4.
 
@@ -9142,7 +9732,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
 
-### Text 148
+### Text 149
 
 Used by: muda 0.20.0, tray-icon 0.25.1.
 
@@ -9170,7 +9760,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 149
+### Text 150
 
 Used by: muda 0.20.0.
 
@@ -9196,7 +9786,7 @@ PackageDownloadLocation: git+ssh://github.com/tauri-apps/muda.git
 Creator: Person: Daniel Thompson-Yvetot
 ```
 
-### Text 150
+### Text 151
 
 Used by: muda 0.20.0.
 
@@ -9208,7 +9798,7 @@ Copyright 2021-2022 Tauri Programme within The Commons Conservancy
 SPDX-License-Identifier: Apache-2.0
 ```
 
-### Text 151
+### Text 152
 
 Used by: new_debug_unreachable 1.0.6.
 
@@ -9240,7 +9830,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 152
+### Text 153
 
 Used by: num-conv 0.2.2.
 
@@ -9266,7 +9856,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 153
+### Text 154
 
 Used by: num_enum 0.7.6, num_enum_derive 0.7.6.
 
@@ -9300,7 +9890,7 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-### Text 154
+### Text 155
 
 Used by: option-ext 0.2.0.
 
@@ -9680,7 +10270,7 @@ Exhibit B - "Incompatible With Secondary Licenses" Notice
   defined by the Mozilla Public License, v. 2.0.
 ```
 
-### Text 155
+### Text 156
 
 Used by: phf 0.13.1, phf_codegen 0.13.1, phf_generator 0.13.1, phf_macros 0.13.1, phf_shared 0.13.1.
 
@@ -9707,7 +10297,7 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 156
+### Text 157
 
 Used by: plist 1.10.3.
 
@@ -9733,7 +10323,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 157
+### Text 158
 
 Used by: png 0.18.1.
 
@@ -9765,7 +10355,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 158
+### Text 159
 
 Used by: powerfmt 0.2.1.
 
@@ -9796,7 +10386,7 @@ APPENDIX: How to apply the Apache License to your work.
    limitations under the License.
 ```
 
-### Text 159
+### Text 160
 
 Used by: powerfmt 0.2.1.
 
@@ -9822,7 +10412,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 160
+### Text 161
 
 Used by: precomputed-hash 0.1.1.
 
@@ -9850,7 +10440,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 161
+### Text 162
 
 Used by: proc-macro-error 1.0.4, proc-macro-error-attr 1.0.4.
 
@@ -9881,7 +10471,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ```
 
-### Text 162
+### Text 163
 
 Used by: proc-macro-error 1.0.4, proc-macro-error-attr 1.0.4.
 
@@ -9909,7 +10499,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 163
+### Text 164
 
 Used by: quick-xml 0.42.0.
 
@@ -9939,7 +10529,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
 
-### Text 164
+### Text 165
 
 Used by: raw-window-handle 0.6.2.
 
@@ -9967,7 +10557,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 165
+### Text 166
 
 Used by: raw-window-handle 0.6.2.
 
@@ -9985,7 +10575,7 @@ Permission is granted to anyone to use this software for any purpose, including 
 3. This notice may not be removed or altered from any source distribution.
 ```
 
-### Text 166
+### Text 167
 
 Used by: redox_syscall 0.5.18.
 
@@ -10014,7 +10604,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 167
+### Text 168
 
 Used by: redox_users 0.5.3.
 
@@ -10042,7 +10632,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 168
+### Text 169
 
 Used by: reqwest 0.13.5.
 
@@ -10073,7 +10663,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ```
 
-### Text 169
+### Text 170
 
 Used by: reqwest 0.13.5.
 
@@ -10099,7 +10689,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
 
-### Text 170
+### Text 171
 
 Used by: same-file 1.0.6, winapi-util 0.1.11.
 
@@ -10127,7 +10717,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
 
-### Text 171
+### Text 172
 
 Used by: schemars 0.8.22, schemars 0.9.0, schemars 1.2.3, schemars_derive 0.8.22.
 
@@ -10155,7 +10745,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 172
+### Text 173
 
 Used by: scopeguard 1.2.0.
 
@@ -10187,7 +10777,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 173
+### Text 174
 
 Used by: serde_spanned 0.6.9, serde_spanned 1.1.2, toml 0.8.2, toml 1.1.8+spec-1.1.0, toml_datetime 1.1.2+spec-1.1.0, toml_edit 0.19.15, toml_edit 0.20.2, toml_edit 0.25.17+spec-1.1.0, toml_parser 1.1.5+spec-1.1.0, toml_writer 1.1.3+spec-1.1.0.
 
@@ -10213,7 +10803,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 174
+### Text 175
 
 Used by: serde_spanned 1.1.2, toml 1.1.8+spec-1.1.0, toml_datetime 1.1.2+spec-1.1.0, toml_edit 0.25.17+spec-1.1.0, toml_parser 1.1.5+spec-1.1.0, toml_writer 1.1.3+spec-1.1.0.
 
@@ -10244,7 +10834,7 @@ APPENDIX: How to apply the Apache License to your work.
    limitations under the License.
 ```
 
-### Text 175
+### Text 176
 
 Used by: serde_with 3.24.0, serde_with_macros 3.24.0.
 
@@ -10276,7 +10866,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 176
+### Text 177
 
 Used by: serialize-to-javascript 0.1.2, serialize-to-javascript-impl 0.1.2.
 
@@ -10304,7 +10894,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 177
+### Text 178
 
 Used by: sha2 0.10.9.
 
@@ -10338,7 +10928,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 178
+### Text 179
 
 Used by: shlex 2.0.1.
 
@@ -10358,7 +10948,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ```
 
-### Text 179
+### Text 180
 
 Used by: shlex 2.0.1.
 
@@ -10386,7 +10976,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
 
-### Text 180
+### Text 181
 
 Used by: simd-adler32 0.3.10.
 
@@ -10414,7 +11004,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 181
+### Text 182
 
 Used by: siphasher 1.0.4.
 
@@ -10428,7 +11018,7 @@ http://www.apache.org/licenses/LICENSE-2.0> or the MIT license
 option.
 ```
 
-### Text 182
+### Text 183
 
 Used by: slab 0.4.12.
 
@@ -10460,7 +11050,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 183
+### Text 184
 
 Used by: smallvec 1.16.4.
 
@@ -10492,7 +11082,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 184
+### Text 185
 
 Used by: softbuffer 0.4.8.
 
@@ -10523,7 +11113,7 @@ APPENDIX: How to apply the Apache License to your work.
    limitations under the License.
 ```
 
-### Text 185
+### Text 186
 
 Used by: softbuffer 0.4.8.
 
@@ -10549,7 +11139,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 186
+### Text 187
 
 Used by: stable_deref_trait 1.2.1.
 
@@ -10581,7 +11171,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 187
+### Text 188
 
 Used by: static_vcruntime 3.0.0.
 
@@ -10589,7 +11179,7 @@ Used by: static_vcruntime 3.0.0.
 MIT OR Apache-2.0 OR Zlib
 ```
 
-### Text 188
+### Text 189
 
 Used by: static_vcruntime 3.0.0.
 
@@ -10605,7 +11195,7 @@ The above copyright notice and this permission notice (including the next paragr
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 189
+### Text 190
 
 Used by: static_vcruntime 3.0.0.
 
@@ -10623,7 +11213,7 @@ Permission is granted to anyone to use this software for any purpose, including 
 3. This notice may not be removed or altered from any source distribution.
 ```
 
-### Text 190
+### Text 191
 
 Used by: strsim 0.11.1.
 
@@ -10653,7 +11243,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 191
+### Text 192
 
 Used by: swift-rs 1.0.9.
 
@@ -10684,7 +11274,7 @@ APPENDIX: How to apply the Apache License to your work.
    limitations under the License.
 ```
 
-### Text 192
+### Text 193
 
 Used by: swift-rs 1.0.9.
 
@@ -10710,7 +11300,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 193
+### Text 194
 
 Used by: synstructure 0.14.0.
 
@@ -10724,7 +11314,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 194
+### Text 195
 
 Used by: tao 0.37.2.
 
@@ -10749,7 +11339,7 @@ PackageDownloadLocation: git+ssh://github.com/tauri-apps/tao.git
 Creator: Person: Daniel Thompson-Yvetot
 ```
 
-### Text 195
+### Text 196
 
 Used by: tao 0.37.2.
 
@@ -10832,7 +11422,7 @@ FITNESS FOR A PARTICULAR PURPOSE.
 --------- END OF W3C SHORT NOTICE ---------------------------------------------------------------
 ```
 
-### Text 196
+### Text 197
 
 Used by: tao-macros 0.1.4.
 
@@ -10860,7 +11450,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 197
+### Text 198
 
 Used by: tao-macros 0.1.4.
 
@@ -10886,7 +11476,7 @@ PackageDownloadLocation: git+ssh://github.com/tauri-apps/tao.git
 Creator: Person: Daniel Thompson-Yvetot
 ```
 
-### Text 198
+### Text 199
 
 Used by: tauri 2.12.5, tauri-build 2.7.4, tauri-codegen 2.7.4, tauri-macros 2.7.4, tauri-runtime 2.12.2, tauri-runtime-wry 2.12.3, tauri-utils 2.10.2.
 
@@ -10914,7 +11504,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 199
+### Text 200
 
 Used by: tauri 2.12.5.
 
@@ -10929,7 +11519,7 @@ SPDX-License-Identifier: MIT
 a modified version of https://github.com/denoland/deno/blob/0ae83847f498a2886ae32172e50fd5bdbab2f524/core/resources.rs#L220
 ```
 
-### Text 200
+### Text 201
 
 Used by: tauri-winres 0.3.7.
 
@@ -10964,7 +11554,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 201
+### Text 202
 
 Used by: tendril 0.5.1.
 
@@ -10996,7 +11586,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 202
+### Text 203
 
 Used by: time 0.3.55, time-core 0.1.9, time-macros 0.2.32.
 
@@ -11022,7 +11612,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 203
+### Text 204
 
 Used by: tokio 1.54.1, tokio-util 0.7.20.
 
@@ -11050,7 +11640,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 204
+### Text 205
 
 Used by: tower 0.5.3, tower-layer 0.3.3, tower-service 0.3.3.
 
@@ -11082,7 +11672,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 205
+### Text 206
 
 Used by: tower-http 0.6.11.
 
@@ -11114,7 +11704,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 206
+### Text 207
 
 Used by: tracing 0.1.44, tracing-core 0.1.36.
 
@@ -11146,7 +11736,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 207
+### Text 208
 
 Used by: tray-icon 0.25.1.
 
@@ -11172,7 +11762,7 @@ PackageDownloadLocation: git+ssh://github.com/tauri-apps/tray-icon.git
 Creator: Person: Daniel Thompson-Yvetot
 ```
 
-### Text 208
+### Text 209
 
 Used by: try-lock 0.2.5.
 
@@ -11199,7 +11789,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
 
-### Text 209
+### Text 210
 
 Used by: typenum 1.20.1.
 
@@ -11207,7 +11797,7 @@ Used by: typenum 1.20.1.
 MIT OR Apache-2.0
 ```
 
-### Text 210
+### Text 211
 
 Used by: typenum 1.20.1.
 
@@ -11238,7 +11828,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ```
 
-### Text 211
+### Text 212
 
 Used by: typenum 1.20.1.
 
@@ -11266,7 +11856,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 212
+### Text 213
 
 Used by: unicode-ident 1.0.27.
 
@@ -11312,7 +11902,7 @@ dealings in these Data Files or Software without prior written
 authorization of the copyright holder.
 ```
 
-### Text 213
+### Text 214
 
 Used by: urlpattern 0.6.0.
 
@@ -11340,7 +11930,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 214
+### Text 215
 
 Used by: utf8_iter 1.1.0.
 
@@ -11389,7 +11979,7 @@ licensed under the Apache License, Version 2.0 <LICENSE-APACHE> or
 <LICENSE-MIT> or <http://opensource.org/licenses/MIT>, at your option.
 ```
 
-### Text 215
+### Text 216
 
 Used by: utf8_iter 1.1.0, utf_types 1.0.0.
 
@@ -11421,7 +12011,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 216
+### Text 217
 
 Used by: utf_types 1.0.0.
 
@@ -11448,7 +12038,7 @@ Test code is dedicated to the Public Domain when so designated (see
 the individual files for PD/CC0-dedicated sections).
 ```
 
-### Text 217
+### Text 218
 
 Used by: uuid 1.29.0.
 
@@ -11481,7 +12071,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 218
+### Text 219
 
 Used by: version-compare 0.2.1.
 
@@ -11507,7 +12097,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 219
+### Text 220
 
 Used by: version_check 0.9.5.
 
@@ -11533,7 +12123,7 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 220
+### Text 221
 
 Used by: vswhom 0.1.0, vswhom-sys 0.1.3.
 
@@ -11561,7 +12151,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 221
+### Text 222
 
 Used by: want 0.3.2.
 
@@ -11587,7 +12177,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
 
-### Text 222
+### Text 223
 
 Used by: web-time 1.1.0.
 
@@ -11618,7 +12208,7 @@ APPENDIX: How to apply the Apache License to your work.
    limitations under the License.
 ```
 
-### Text 223
+### Text 224
 
 Used by: web-time 1.1.0.
 
@@ -11646,7 +12236,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 224
+### Text 225
 
 Used by: webkit2gtk 2.0.2.
 
@@ -11673,7 +12263,7 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 225
+### Text 226
 
 Used by: webkit2gtk-sys 2.0.2.
 
@@ -11698,7 +12288,7 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 226
+### Text 227
 
 Used by: webview2-com-sys 0.39.1.
 
@@ -11732,7 +12322,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-### Text 227
+### Text 228
 
 Used by: winapi 0.3.9.
 
@@ -11758,7 +12348,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 228
+### Text 229
 
 Used by: window-vibrancy 0.8.1.
 
@@ -11786,7 +12376,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 229
+### Text 230
 
 Used by: window-vibrancy 0.8.1.
 
@@ -11812,7 +12402,7 @@ PackageDownloadLocation: git+ssh://github.com/tauri-apps/window-vibrancy.git
 Creator: Person: Daniel Thompson-Yvetot
 ```
 
-### Text 230
+### Text 231
 
 Used by: windows 0.62.2, windows-collections 0.3.2, windows-core 0.62.2, windows-future 0.3.2, windows-implement 0.60.2, windows-interface 0.59.3, windows-link 0.2.1, windows-numerics 0.3.1, windows-result 0.4.1, windows-strings 0.5.1, windows-sys 0.45.0, windows-sys 0.61.2 and 10 more.
 
@@ -11843,9 +12433,9 @@ APPENDIX: How to apply the Apache License to your work.
    limitations under the License.
 ```
 
-### Text 231
+### Text 232
 
-Used by: windows 0.62.2, windows-collections 0.3.2, windows-core 0.62.2, windows-future 0.3.2, windows-implement 0.60.2, windows-interface 0.59.3, windows-link 0.2.1, windows-numerics 0.3.1, windows-result 0.4.1, windows-strings 0.5.1, windows-sys 0.45.0, windows-sys 0.61.2 and 10 more.
+Used by: windows 0.62.2, windows-collections 0.3.2, windows-core 0.62.2, windows-future 0.3.2, windows-implement 0.60.2, windows-interface 0.59.3, windows-link 0.2.1, windows-numerics 0.3.1, windows-result 0.4.1, windows-strings 0.5.1, windows-sys 0.45.0, windows-sys 0.61.2 and 12 more.
 
 ```text
 MIT License
@@ -11871,7 +12461,7 @@ MIT License
     SOFTWARE
 ```
 
-### Text 232
+### Text 233
 
 Used by: winreg 0.56.0.
 
@@ -11897,7 +12487,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
 
-### Text 233
+### Text 234
 
 Used by: wry 0.57.1.
 
@@ -11925,7 +12515,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 234
+### Text 235
 
 Used by: wry 0.57.1.
 
@@ -11952,7 +12542,7 @@ PackageDownloadLocation: git+ssh://github.com/tauri-apps/wry.git
 Creator: Person: Daniel Thompson-Yvetot
 ```
 
-### Text 235
+### Text 236
 
 Used by: zlib-rs 0.6.8.
 
@@ -11978,7 +12568,7 @@ freely, subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 ```
 
-### Text 236
+### Text 237
 
 Used by: Rust standard library: core, alloc, std and the other in-tree libraries.
 
@@ -12040,7 +12630,7 @@ Copyright: 2016 The Fuchsia Authors
 Copyright: The Rust Project Developers (see https://thanks.rust-lang.org)
 ```
 
-### Text 237
+### Text 238
 
 Used by: Rust standard library: core, alloc, std and the other in-tree libraries.
 
@@ -12086,7 +12676,7 @@ dealings in these Data Files or Software without prior written
 authorization of the copyright holder.
 ```
 
-### Text 238
+### Text 239
 
 Used by: Rust standard library: compiler_builtins, with libm.
 
@@ -12368,7 +12958,7 @@ Additionally, some source files may contain comments with specific copyrights
 or licenses.
 ```
 
-### Text 239
+### Text 240
 
 Used by: Rust standard library: compiler_builtins, with libm.
 
@@ -12633,7 +13223,7 @@ have been licensed under extremely permissive terms.
 Copyright notices are retained in src/* files where relevant.
 ```
 
-### Text 240
+### Text 241
 
 Used by: Rust standard library: addr2line.
 
@@ -12665,7 +13255,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 241
+### Text 242
 
 Used by: Rust standard library: object.
 
@@ -12697,7 +13287,259 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 242
+### Text 243
+
+Used by: WiX Toolset: WixUI and its custom actions.
+
+```text
+Copyright (c) .NET Foundation and contributors.
+This software is released under the Microsoft Reciprocal License (MS-RL) (the "License"); you may not use the software except in compliance with the License.
+
+The text of the Microsoft Reciprocal License (MS-RL) can be found online at:
+ http://opensource.org/licenses/ms-rl
+
+
+Microsoft Reciprocal License (MS-RL)
+
+This license governs use of the accompanying software. If you use the software, you accept this license. If you do not accept the license, do not use the software.
+
+1. Definitions
+ The terms "reproduce," "reproduction," "derivative works," and "distribution" have the same meaning here as under U.S. copyright law.
+ A "contribution" is the original software, or any additions or changes to the software.
+ A "contributor" is any person that distributes its contribution under this license.
+ "Licensed patents" are a contributor's patent claims that read directly on its contribution.
+
+2. Grant of Rights
+ (A) Copyright Grant- Subject to the terms of this license, including the license conditions and limitations in section 3, each contributor grants you a non-exclusive, worldwide, royalty-free copyright license to reproduce its contribution, prepare derivative works of its contribution, and distribute its contribution or any derivative works that you create.
+ (B) Patent Grant- Subject to the terms of this license, including the license conditions and limitations in section 3, each contributor grants you a non-exclusive, worldwide, royalty-free license under its licensed patents to make, have made, use, sell, offer for sale, import, and/or otherwise dispose of its contribution in the software or derivative works of the contribution in the software.
+
+3. Conditions and Limitations
+ (A) Reciprocal Grants- For any file you distribute that contains code from the software (in source code or binary format), you must provide recipients the source code to that file along with a copy of this license, which license will govern that file. You may license other files that are entirely your own work and do not contain code from the software under any terms you choose.
+ (B) No Trademark License- This license does not grant you rights to use any contributors' name, logo, or trademarks.
+ (C) If you bring a patent claim against any contributor over patents that you claim are infringed by the software, your patent license from such contributor to the software ends automatically.
+ (D) If you distribute any portion of the software, you must retain all copyright, patent, trademark, and attribution notices that are present in the software.
+ (E) If you distribute any portion of the software in source code form, you may do so only under this license by including a complete copy of this license with your distribution. If you distribute any portion of the software in compiled or object code form, you may only do so under a license that complies with this license.
+ (F) The software is licensed "as-is." You bear the risk of using it. The contributors give no express warranties, guarantees or conditions. You may have additional consumer rights under your local laws which this license cannot change. To the extent permitted under your local laws, the contributors exclude the implied warranties of merchantability, fitness for a particular purpose and non-infringement.
+```
+
+### Text 244
+
+Used by: NSIS, NSIS LZMA compression module.
+
+```text
+COPYRIGHT
+---------
+
+Copyright (C) 1999-2026 Contributors
+
+More detailed copyright information can be found in the individual source code files.
+
+APPLICABLE LICENSES
+-------------------
+
+* All NSIS source code, plug-ins, documentation, examples, header files and graphics, with the exception of the compression modules and where otherwise noted, are licensed under the zlib/libpng license.
+
+* The zlib compression module for NSIS is licensed under the zlib/libpng license.
+
+* The bzip2 compression module for NSIS is licensed under the bzip2 license.
+
+* The LZMA compression module for NSIS is licensed under the Common Public License version 1.0.
+
+ZLIB/LIBPNG LICENSE
+-------------------
+
+This software is provided 'as-is', without any express or implied warranty. In no event will the authors be held liable for any damages arising from the use of this software.
+
+Permission is granted to anyone to use this software for any purpose, including commercial applications, and to alter it and redistribute it freely, subject to the following restrictions:
+
+      1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
+
+      2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
+
+      3. This notice may not be removed or altered from any source distribution.
+
+BZIP2 LICENSE
+-------------
+
+This program, "bzip2" and associated library "libbzip2", are copyright (C) 1996-2000 Julian R Seward. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+
+      1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+
+      2. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
+
+      3. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
+
+      4. The name of the author may not be used to endorse or promote products derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+Julian Seward, Cambridge, UK.
+
+jseward@acm.org
+
+COMMON PUBLIC LICENSE VERSION 1.0
+---------------------------------
+
+THE ACCOMPANYING PROGRAM IS PROVIDED UNDER THE TERMS OF THIS COMMON PUBLIC LICENSE ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THE PROGRAM CONSTITUTES RECIPIENT'S ACCEPTANCE OF THIS AGREEMENT.
+
+1. DEFINITIONS
+
+"Contribution" means:
+
+      a) in the case of the initial Contributor, the initial code and documentation distributed under this Agreement, and
+      b) in the case of each subsequent Contributor:
+
+      i) changes to the Program, and
+
+      ii) additions to the Program;
+
+      where such changes and/or additions to the Program originate from and are distributed by that particular Contributor. A Contribution 'originates' from a Contributor if it was added to the Program by such Contributor itself or anyone acting on such Contributor's behalf. Contributions do not include additions to the Program which: (i) are separate modules of software distributed in conjunction with the Program under their own license agreement, and (ii) are not derivative works of the Program.
+
+"Contributor" means any person or entity that distributes the Program.
+
+"Licensed Patents " mean patent claims licensable by a Contributor which are necessarily infringed by the use or sale of its Contribution alone or when combined with the Program.
+
+"Program" means the Contributions distributed in accordance with this Agreement.
+
+"Recipient" means anyone who receives the Program under this Agreement, including all Contributors.
+
+2. GRANT OF RIGHTS
+
+      a) Subject to the terms of this Agreement, each Contributor hereby grants Recipient a non-exclusive, worldwide, royalty-free copyright license to reproduce, prepare derivative works of, publicly display, publicly perform, distribute and sublicense the Contribution of such Contributor, if any, and such derivative works, in source code and object code form.
+
+      b) Subject to the terms of this Agreement, each Contributor hereby grants Recipient a non-exclusive, worldwide, royalty-free patent license under Licensed Patents to make, use, sell, offer to sell, import and otherwise transfer the Contribution of such Contributor, if any, in source code and object code form. This patent license shall apply to the combination of the Contribution and the Program if, at the time the Contribution is added by the Contributor, such addition of the Contribution causes such combination to be covered by the Licensed Patents. The patent license shall not apply to any other combinations which include the Contribution. No hardware per se is licensed hereunder.
+
+      c) Recipient understands that although each Contributor grants the licenses to its Contributions set forth herein, no assurances are provided by any Contributor that the Program does not infringe the patent or other intellectual property rights of any other entity. Each Contributor disclaims any liability to Recipient for claims brought by any other entity based on infringement of intellectual property rights or otherwise. As a condition to exercising the rights and licenses granted hereunder, each Recipient hereby assumes sole responsibility to secure any other intellectual property rights needed, if any. For example, if a third party patent license is required to allow Recipient to distribute the Program, it is Recipient's responsibility to acquire that license before distributing the Program.
+
+      d) Each Contributor represents that to its knowledge it has sufficient copyright rights in its Contribution, if any, to grant the copyright license set forth in this Agreement.
+
+3. REQUIREMENTS
+
+A Contributor may choose to distribute the Program in object code form under its own license agreement, provided that:
+
+      a) it complies with the terms and conditions of this Agreement; and
+
+      b) its license agreement:
+
+      i) effectively disclaims on behalf of all Contributors all warranties and conditions, express and implied, including warranties or conditions of title and non-infringement, and implied warranties or conditions of merchantability and fitness for a particular purpose;
+
+      ii) effectively excludes on behalf of all Contributors all liability for damages, including direct, indirect, special, incidental and consequential damages, such as lost profits;
+
+      iii) states that any provisions which differ from this Agreement are offered by that Contributor alone and not by any other party; and
+
+      iv) states that source code for the Program is available from such Contributor, and informs licensees how to obtain it in a reasonable manner on or through a medium customarily used for software exchange.
+
+When the Program is made available in source code form:
+
+      a) it must be made available under this Agreement; and
+
+      b) a copy of this Agreement must be included with each copy of the Program.
+
+Contributors may not remove or alter any copyright notices contained within the Program.
+
+Each Contributor must identify itself as the originator of its Contribution, if any, in a manner that reasonably allows subsequent Recipients to identify the originator of the Contribution.
+
+4. COMMERCIAL DISTRIBUTION
+
+Commercial distributors of software may accept certain responsibilities with respect to end users, business partners and the like. While this license is intended to facilitate the commercial use of the Program, the Contributor who includes the Program in a commercial product offering should do so in a manner which does not create potential liability for other Contributors. Therefore, if a Contributor includes the Program in a commercial product offering, such Contributor ("Commercial Contributor") hereby agrees to defend and indemnify every other Contributor ("Indemnified Contributor") against any losses, damages and costs (collectively "Losses") arising from claims, lawsuits and other legal actions brought by a third party against the Indemnified Contributor to the extent caused by the acts or omissions of such Commercial Contributor in connection with its distribution of the Program in a commercial product offering. The obligations in this section do not apply to any claims or Losses relating to any actual or alleged intellectual property infringement. In order to qualify, an Indemnified Contributor must: a) promptly notify the Commercial Contributor in writing of such claim, and b) allow the Commercial Contributor to control, and cooperate with the Commercial Contributor in, the defense and any related settlement negotiations. The Indemnified Contributor may participate in any such claim at its own expense.
+
+For example, a Contributor might include the Program in a commercial product offering, Product X. That Contributor is then a Commercial Contributor. If that Commercial Contributor then makes performance claims, or offers warranties related to Product X, those performance claims and warranties are such Commercial Contributor's responsibility alone. Under this section, the Commercial Contributor would have to defend claims against the other Contributors related to those performance claims and warranties, and if a court requires any other Contributor to pay any damages as a result, the Commercial Contributor must pay those damages.
+
+5. NO WARRANTY
+
+EXCEPT AS EXPRESSLY SET FORTH IN THIS AGREEMENT, THE PROGRAM IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED INCLUDING, WITHOUT LIMITATION, ANY WARRANTIES OR CONDITIONS OF TITLE, NON-INFRINGEMENT, MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE. Each Recipient is solely responsible for determining the appropriateness of using and distributing the Program and assumes all risks associated with its exercise of rights under this Agreement, including but not limited to the risks and costs of program errors, compliance with applicable laws, damage to or loss of data, programs or equipment, and unavailability or interruption of operations.
+
+6. DISCLAIMER OF LIABILITY
+
+EXCEPT AS EXPRESSLY SET FORTH IN THIS AGREEMENT, NEITHER RECIPIENT NOR ANY CONTRIBUTORS SHALL HAVE ANY LIABILITY FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING WITHOUT LIMITATION LOST PROFITS), HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OR DISTRIBUTION OF THE PROGRAM OR THE EXERCISE OF ANY RIGHTS GRANTED HEREUNDER, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+
+7. GENERAL
+
+If any provision of this Agreement is invalid or unenforceable under applicable law, it shall not affect the validity or enforceability of the remainder of the terms of this Agreement, and without further action by the parties hereto, such provision shall be reformed to the minimum extent necessary to make such provision valid and enforceable.
+
+If Recipient institutes patent litigation against a Contributor with respect to a patent applicable to software (including a cross-claim or counterclaim in a lawsuit), then any patent licenses granted by that Contributor to such Recipient under this Agreement shall terminate as of the date such litigation is filed. In addition, if Recipient institutes patent litigation against any entity (including a cross-claim or counterclaim in a lawsuit) alleging that the Program itself (excluding combinations of the Program with other software or hardware) infringes such Recipient's patent(s), then such Recipient's rights granted under Section 2(b) shall terminate as of the date such litigation is filed.
+
+All Recipient's rights under this Agreement shall terminate if it fails to comply with any of the material terms or conditions of this Agreement and does not cure such failure in a reasonable period of time after becoming aware of such noncompliance. If all Recipient's rights under this Agreement terminate, Recipient agrees to cease use and distribution of the Program as soon as reasonably practicable. However, Recipient's obligations under this Agreement and any licenses granted by Recipient relating to the Program shall continue and survive.
+
+Everyone is permitted to copy and distribute copies of this Agreement, but in order to avoid inconsistency the Agreement is copyrighted and may only be modified in the following manner. The Agreement Steward reserves the right to publish new versions (including revisions) of this Agreement from time to time. No one other than the Agreement Steward has the right to modify this Agreement. IBM is the initial Agreement Steward. IBM may assign the responsibility to serve as the Agreement Steward to a suitable separate entity. Each new version of the Agreement will be given a distinguishing version number. The Program (including Contributions) may always be distributed subject to the version of the Agreement under which it was received. In addition, after a new version of the Agreement is published, Contributor may elect to distribute the Program (including its Contributions) under the new version. Except as expressly stated in Sections 2(a) and 2(b) above, Recipient receives no rights or licenses to the intellectual property of any Contributor under this Agreement, whether expressly, by implication, estoppel or otherwise. All rights in the Program not expressly granted under this Agreement are reserved.
+
+This Agreement is governed by the laws of the State of New York and the intellectual property laws of the United States of America. No party to this Agreement will bring a legal action under this Agreement more than one year after the cause of action arose. Each party waives its rights to a jury trial in any resulting litigation.
+
+SPECIAL EXCEPTION FOR LZMA COMPRESSION MODULE
+---------------------------------------------
+
+Igor Pavlov and Amir Szekely, the authors of the LZMA compression module for NSIS, expressly permit you to statically or dynamically link your code (or bind by name) to the files from the LZMA compression module for NSIS without subjecting your linked code to the terms of the Common Public license version 1.0. Any modifications or additions to files from the LZMA compression module for NSIS, however, are subject to the terms of the Common Public License version 1.0.
+```
+
+### Text 245
+
+Used by: nsis_tauri_utils (NSIS plugin), nsis-plugin-api (in nsis_tauri_utils).
+
+```text
+MIT License
+
+Copyright (c) 2019 - 2022 Tauri Programme within The Commons Conservancy
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+### Text 246
+
+Used by: Tauri bundler’s installer templates.
+
+```text
+Copyright 2017 Cargo-Bundle developers
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+---
+
+MIT License
+
+Copyright (c) 2017 - Present Tauri Apps Contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+### Text 247
 
 Used by: @docsearch/css.
 
@@ -12707,7 +13549,7 @@ Used by: @docsearch/css.
 @docsearch/css 3.8.2 | MIT License | © Algolia, Inc. and contributors | https://docsearch.algolia.com
 ```
 
-### Text 243
+### Text 248
 
 Used by: @vue/reactivity, @vue/runtime-core, @vue/runtime-dom, @vue/shared, vue.
 
@@ -12735,7 +13577,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
 
-### Text 244
+### Text 249
 
 Used by: @vueuse/core, @vueuse/integrations, @vueuse/shared.
 
@@ -12763,7 +13605,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 245
+### Text 250
 
 Used by: focus-trap.
 
@@ -12791,7 +13633,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 246
+### Text 251
 
 Used by: mark.js.
 
@@ -12819,7 +13661,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 247
+### Text 252
 
 Used by: minisearch.
 
@@ -12833,7 +13675,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-### Text 248
+### Text 253
 
 Used by: tabbable.
 
@@ -12861,7 +13703,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 249
+### Text 254
 
 Used by: vitepress.
 
@@ -12889,7 +13731,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Text 250
+### Text 255
 
 Used by: @vitejs/plugin-vue (export helper).
 

@@ -241,3 +241,14 @@ test('the DMG carries no license agreement: macOS drops licenseFile', () => {
   const macos = JSON.parse(readFileSync(new URL('../desktop/tauri.macos.conf.json', import.meta.url), 'utf8'));
   assert.deepEqual(macos.bundle, { licenseFile: null });
 });
+
+test('every system checks out the sample with the same bytes, so the parts agree on demo.dbc', () => {
+  // Each build job copies its checkout's examples/demo.dbc into its part, and
+  // finish refuses a file that differs between parts. A Windows checkout
+  // converts text files to CRLF unless .gitattributes turns that off.
+  const attr = execFileSync('git', ['check-attr', 'text', '--', 'examples/demo.dbc'], {
+    cwd: new URL('..', import.meta.url),
+    encoding: 'utf8',
+  });
+  assert.equal(attr.trim(), 'examples/demo.dbc: text: unset');
+});

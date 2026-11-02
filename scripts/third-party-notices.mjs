@@ -24,11 +24,12 @@
 //     node_modules/ give their versions, licenses and license files;
 //   - what no metadata describes (the libraries inside the Pyodide runtime and
 //     inside two wheels, the icon paths copied into the sources, notices in
-//     crates' source files, and the Rust standard library):
-//     scripts/license-policy.mjs, with license texts from upstream in
-//     scripts/third-party/licenses/. The standard library is reviewed for one
-//     Rust version; this script fails when the toolchain it runs with ships a
-//     library that the review does not list.
+//     crates' source files, the Rust standard library, and what the Windows
+//     installers hold besides the app): scripts/license-policy.mjs, with
+//     license texts from upstream in scripts/third-party/licenses/. The
+//     standard library is reviewed for one Rust version; this script fails
+//     when the toolchain it runs with ships a library that the review does
+//     not list.
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -46,6 +47,8 @@ import {
   VENDORED,
   WHEEL_BUNDLED,
   WHEELS,
+  WINDOWS_INSTALLERS,
+  WINDOWS_INSTALLER_FILES,
 } from './license-policy.mjs';
 import { readZip } from './zip.mjs';
 
@@ -385,7 +388,7 @@ function collectCrates() {
 
 // ---------------------------------------------------------------- render
 
-export function render({ npm, wheels, crates, buildHelpers = [], rustStd, docsSite }) {
+export function render({ npm, wheels, crates, buildHelpers = [], rustStd, windowsInstallers = [], docsSite }) {
   const texts = new Texts();
   const slugger = new Slugger();
   const contents = [];
@@ -399,7 +402,8 @@ export function render({ npm, wheels, crates, buildHelpers = [], rustStd, docsSi
     if (note) body.push(note, '');
     if (version) body.push(`- Version: ${version}`);
     body.push(`- License: ${license}`);
-    if (source) body.push(`- Source: <${source}>`);
+    const sources = [source ?? []].flat();
+    if (sources.length) body.push(`- Source: ${sources.map((s) => `<${s}>`).join(', ')}`);
     body.push(`- License text: ${textLinks([...new Set(ns)])}`, '');
   };
   const section = (heading, intro) => {
@@ -524,6 +528,18 @@ export function render({ npm, wheels, crates, buildHelpers = [], rustStd, docsSi
     contents.push(`| [${heading}](#${anchor}) | ${rustStd.version} | see the list | desktop app |`);
   }
 
+  if (windowsInstallers.length) {
+    const files = (keys) => keys.map((k) => WINDOWS_INSTALLER_FILES[k]).join(' and ');
+    section(
+      'Windows installers',
+      `This section applies to the two Windows installers only, the \`.msi\` and the \`-setup.exe\`; no other package holds these parts. ` +
+        'Tauri’s bundler builds the `.msi` with the WiX Toolset and the `-setup.exe` with NSIS, and each installer keeps parts of the tool that made it. ' +
+        'These parts make up the installer program, which installs and removes CanViewer and comes in the same file; they are not part of the app. ' +
+        'Neither holds the WebView2 installer: they download Microsoft’s bootstrapper at install time when WebView2 is missing.',
+    );
+    for (const p of windowsInstallers) component(p.name, { ...p, textFiles: p.texts, shipsIn: `Windows ${files(p.in)}` });
+  }
+
   if (docsSite) {
     const SITE = 'documentation site';
     slugger.slug('Documentation site');
@@ -588,6 +604,7 @@ function main() {
     crates: collectCrates(),
     buildHelpers: collectBuildHelpers(),
     rustStd: collectRustStd(),
+    windowsInstallers: WINDOWS_INSTALLERS,
     docsSite: collectDocsSite(),
   });
   if (check) {
