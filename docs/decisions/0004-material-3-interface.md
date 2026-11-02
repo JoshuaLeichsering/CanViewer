@@ -37,7 +37,7 @@ the app makes no request outside its own origin.
 - The documentation site uses the same fonts and colours, from the same files, so it
   needs no web font either ([0006](./0006-documentation-site.md)).
 - The design renders in `docs/design/` were generated for this project and may be
-  published (the owner's decision after the license audit).
+  published (the owner's decision).
 
 ## Alternatives considered
 

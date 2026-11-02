@@ -156,8 +156,8 @@ describe('importWithCanmatrix', () => {
   });
 });
 
-// The worker's life cycle; these cases came with the component tests (W2)
-// and were carried over to the cluster-returning API.
+// The worker's life cycle; these cases came with the component tests and
+// were carried over to the cluster-returning API.
 describe('importWithCanmatrix: the worker', () => {
   const read = (name: string, db = parseDbc('BO_ 1 A: 8 ECU\n')) => ({
     ...result({ clusters: [{ name, db }] }),

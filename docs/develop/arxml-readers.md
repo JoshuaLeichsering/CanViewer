@@ -4,7 +4,7 @@
 (`app/src/lib/canmatrix/`). cantools reads some of the files canmatrix fails on, so
 this report holds the two readers against each other and against the DBC twins on
 the corpus. Nothing is switched: replacing canmatrix's ARXML reader is the
-maintainer's decision (`docs/handover/2026-11-01-goal.md`, *Authority*).
+maintainer's decision.
 
 ## The short answer
 
@@ -365,8 +365,8 @@ Pyodide download would grow by these packages (sizes of the PyPI wheels):
   needed too (1.17.3 has a pure-Python one, 23,591 bytes).
 - LGPL-3.0-only code can be combined with GPL code only under GPL version 3 or
   later, so, like the Apache-2.0 parts, it would rely on the "or later" of
-  GPL-2.0-or-later. It would need an entry in the license audit
-  (`docs/handover/2026-11-01-license-audit.md`).
+  GPL-2.0-or-later. It would need an entry in the license policy
+  (`scripts/license-policy.mjs`) and in the third-party notices.
 - bitstruct would need a Pyodide build of its own, or a check that its
   pure-Python code path works there.
 - The adapter would need a second mapping (the one in `cantools_dump.py` is a

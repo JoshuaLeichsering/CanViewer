@@ -9,7 +9,7 @@ describe('import UI strings', () => {
     expect(Object.keys(impDe).sort()).toEqual(Object.keys(impEn).sort());
   });
 
-  it('carry the workstream prefix', () => {
+  it('carry the import UI prefix', () => {
     for (const key of Object.keys(impEn)) expect(key).toMatch(/^imp[A-Z]/);
   });
 

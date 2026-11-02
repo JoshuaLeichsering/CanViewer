@@ -103,7 +103,7 @@ describe('format reference generated from the baselines', () => {
  * number it must equal, and must find at least one sentence.
  */
 describe('numbers written into the documentation by hand', () => {
-  const EXCLUDED = new Set(['docs/handover', 'docs/spikes', 'docs/design', 'docs/.vitepress']);
+  const EXCLUDED = new Set(['docs/spikes', 'docs/design', 'docs/.vitepress']);
   const markdownIn = (dir: string): string[] =>
     readdirSync(join(root, dir), { withFileTypes: true }).flatMap((e) => {
       const path = `${dir}/${e.name}`;

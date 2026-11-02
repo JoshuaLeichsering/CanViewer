@@ -1,6 +1,6 @@
 # Spike: canmatrix in a Pyodide Web Worker, self-hosted
 
-**Date** 2026-11-01. Task 3 of [the handover](../../handover/2026-11-01-multi-format-import.md):
+**Date** 2026-11-01. The task, as it was set:
 
 > Run Pyodide in a Web Worker under Vite, with the runtime and the wheels in the build
 > (`public/` or a Vite plugin) and micropip installing only from those local URLs.
@@ -21,7 +21,7 @@ first visit it reloaded and opened a DBC and an ARXML file with the network swit
 | Assets: runtime from `node_modules/pyodide`, wheels from `vendor/pyodide` (see `scripts/fetch-wheels.mjs`), served under `<base>pyodide/` in dev and copied to `dist/pyodide/` in the build | `scripts/vite-plugins.ts` |
 | Service worker: precaches the app shell, caches `pyodide/*` when first fetched | `app/src/service-worker.js`, built to `dist/sw.js` |
 
-There is **no micropip**, a deliberate change from the handover's wording. The worker
+There is **no micropip**, a deliberate change from the task's wording. The worker
 passes the custom lock file (`app/src/lib/canmatrix/wheels.lock.json`, minus its download URLs)
 to `loadPyodide` as `lockFileContents`, sets `packageBaseUrl` to `<base>pyodide/`, and
 calls `loadPackage`. Pyodide resolves dependencies from that lock alone and checks each
@@ -40,7 +40,7 @@ in the worker chunk, which is not used because `packageBaseUrl` is always set.
 Material redesign the script waits on the document title and the `[role=alert]` snackbar
 instead of the old toolbar's `.file-info`; the run quoted below predates that change.) Chromium was
 started with `--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE localhost`, so any other
-host would have failed to resolve. The run below is the build of the spike's branch (#5) at the time.
+host would have failed to resolve. The run below is the build of the spike's branch at the time.
 
 ```sh
 npm run build
@@ -129,7 +129,7 @@ writes them anew into its output directory:
 - Spike scope in the UI: the file dialog accepts `.arxml` (drag and drop takes every
   canmatrix format), the first cluster with messages is shown, a stage line replaces the
   file info while loading, and canmatrix's log lines are listed as problems. An imported
-  file is not restored on reload. Task 5 covers the UI properly.
+  file is not restored on reload. The import UI, built later, covers that properly.
 - In the sidebar of the time, 8-digit hex IDs ran into long message names. ARXML files
   with extended IDs and long names show such layout limits more often.
 - `vite build` logs `Module "node:…" has been externalized for browser compatibility`

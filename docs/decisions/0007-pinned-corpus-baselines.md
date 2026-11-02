@@ -2,8 +2,6 @@
 
 - **Status:** accepted
 - **Date:** 2026-11-01
-- **Condensed from:** the [multi-format handover](../handover/2026-11-01-multi-format-import.md)
-  (its first tasks) and the [goal](../handover/2026-11-01-goal.md)
 
 ## Context
 

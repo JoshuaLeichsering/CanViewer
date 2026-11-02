@@ -283,7 +283,7 @@ await step('the German UI labels the controls in German, in the dark theme', asy
   await page.screenshot({ path: join(outDir, 'signal-table-dark-de.png'), fullPage: true });
 });
 
-// The app shell has no layout for phones yet (that is W6's audit): at 390 px the
+// The app shell has no layout for phones yet: at 390 px the
 // detail pane is squeezed to nothing. A 900 px window leaves the detail pane
 // about 500 px, narrower than the table, which is the case this step is about.
 await step('in a narrow window the table scrolls on its own; the title and the filter controls stay in view', async () => {

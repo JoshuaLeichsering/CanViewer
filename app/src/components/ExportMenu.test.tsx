@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // @vitest-environment jsdom
-// The export and copy-as menus (W8), and the menu button they share.
+// The export and copy-as menus, and the menu button they share.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, fireEvent, screen } from '@testing-library/react';
 import { renderWithProviders } from '../test/render';

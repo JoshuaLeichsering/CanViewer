@@ -15,7 +15,7 @@ import { missingWheels, startCanmatrix, type NodeCanmatrix } from './node-runtim
  * The strongest check available: read a DBC file through canmatrix and the
  * mapper, and compare the result with CanViewer's own parser on the same file.
  * For examples/demo.dbc there must be no difference at all. For the 58 corpus
- * DBC files the differences, all canmatrix behaviour the handover documents
+ * DBC files the differences, all known canmatrix behaviour
  * (dangling comments dropped, long names applied, nodes created from
  * senders, ...), and the problems the mapper reports for lines canmatrix
  * dropped are pinned in mapper-dbc-baseline.json; regenerate with

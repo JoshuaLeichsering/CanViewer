@@ -1,13 +1,11 @@
 # Spike: CanViewer as a Tauri desktop app, built and tested by CI on all three systems
 
-**Date** 2026-11-01. The question, from G4 of the goal at the time: can GitHub Actions
-build CanViewer as a desktop app on Windows, macOS and Linux, install each package, and
-use it, ARXML import through Pyodide included? Tauri was the backlog's candidate, and
-the fear was that macOS would be the hard one.
+**Date** 2026-11-01. The question: can GitHub Actions build CanViewer as a desktop app on
+Windows, macOS and Linux, install each package, and use it, ARXML import through Pyodide
+included? Tauri was the backlog's candidate, and the fear was that macOS would be the
+hard one.
 
-**Result: yes, on all three.** In run
-[41313248134](https://github.com/JoshuaLeichsering/CanViewer/actions/runs/41313248134),
-each job:
+**Result: yes, on all three.** In one CI run, each job:
 - built the packages;
 - installed them the way a user would;
 - had the installed app open `examples/demo.dbc` and canmatrix's `test.arxml` (28
@@ -48,8 +46,8 @@ easy to drive on a CI runner. So the app tests itself:
 
 ## Results
 
-All from run 41313248134 (the head of #10 at the time). The self-test reports are quoted from the
-job logs.
+All from that run, on the spike's branch at the time. The self-test reports are quoted
+from the job logs.
 
 | | Windows | macOS | Linux |
 |---|---|---|---|
@@ -128,8 +126,8 @@ variable did not take effect alongside them. CI therefore builds a second binary
 only for this check, whose window config adds the flag (`e2e/desktop-cdp.conf.json`, built with
 `--no-bundle`), and drives that one.
 
-In run [41314152587](https://github.com/JoshuaLeichsering/CanViewer/actions/runs/41314152587)
-(a later head of #10), all three jobs passed again, and the variant was driven over CDP:
+In a later run, on a later head of the spike's branch, all three jobs passed again, and
+the variant was driven over CDP:
 
 ```
 app page: http://tauri.localhost/
@@ -145,10 +143,10 @@ smoke test passed
 ```
 
 Every request went to the app's own origin, the worker's Pyodide requests included, and
-the service worker stayed off. The full request list is in the run's `smoke-windows`
+the service worker stayed off. The full request list was in that run's `smoke-windows`
 artifact (`cdp-windows/report.json`).
 
-## Findings for G4
+## Findings
 
 - **macOS is not the hard part.**
   - It built, installed from the DMG, and ran the ARXML import fastest of the three.
@@ -175,7 +173,8 @@ artifact (`cdp-windows/report.json`).
   - Since resolved: the desktop app now starts the worker that way
     ([decision 0009](../../decisions/0009-desktop-shell.md)).
 - **The missing favicon shows up here too**: the page requests
-  `http://tauri.localhost/favicon.ico`. That is W6 in the goal.
+  `http://tauri.localhost/favicon.ico`. The page has since been given an icon of its own
+  (`scripts/vite-plugins.ts`).
 - **Size.** LTO and single-unit codegen were turned off to speed up CI. With them
   (first Windows run), the installed executable was 16,811,008 bytes, against
   17,608,704 without.

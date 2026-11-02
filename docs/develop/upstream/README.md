@@ -1,8 +1,7 @@
 # Upstream reports
 
 Drafts of reports for projects CanViewer depends on. **None of them is posted.**
-Posting on other people's repositories is the maintainer's decision
-(`docs/handover/2026-11-01-goal.md`, *Authority*).
+Posting on other people's repositories is the maintainer's decision.
 
 | draft | project | found in | status upstream | effect on CanViewer |
 |---|---|---|---|---|

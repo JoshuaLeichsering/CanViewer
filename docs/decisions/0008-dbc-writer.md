@@ -9,8 +9,8 @@ CanViewer is getting editing: message and signal properties can be changed in th
 and the result is saved with *Save as DBC*. Saving is only trustworthy if writing does not
 change the database behind the user's back. The project's first intention is that
 CanViewer shows what the file says, no less and no more, and that a loss is visible,
-never silent (see [the goal](../handover/2026-11-01-goal.md) and its section on
-editing).
+never silent. For editing, the owner accepted that the layout of comments and whitespace
+need not be preserved.
 
 The TypeScript parser (`app/src/lib/dbc/parser.ts`) is in charge of `.dbc` files. It
 reads a file into a `DbcDatabase`, the model every view works on. It keeps no concrete
@@ -164,7 +164,7 @@ desktop smoke test of the final CI run.
 - **Edit the source text in place**, keeping comments, layout and order. That needs a
   concrete syntax tree in the parser (or a second parser), and edits that touch several
   statements (renaming a signal touches `SG_`, `CM_`, `BA_`, `VAL_` and `SG_MUL_VAL_`)
-  become text surgery. The goal accepts losing comment and whitespace layout, so the
+  become text surgery. Losing comment and whitespace layout is accepted, so the
   simpler model writer was chosen.
 - **Carry unmodeled statements through as raw text.** It would keep environment
   variables and signal groups, but it changes the model, and with it every pinned

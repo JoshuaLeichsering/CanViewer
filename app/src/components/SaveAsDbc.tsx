@@ -56,7 +56,7 @@ export function SaveAsDbcButton({
 
   const save = (result: DbcWriteResult) => {
     const name = dbcFileName(fileName);
-    // A download, as the export menu's (W8): nothing leaves the machine, and
+    // A download, as the export menu's: nothing leaves the machine, and
     // the desktop app saves it through the shell's download handler
     // (desktop/src/main.rs).
     downloadText(name, 'application/octet-stream', result.text);

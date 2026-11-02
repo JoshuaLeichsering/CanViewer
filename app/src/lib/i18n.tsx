@@ -42,7 +42,7 @@ const en = {
   linkCopied: 'Link copied',
   copyFailed: 'Could not copy the link',
 
-  // rough edges (W6): narrow layout, keyboard, error boundary
+  // rough edges: narrow layout, keyboard, error boundary
   rghBackMessages: 'All messages',
   rghBackNodes: 'All nodes',
   rghBackTables: 'All value tables',

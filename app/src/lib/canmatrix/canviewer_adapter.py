@@ -3,7 +3,7 @@
 DbcDatabase (app/src/lib/dbc/types.ts), as plain dicts and lists that convert to
 JavaScript objects without any PyProxy left over.
 
-What is mapped (handover task 4):
+What is mapped:
 - messages and signals: layout with the DBC-as-written start bit, scaling,
   range, unit, receivers, value descriptions, comments, multiplexing (simple
   and extended);

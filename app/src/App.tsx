@@ -202,7 +202,7 @@ export function App() {
     [db, t],
   );
 
-  // A database replaces unsaved edits only once the person agrees (W11); a
+  // A database replaces unsaved edits only once the person agrees; a
   // log leaves the database as it is and opens without asking.
   const loadFile = useCallback(
     (file: File) => {

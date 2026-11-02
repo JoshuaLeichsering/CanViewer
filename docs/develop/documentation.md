@@ -22,7 +22,7 @@ npm run docs:preview   # serve that build
 | `docs/develop/` | This developer guide |
 | `docs/decisions/` | The decision records |
 | `docs/archive/` | The page that lists the working notes |
-| `docs/handover/`, `docs/spikes/`, `docs/design/` | The working notes: kept in the repository, not published |
+| `docs/spikes/`, `docs/design/` | The working notes: kept in the repository, not published |
 
 ## Writing pages
 
