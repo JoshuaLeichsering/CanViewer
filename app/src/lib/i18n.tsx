@@ -277,6 +277,9 @@ const en = {
   abtWarranty:
     'CanViewer is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.',
   abtSource: 'Source code',
+  abtSourceDesktop: 'The desktop app opens no browser and makes no network requests: copy the address and open it in your browser.',
+  abtCopySource: 'Copy address',
+  abtCopied: 'Address copied.',
   abtDocuments: 'License and notices',
   abtDocCopyright: 'Copyright notice and additional permission',
   abtDocGpl2: 'GNU General Public License, version 2',
@@ -698,6 +701,9 @@ const de: Record<MsgKey, string> = {
   abtWarranty:
     'CanViewer wird in der Hoffnung verbreitet, dass es nützlich ist, aber OHNE JEDE GEWÄHRLEISTUNG; sogar ohne die implizite Gewährleistung der MARKTREIFE oder der VERWENDBARKEIT FÜR EINEN BESTIMMTEN ZWECK. Einzelheiten stehen in der GNU General Public License.',
   abtSource: 'Quellcode',
+  abtSourceDesktop: 'Die Desktop-App öffnet keinen Browser und baut keine Netzwerkverbindung auf: Kopieren Sie die Adresse und öffnen Sie sie in Ihrem Browser.',
+  abtCopySource: 'Adresse kopieren',
+  abtCopied: 'Adresse kopiert.',
   abtDocuments: 'Lizenz und Hinweise',
   abtDocCopyright: 'Copyright-Hinweis und zusätzliche Erlaubnis',
   abtDocGpl2: 'GNU General Public License, Version 2',

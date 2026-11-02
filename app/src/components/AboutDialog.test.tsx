@@ -5,6 +5,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import * as download from '../lib/export/download';
 import { renderWithProviders } from '../test/render';
 import { AboutDialog, LEGAL_DOCUMENTS, SOURCE_URL } from './AboutDialog';
 
@@ -20,7 +21,12 @@ function show() {
 
 afterEach(() => {
   vi.unstubAllGlobals();
+  vi.restoreAllMocks();
+  delete (window as { __TAURI_INTERNALS__?: unknown }).__TAURI_INTERNALS__;
 });
+
+/** As in the desktop app, whose shell defines this global before the app runs. */
+const asDesktopApp = () => Object.assign(window, { __TAURI_INTERNALS__: {} });
 
 describe('AboutDialog', () => {
   it('shows the version, the license, the no-warranty statement and the source', () => {
@@ -96,6 +102,46 @@ describe('AboutDialog', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Close' }));
     fireEvent.keyDown(dialog, { key: 'Escape' });
     expect(onClose).toHaveBeenCalledTimes(2);
+  });
+
+  it('in the desktop app, shows the source address as text with a button that copies it', async () => {
+    asDesktopApp();
+    const copy = vi.spyOn(download, 'copyText').mockResolvedValue(true);
+    const { dialog } = show();
+    // No link: the desktop app opens no other window, so a new-tab link would do nothing.
+    expect(dialog.querySelector(`a[href="${SOURCE_URL}"]`)).toBeNull();
+    expect(screen.getByTestId('abt-source').tagName).toBe('SPAN');
+    expect(screen.getByTestId('abt-source').textContent).toBe(SOURCE_URL);
+    expect(screen.getByTestId('abt-copy-status').textContent).toBe(
+      'The desktop app opens no browser and makes no network requests: copy the address and open it in your browser.',
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Copy address' }));
+    await waitFor(() => expect(screen.getByTestId('abt-copy-status').textContent).toBe('Address copied.'));
+    expect(copy).toHaveBeenCalledWith(SOURCE_URL);
+    // The license files still open in the dialog.
+    expect(screen.getAllByTestId('abt-doc')).toHaveLength(4);
+  });
+
+  it('in the desktop app, says so when the address cannot be copied', async () => {
+    asDesktopApp();
+    vi.spyOn(download, 'copyText').mockResolvedValue(false);
+    show();
+    fireEvent.click(screen.getByRole('button', { name: 'Copy address' }));
+    await waitFor(() => expect(screen.getByRole('alert').textContent).toBe('Could not copy: the clipboard is not available'));
+  });
+
+  it('in the browser, has no copy button', () => {
+    show();
+    expect(screen.queryByTestId('abt-copy-source')).toBeNull();
+    expect(screen.queryByTestId('abt-copy-status')).toBeNull();
+  });
+
+  it('is in German, in the desktop app too', () => {
+    localStorage.setItem('canviewer.lang', 'de');
+    asDesktopApp();
+    renderWithProviders(<AboutDialog onClose={() => {}} />);
+    expect(screen.getByRole('button', { name: 'Adresse kopieren' })).toBeTruthy();
+    expect(screen.getByTestId('abt-copy-status').textContent).toMatch(/^Die Desktop-App öffnet keinen Browser/);
   });
 
   it('is in German', () => {

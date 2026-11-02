@@ -42,10 +42,14 @@ first.
 **About CanViewer**, the last item of the menu, shows the version, the license (the GNU
 GPL, version 2 or any later version; the web app and the desktop app are distributed
 under version 3, because they include parts under the Apache License 2.0), the
-no-warranty statement and the link to the source code. It also lists the copyright
-notice with its additional permission for the Windows build, the texts of the GPL
-versions 2 and 3, and the third-party notices: each opens in the dialog, read from the
-app's own files, in the desktop app as in the browser.
+no-warranty statement and the address of the source code. In the browser the address
+is a link that opens in a new tab. The desktop app opens no browser and makes no network
+requests, so there the address is shown as text with a **Copy address** button, to paste
+into your browser. The dialog also lists the copyright notice with its additional
+permission for the Windows build, the texts of the GPL versions 2 and 3, and the
+third-party notices: each opens in the dialog, read from the app's own files, in the
+desktop app as in the browser, and offline too (the web app keeps them with its other
+files after the first visit).
 
 ## Fonts and icons
 
