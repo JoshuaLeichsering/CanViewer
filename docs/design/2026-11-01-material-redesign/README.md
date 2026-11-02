@@ -20,18 +20,22 @@ for the renders those three files were served from local npm copies of the same 
 | Value tables | ![](design/tables-light.png) |
 
 When the redesign landed, `app/` also held the implementation in the same six states, for
-a side-by-side review. Those screenshots duplicated the renders above and went stale with
-every UI change, so they were removed; current screenshots of the app come from
+a side-by-side review, and in four screens the design does not show. They duplicated the
+renders above or the generated screenshots and went stale with every UI change, so they
+were removed; current screenshots of the app come from
 [`scripts/screenshots.mjs`](../../../scripts/screenshots.mjs), which writes them to
-[`docs/guide/images/`](../../guide/images/). `app/` keeps the screens the design does not show, as first implemented
-(a production build with `examples/demo.dbc` open):
+[`docs/guide/images/`](../../guide/images/): the welcome screen
+(`welcome-en-*.webp`), parse problems (`problems-en-*.webp`, `vw_mqb.dbc` from opendbc)
+and the German UI (`overview-de-*.webp`, `message-de-*.webp`).
 
-| Screen | App |
+`app/` keeps one screen that neither the design nor the generated set shows: a CAN FD
+frame of 24 bytes, in the dark theme. It is a historical record of the first
+implementation of the redesign, not of the app as it is: its navigation rail predates the
+Compare and Traces destinations and the export menu.
+
+| Screen | First implementation |
 |---|---|
-| Welcome (no file open) | ![](app/welcome-light.png) |
-| CAN FD frame, 24 bytes, dark | ![](app/adas-dark.png) |
-| Parse problems (`vw_mqb.dbc` from opendbc) | ![](app/problems-light.png) |
-| German UI | ![](app/overview-de.png) |
+| CAN FD frame (`AdasObjects`), 24 bytes, dark | ![](app/adas-dark.png) |
 
 ## Where the app differs from the design, and why
 

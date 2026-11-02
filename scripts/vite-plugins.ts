@@ -14,6 +14,10 @@
  * built files to precache, so the app opens offline after the first visit.
  * The Pyodide files are not precached: they are cached when first used, so a
  * DBC-only visitor never downloads them.
+ *
+ * favicon: the browser tab's icon, made from desktop/app-icon.svg at build
+ * time (and served by the dev server), so that it cannot drift from the
+ * desktop app's icon; the docs site takes its icon from the same file.
  */
 import { createHash } from 'node:crypto';
 import { createReadStream, existsSync, readFileSync, statSync } from 'node:fs';
@@ -103,6 +107,48 @@ export function pyodideAssets(): Plugin {
       for (const [name, src] of files) {
         this.emitFile({ type: 'asset', fileName: `pyodide/${name}`, source: readFileSync(src) });
       }
+    },
+  };
+}
+
+const APP_ICON = join(root, 'desktop/app-icon.svg');
+
+/**
+ * desktop/app-icon.svg cropped to its rounded square (96 to 928 on both
+ * axes), so that it fills a browser tab: only the root element's size and
+ * viewBox change, the shapes stay as they are.
+ */
+export function faviconSvg(appIcon: string): string {
+  let found = false;
+  const svg = appIcon.replace(/<svg\b[^>]*>/, (tag) => {
+    found = /\bviewBox="0 0 1024 1024"/.test(tag);
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="96 96 832 832">';
+  });
+  if (!found) throw new Error('desktop/app-icon.svg: expected an <svg> with viewBox="0 0 1024 1024"');
+  return svg.endsWith('\n') ? svg : `${svg}\n`;
+}
+
+export function favicon(): Plugin {
+  let build = false;
+  const source = () => faviconSvg(readFileSync(APP_ICON, 'utf8'));
+  return {
+    name: 'canviewer:favicon',
+    configResolved(config: ResolvedConfig) {
+      build = config.command === 'build';
+    },
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        if (req.url?.split('?')[0] !== `${server.config.base}favicon.svg`) return next();
+        res.setHeader('Content-Type', 'image/svg+xml');
+        res.end(source());
+      });
+    },
+    // In buildStart, so that the service worker's list of files to precache has it.
+    buildStart() {
+      if (build) this.emitFile({ type: 'asset', fileName: 'favicon.svg', source: source() });
+    },
+    transformIndexHtml() {
+      return [{ tag: 'link', attrs: { rel: 'icon', type: 'image/svg+xml', href: './favicon.svg' }, injectTo: 'head' }];
     },
   };
 }

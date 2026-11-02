@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import type { InlineConfig } from 'vitest/node';
-import { pyodideAssets, pyodideLock, serviceWorker } from './scripts/vite-plugins';
+import { favicon, pyodideAssets, pyodideLock, serviceWorker } from './scripts/vite-plugins';
 import { legalFiles } from './scripts/vite-legal';
 
 // Vitest 2 brings its own copy of Vite 5 and adds `test` to that copy's config
@@ -34,7 +34,7 @@ export default defineConfig({
     // dist/ is outside the Vite root, which Vite does not empty unless told to.
     emptyOutDir: true,
   },
-  plugins: [react(), pyodideLock(), pyodideAssets(), legalFiles({ emit: true }), serviceWorker()],
+  plugins: [react(), pyodideLock(), pyodideAssets(), favicon(), legalFiles({ emit: true }), serviceWorker()],
   // The version the About dialog shows (app/src/app-version.d.ts).
   define: {
     __APP_VERSION__: JSON.stringify(version),

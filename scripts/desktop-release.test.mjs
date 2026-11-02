@@ -101,6 +101,12 @@ test('the overlay bundles the license files that exist, and a release needs them
   });
 });
 
+test('every file in desktop/icons is one that bundle.icon lists, and the other way round', () => {
+  const config = JSON.parse(readFileSync(new URL('../desktop/tauri.conf.json', import.meta.url), 'utf8'));
+  const icons = readdirSync(new URL('../desktop/icons/', import.meta.url)).map((f) => `icons/${f}`).sort();
+  assert.deepEqual(icons, [...config.bundle.icon].sort());
+});
+
 test('the desktop config carries the license metadata, so a release cannot lack it', () => {
   const config = JSON.parse(readFileSync(new URL('../desktop/tauri.conf.json', import.meta.url), 'utf8'));
   const cargo = readFileSync(new URL('../desktop/Cargo.toml', import.meta.url), 'utf8');

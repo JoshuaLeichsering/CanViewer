@@ -790,7 +790,7 @@ describe('narrow layout (390 px)', () => {
 });
 
 describe('favicon', () => {
-  test('the page links an icon that loads, and no request fails', async () => {
+  test('the page links an icon that loads, made from the desktop app\'s icon, and no request fails', async () => {
     const { context, page, problems } = await openApp();
     const href = await page.locator('link[rel=icon]').first().getAttribute('href');
     assert.ok(href, 'a link rel=icon exists');
@@ -800,7 +800,11 @@ describe('favicon', () => {
     }, href);
     assert.equal(icon.status, 200);
     assert.match(icon.type ?? '', /^image\/svg\+xml/);
-    assert.match(icon.body, /<svg/);
+    // The shapes of desktop/app-icon.svg, cropped to its rounded square.
+    const appIcon = readFileSync(repoPath('desktop/app-icon.svg'), 'utf8');
+    const shapes = (svg) => svg.replace(/<svg\b[^>]*>/, '').trim();
+    assert.match(icon.body, /^<svg xmlns="http:\/\/www\.w3\.org\/2000\/svg" viewBox="96 96 832 832">/);
+    assert.equal(shapes(icon.body), shapes(appIcon));
     assert.deepEqual(problems, []);
     await context.close();
   });
