@@ -25,7 +25,8 @@ move items up/down freely and check them off when done. The
       the page for 0.1 to 0.25 s while it parses (0.6 s with the CPU throttled
       2x). Proposed for the owner: defer it past v0.2.0, since the pause happens
       once per file and every view stays responsive afterwards (the 5000-message
-      check in `e2e/large-database.mjs`); the owner has not decided yet
+      check in `e2e/large-database.mjs`); the owner has not decided yet (question 1
+      of the open questions in [the goal](docs/handover/2026-11-01-goal.md#questions-for-joshua))
 
 ## Formats
 
@@ -41,16 +42,18 @@ move items up/down freely and check them off when done. The
 - [ ] Report the losses of ECU configuration files (`.ecuc.arxml`), where canmatrix
       reads every frame ID as 0 and ignores the signal types, as a visible problem
       ([The two ARXML readers](docs/develop/arxml-readers.md)). The owner decides
-      between this and an upstream report
+      between this and an upstream report (question 2 of the open questions in
+      [the goal](docs/handover/2026-11-01-goal.md#questions-for-joshua))
 - [ ] Report the other losses canmatrix does not report itself, measured in
       [The two ARXML readers](docs/develop/arxml-readers.md#findings-for-canviewer-whatever-the-decision):
       a missing `PACKING-BYTE-ORDER` read as big endian (logged at debug level
       only), a broken `COMPU-METHOD` given an assumed scaling, and a range canmatrix
       computes from the raw value range when the file gives none. Each needs the
       adapter to detect what canmatrix does silently, or an upstream change; the
-      owner decides which, as for the ECU configuration files
+      owner decides which, as for the ECU configuration files (question 2)
 - Owner's decision: whether to read ARXML with cantools instead of canmatrix, and
   whether to post the drafted canmatrix reports ([`docs/develop/upstream/`](docs/develop/upstream/))
+  (question 3)
 
 ## Compare & export
 
@@ -60,7 +63,8 @@ move items up/down freely and check them off when done. The
 - [x] Copy a message as C struct / decode pseudo-code
 - Owner's decision: whether the comparison should ignore whitespace around line
   breaks in comments (it reports `"Multi \n Line"` against `"Multi\nLine"` as a
-  change). Until then it reports them, which shows what the files say
+  change). Until then it reports them, which shows what the files say (question 4
+  of the open questions in [the goal](docs/handover/2026-11-01-goal.md#questions-for-joshua))
 
 ## Decode & traces
 
