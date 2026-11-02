@@ -2,15 +2,15 @@
 import { canmatrixFormatFor } from './formats';
 import { ImportFailure, noDatabase } from './import-failure';
 import type { CanmatrixReadResult, ImportedCluster } from './types';
-import type { ImportStage, ImportTimings, WorkerReply, WorkerRequest } from './worker-protocol';
+import type { ImportStage, WorkerReply, WorkerRequest } from './worker-protocol';
 import { inDesktopApp } from '../desktop';
 import { startImportWorker } from './start-worker';
 import workerUrl from './worker.ts?worker&url';
 
-export type { ImportStage, ImportTimings } from './worker-protocol';
+export type { ImportStage } from './worker-protocol';
 
 interface Pending {
-  resolve(value: { result: CanmatrixReadResult; timings: ImportTimings }): void;
+  resolve(result: CanmatrixReadResult): void;
   reject(reason: Error): void;
   onStage?: (stage: ImportStage) => void;
 }
@@ -33,7 +33,7 @@ function getWorker(): Worker {
       return;
     }
     pending.delete(reply.id);
-    if (reply.kind === 'result') p.resolve({ result: reply.result, timings: reply.timings });
+    if (reply.kind === 'result') p.resolve(reply.result);
     else if (reply.stage === 'reading') p.reject(new Error(reply.message));
     // The runtime or a package did not load: CanViewer's failure, not the file's.
     else p.reject(new ImportFailure(reply.stage, reply.message));
@@ -55,7 +55,6 @@ export interface ImportedFile {
    * choice (app/src/lib/import/clusters.ts).
    */
   clusters: ImportedCluster[];
-  timings: ImportTimings;
 }
 
 /**
@@ -81,15 +80,13 @@ export async function importWithCanmatrix(
     importType: format.importType,
     packages: format.packages,
   };
-  const { result, timings } = await new Promise<{ result: CanmatrixReadResult; timings: ImportTimings }>(
-    (resolve, reject) => {
-      pending.set(id, { resolve, reject, onStage });
-      getWorker().postMessage(request, [copy]);
-    },
-  );
+  const result = await new Promise<CanmatrixReadResult>((resolve, reject) => {
+    pending.set(id, { resolve, reject, onStage });
+    getWorker().postMessage(request, [copy]);
+  });
   if (result.clusters.length === 0) {
     if (result.error) throw new Error(result.error);
     throw noDatabase();
   }
-  return { clusters: result.clusters, timings };
+  return { clusters: result.clusters };
 }

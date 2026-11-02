@@ -83,7 +83,6 @@ describe('DiffView', () => {
     });
     importMock.mockResolvedValue({
       clusters: [cluster('Motor', 'MotorStatus'), cluster('Comfort', 'SeatHeating')],
-      timings: { runtimeMs: 1, packagesMs: 1, readMs: 1 },
     });
     renderWithProviders(<Harness db={parseDbc('BU_: ECU\nBO_ 1 SeatHeating: 8 ECU\n')} cluster="Comfort" />);
     choose(fileOf('older.kcd', '<NetworkDefinition/>'));

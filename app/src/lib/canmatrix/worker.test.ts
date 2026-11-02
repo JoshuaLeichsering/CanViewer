@@ -86,7 +86,7 @@ describe('import worker', () => {
     expect(py.pyodide.pyimport).toHaveBeenCalledWith('canviewer_adapter');
   });
 
-  it('reports the stages, reads the bytes with the adapter and posts the result with timings', async () => {
+  it('reports the stages, reads the bytes with the adapter and posts the result', async () => {
     const result = { clusters: [{ name: 'CAN', db: {} }], log: ['warning'] };
     py.proxy.toJs.mockReturnValue(result);
     await send({ id: 7, importType: 'kcd' });
@@ -99,8 +99,7 @@ describe('import worker', () => {
     expect(py.proxy.destroy).toHaveBeenCalledOnce();
     const reply = posted[3] as Extract<WorkerReply, { kind: 'result' }>;
     expect(reply.id).toBe(7);
-    expect(reply.result).toBe(result);
-    for (const ms of Object.values(reply.timings)) expect(ms).toBeGreaterThanOrEqual(0);
+    expect(reply).toStrictEqual({ id: 7, kind: 'result', result });
   });
 
   it('starts the runtime once and loads each package once', async () => {

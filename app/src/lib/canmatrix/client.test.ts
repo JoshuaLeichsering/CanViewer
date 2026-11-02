@@ -37,13 +37,11 @@ class FakeWorker {
   }
 }
 
-const timings = { runtimeMs: 1, packagesMs: 1, readMs: 1 };
 const bytesOf = (text: string) => new TextEncoder().encode(text).buffer as ArrayBuffer;
 const result = (r: Partial<CanmatrixReadResult>): WorkerReply => ({
   id: 0,
   kind: 'result',
   result: { clusters: [], log: [], ...r },
-  timings,
 });
 
 /**
@@ -97,7 +95,7 @@ describe('importWithCanmatrix', () => {
     worker.reply({ ...result({ clusters }), id: worker.id });
     const imported = await pending;
     expect(stages).toEqual(['runtime', 'packages', 'reading']);
-    expect(imported).toStrictEqual({ clusters, timings });
+    expect(imported).toStrictEqual({ clusters });
   });
 
   it('names the runtime or the packages when either did not load, and keeps the browser’s message', async () => {

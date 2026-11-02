@@ -320,7 +320,6 @@ describe('App: importing other formats through canmatrix', () => {
             clusters: [
               { name: 'CAN1', db: dbcOf('BU_: Gateway\nBO_ 1 Imported: 8 Gateway\n SG_ S : 0|8@1+ (1,0) [0|255] "" Gateway') },
             ],
-            timings: { runtimeMs: 1, packagesMs: 1, readMs: 1 },
           });
       });
     });
@@ -382,7 +381,6 @@ describe('App: importing other formats through canmatrix', () => {
     });
     importMock.mockResolvedValue({
       clusters: [{ name: 'CAN', db: dbcOf('BU_: A') }],
-      timings: { runtimeMs: 0, packagesMs: 0, readMs: 0 },
     });
     renderWithProviders(<App />);
     openFile(fileOf('a.json', '{}'));
@@ -397,7 +395,6 @@ describe('App: unsaved edits and what would replace them', () => {
         { name: 'Motor', db: dbcOf('BU_: ECU\nBO_ 1 MotorStatus: 8 ECU\n SG_ S : 0|8@1+ (1,0) [0|255] "" ECU') },
         { name: 'Comfort', db: dbcOf('BU_: ECU\nBO_ 2 SeatHeating: 8 ECU\n SG_ T : 0|8@1+ (1,0) [0|255] "" ECU') },
       ],
-      timings: { runtimeMs: 0, packagesMs: 0, readMs: 0 },
     });
   /** Renames the first message in the message editor (W11). */
   const renameFirstMessage = async (name: string) => {

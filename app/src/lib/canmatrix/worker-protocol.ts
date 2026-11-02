@@ -19,14 +19,8 @@ export interface WorkerRequest {
   packages: string[];
 }
 
-export interface ImportTimings {
-  runtimeMs: number;
-  packagesMs: number;
-  readMs: number;
-}
-
 export type WorkerReply =
   | { id: number; kind: 'stage'; stage: ImportStage }
-  | { id: number; kind: 'result'; result: CanmatrixReadResult; timings: ImportTimings }
+  | { id: number; kind: 'result'; result: CanmatrixReadResult }
   /** `stage` is the step that failed, so the page can tell a runtime that did not load from a file that did not read. */
   | { id: number; kind: 'error'; message: string; stage: ImportStage };

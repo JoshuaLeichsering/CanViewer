@@ -77,7 +77,6 @@ function startRuntime(assetsUrl: string): Promise<Runtime> {
 
 scope.onmessage = async (e) => {
   const { id, assetsUrl, bytes, importType, packages } = e.data;
-  const t0 = performance.now();
   let stage: ImportStage = 'runtime';
   const enter = (next: ImportStage) => {
     stage = next;
@@ -86,14 +85,12 @@ scope.onmessage = async (e) => {
   try {
     enter('runtime');
     const { pyodide, adapter } = await startRuntime(assetsUrl);
-    const t1 = performance.now();
     const missing = packages.filter((p) => !loaded.has(p));
     if (missing.length) {
       enter('packages');
       await loadPackages(pyodide, missing);
       missing.forEach((p) => loaded.add(p));
     }
-    const t2 = performance.now();
     enter('reading');
     const proxy = adapter.read(new Uint8Array(bytes), importType);
     let result: CanmatrixReadResult;
@@ -102,13 +99,7 @@ scope.onmessage = async (e) => {
     } finally {
       proxy.destroy();
     }
-    const t3 = performance.now();
-    scope.postMessage({
-      id,
-      kind: 'result',
-      result,
-      timings: { runtimeMs: t1 - t0, packagesMs: t2 - t1, readMs: t3 - t2 },
-    });
+    scope.postMessage({ id, kind: 'result', result });
   } catch (err) {
     scope.postMessage({ id, kind: 'error', message: err instanceof Error ? err.message : String(err), stage });
   }
