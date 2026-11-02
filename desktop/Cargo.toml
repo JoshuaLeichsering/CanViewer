@@ -1,6 +1,6 @@
 [package]
 name = "canviewer"
-version = "0.2.0"
+version = "0.2.1"
 description = "CanViewer: a viewer for CAN database files"
 license = "GPL-2.0-or-later"
 edition = "2021"
