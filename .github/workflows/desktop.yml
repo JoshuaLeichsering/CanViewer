@@ -175,6 +175,19 @@ jobs:
           for ($i = 0; $i -lt 60 -and (Test-Path $exe); $i++) { Start-Sleep 1 }
           if (Test-Path $exe) { throw "$exe is still there after 60 s" }
           "removed: $exe"
+      # The setup.exe uninstaller leaves its install folder recorded under
+      # HKCU\Software\<publisher>\<product>, and the MSI reads that key to choose
+      # its folder. Removing the leftovers, as the runbook says, lets the MSI
+      # install where it should.
+      - name: 'Runbook: remove the leftovers (setup.exe installation)'
+        shell: pwsh
+        run: |
+          $key = 'HKCU:\Software\The CanViewer authors\CanViewer'
+          "before: $key exists: $(Test-Path $key)"
+          node scripts/runbook.mjs run windows-remove-data --cwd "$HOME\Downloads"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          if (Test-Path $key) { throw "$key is still there" }
+          "removed: $key"
 
       - name: 'Runbook: install for all users (MSI)'
         shell: pwsh

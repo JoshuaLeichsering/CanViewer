@@ -96,6 +96,11 @@ $p = Start-Process msiexec.exe -ArgumentList "/i `"$msi`" /qn" -Wait -PassThru
 if ($p.ExitCode -ne 0) { throw "msiexec exited with code $($p.ExitCode)" }
 ```
 
+The `.msi` installs into `C:\Program Files\CanViewer\`, unless `setup.exe` installed
+CanViewer before: then it reuses that folder in `%LOCALAPPDATA%`, which the uninstaller
+of the `setup.exe` installation leaves recorded. Removing the leftovers (step 6 below)
+clears that.
+
 CanViewer needs the Microsoft Edge WebView2 Runtime, which is part of Windows 11 and of
 current Windows 10. On a computer without it, the installer downloads it from Microsoft.
 
@@ -160,11 +165,13 @@ if ($p.ExitCode -ne 0) { throw "msiexec exited with code $($p.ExitCode)" }
 ```
 
 Uninstalling keeps the app's data: the file you last opened, the theme and the language.
-To delete it as well:
+The uninstaller of the `setup.exe` installation also leaves the folder it installed into
+recorded in the registry. To delete both:
 
 <!-- runbook: windows-remove-data -->
 ```powershell
 Remove-Item -Recurse -Force "$env:APPDATA\io.github.joshualeichsering.canviewer", "$env:LOCALAPPDATA\io.github.joshualeichsering.canviewer" -ErrorAction SilentlyContinue
+Remove-Item -Recurse -Force 'HKCU:\Software\The CanViewer authors\CanViewer' -ErrorAction SilentlyContinue
 ```
 
 ## macOS
