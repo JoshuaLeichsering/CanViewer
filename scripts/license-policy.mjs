@@ -21,6 +21,43 @@
  */
 export const LICENSE_FILES = ['COPYRIGHT', 'LICENSE', 'LICENSE-GPL-3.0'];
 
+/** Where the releases are, each with its packages and the source archives below. */
+export const RELEASES_URL = 'https://github.com/JoshuaLeichsering/CanViewer/releases';
+
+/**
+ * The source code that every release carries next to its packages, for the two
+ * parts whose licenses ask for the source to come with the binary rather than
+ * from an address: GNU libiconv, compiled into lxml (LGPL-2.0 section 4), and
+ * the WiX Toolset's dialogs and uica.dll in the .msi (MS-RL 3(A))
+ * (docs/decisions/0005-license-gpl-2-or-later.md). The release workflow
+ * downloads each file from `url` and refuses it unless its SHA-256 is
+ * `sha256` (scripts/desktop-release.mjs sources); the notices name the file
+ * with the part (`archive` on its entry below), and the release notes with
+ * `label`.
+ *
+ * libiconv's hash is the one Pyodide's recipe pins (pyodide-recipes
+ * 314-20260911, packages/libiconv/meta.yaml), which builds the tarball as it
+ * is, without patches. WiX's is that of GitHub's archive of the tag wix3141rtm
+ * (commit b40e9a32c24033e11b77baf2c91a704382f898ed, which the archive names
+ * in its header); the wix3 repository is archived. Should GitHub ever produce
+ * that archive differently, the release stops at the check: compare the new
+ * file's contents with the tag before changing the hash.
+ */
+export const SOURCE_ARCHIVES = [
+  {
+    name: 'libiconv-1.16.tar.gz',
+    url: 'https://ftp.gnu.org/gnu/libiconv/libiconv-1.16.tar.gz',
+    sha256: 'e6a1b1b589654277ee790cce3734f07876ac4ccfaecbee8afa0b649cf529cc04',
+    label: 'GNU libiconv 1.16, compiled into lxml, in every package and the web app',
+  },
+  {
+    name: 'wix3-wix3141rtm.tar.gz',
+    url: 'https://github.com/wixtoolset/wix3/archive/refs/tags/wix3141rtm.tar.gz',
+    sha256: '374ec1923954c0df5874964d845c09d887012fbab5aa13d000201d0b9f789d96',
+    label: 'the WiX Toolset 3.14.1, whose installer dialogs and custom actions are in the `.msi`',
+  },
+];
+
 /** SPDX identifiers that bundled third-party code may carry. */
 export const ALLOWED = new Set([
   '0BSD',
@@ -171,6 +208,7 @@ export const WHEEL_BUNDLED = {
         'https://github.com/pyodide/pyodide-recipes/tree/314-20260911/packages/libiconv',
         'https://github.com/pyodide/pyodide-recipes/tree/314-20260911/packages/lxml',
       ],
+      archive: 'libiconv-1.16.tar.gz',
       note:
         'Copyright (C) 1999-2019 Free Software Foundation, Inc. ' +
         'The character-set conversion that libxml2 uses, linked statically into lxml’s `etree` module ' +
@@ -663,12 +701,13 @@ export const WINDOWS_INSTALLERS = [
     texts: ['windows-installers/wix-LICENSE.txt'],
     source: 'https://github.com/wixtoolset/wix3/tree/wix3141rtm',
     in: ['msi'],
+    archive: 'wix3-wix3141rtm.tar.gz',
     note:
       'In the `.msi`: the dialogs of WixUI_InstallDir with their bitmaps, icons and strings (src/ext/UIExtension/wixlib), ' +
       'and uica.dll, the custom actions with which those dialogs check the chosen folder and print the license ' +
       '(src/ext/UIExtension/ca, linked with the libraries in src/libs/dutil and src/libs/wcautil). ' +
-      'The source code of each of these files is in WiX’s v3.14.1 release (tag wix3141rtm), at the address below, ' +
-      'under the Microsoft Reciprocal License (WiX’s LICENSE.TXT, the license text below).',
+      'The source code of each of these files is in WiX’s v3.14.1 release (tag wix3141rtm), at the address below and in the ' +
+      'source archive that comes with every CanViewer release, under the Microsoft Reciprocal License (WiX’s LICENSE.TXT, the license text below).',
   },
   {
     name: 'NSIS',

@@ -8,6 +8,9 @@
 //            (always, for a release), and an MSI version for a pre-release
 //   collect  copies one system's packages out of Tauri's bundle directory under
 //            their release names, adds demo.dbc, and writes SHA256SUMS
+//   sources  downloads the source archives the release carries
+//            (SOURCE_ARCHIVES in scripts/license-policy.mjs), checks each
+//            against its pinned SHA-256, and writes SHA256SUMS: one more part
 //   finish   joins the systems' parts into the release: checks every part
 //            against its SHA256SUMS, adds THIRD_PARTY_NOTICES.md, writes the
 //            combined SHA256SUMS and the release notes with each package's size
@@ -17,13 +20,14 @@
 //   node scripts/desktop-release.mjs resources
 //   node scripts/desktop-release.mjs config --out FILE [--release]
 //   node scripts/desktop-release.mjs collect --system windows|macos|linux --out DIR [--bundle-dir DIR]
+//   node scripts/desktop-release.mjs sources --out DIR
 //   node scripts/desktop-release.mjs finish --parts DIR --out DIR --notes FILE [--release] [--tag vX.Y.Z]
 //     [--repo-url URL] [--run-url URL]
 import { createHash } from 'node:crypto';
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { LICENSE_FILES } from './license-policy.mjs';
+import { LICENSE_FILES, SOURCE_ARCHIVES } from './license-policy.mjs';
 import { ROOT, isPrerelease, msiVersion } from './release-version.mjs';
 
 export const SUMS = 'SHA256SUMS';
@@ -122,19 +126,43 @@ export function collect({ root = ROOT, system, bundleDir = join(root, BUNDLE_DIR
   return entries;
 }
 
+/**
+ * Download the source archives into `out`, each checked against the SHA-256
+ * that scripts/license-policy.mjs pins, and write their SHA256SUMS, so that
+ * `out` is a part like those of the build jobs. A file whose hash differs is
+ * not written. Returns [{ name, size, sha256 }].
+ */
+export async function fetchSources({ out, archives = SOURCE_ARCHIVES, fetch = globalThis.fetch }) {
+  mkdirSync(out, { recursive: true });
+  const entries = [];
+  for (const a of archives) {
+    const response = await fetch(a.url);
+    if (!response.ok) throw new Error(`${a.name}: ${a.url} answered ${response.status}`);
+    const bytes = Buffer.from(await response.arrayBuffer());
+    const hash = createHash('sha256').update(bytes).digest('hex');
+    if (hash !== a.sha256) throw new Error(`${a.name}: SHA-256 ${hash}, but scripts/license-policy.mjs pins ${a.sha256}`);
+    writeFileSync(join(out, a.name), bytes);
+    entries.push({ name: a.name, size: bytes.length, sha256: hash });
+  }
+  writeFileSync(join(out, SUMS), formatSums(entries));
+  return entries;
+}
+
 /** Every release asset's name, in the order the notes list them. */
 export const releaseAssets = (version) => [
   ...Object.values(PACKAGES).flatMap((ps) => ps.map((p) => p.name(version))),
   basename(SAMPLE),
   NOTICES,
+  ...SOURCE_ARCHIVES.map((a) => a.name),
   SUMS,
 ];
 
 /**
- * Join the parts the build jobs uploaded (one directory each, with its own
- * SHA256SUMS) into the release in `out`. Every file must match its part's
- * SHA256SUMS, and a file in two parts (demo.dbc) must be identical. Adds
- * THIRD_PARTY_NOTICES.md (required for a release) and the combined SHA256SUMS.
+ * Join the parts the build jobs uploaded and the source archives (one
+ * directory each, with its own SHA256SUMS) into the release in `out`. Every
+ * file must match its part's SHA256SUMS, and a file in two parts (demo.dbc)
+ * must be identical. Adds THIRD_PARTY_NOTICES.md (required for a release) and
+ * the combined SHA256SUMS.
  */
 export function finish({ root = ROOT, parts, out, version = packageVersion(root), release = false }) {
   mkdirSync(out, { recursive: true });
@@ -203,6 +231,17 @@ export function releaseNotes({ version, assets, tag = `v${version}`, repoUrl, ru
     '',
     `Also here: \`${SUMS}\`, the SHA-256 checksum of every file of this release; \`${NOTICES}\`, the licenses of the third-party software the app contains; and \`demo.dbc\`, a small CAN database to open once CanViewer is installed.`,
     '',
+  );
+  const archives = SOURCE_ARCHIVES.filter((a) => size.has(a.name));
+  if (archives.length) {
+    lines.push(
+      `And the source code that the licenses of these parts ask to come with the program (you do not need it to install CanViewer): ${archives
+        .map((a) => `\`${a.name}\`, ${a.label}`)
+        .join('; ')}.`,
+      '',
+    );
+  }
+  lines.push(
     'The packages are not code-signed. Windows and macOS therefore ask once before the first start; the install guide shows how to allow it.',
     '',
   );
@@ -215,7 +254,7 @@ export function releaseNotes({ version, assets, tag = `v${version}`, repoUrl, ru
   return lines.join('\n') + '\n';
 }
 
-function main(argv) {
+async function main(argv) {
   const [command] = argv;
   const opt = (name) => {
     const i = argv.indexOf(`--${name}`);
@@ -239,6 +278,12 @@ function main(argv) {
     for (const e of entries) console.log(`| ${e.name} | ${formatSize(e.size)} | \`${e.sha256}\` |`);
     return 0;
   }
+  if (command === 'sources' && opt('out')) {
+    const entries = await fetchSources({ out: opt('out') });
+    console.log('### source archives\n\n| File | Size | SHA-256 |\n|---|---|---|');
+    for (const e of entries) console.log(`| ${e.name} | ${formatSize(e.size)} | \`${e.sha256}\` |`);
+    return 0;
+  }
   if (command === 'finish' && opt('parts') && opt('out') && opt('notes')) {
     const version = packageVersion();
     const release = flag('release');
@@ -253,4 +298,4 @@ function main(argv) {
   return 2;
 }
 
-if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) process.exitCode = main(process.argv.slice(2));
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) process.exitCode = await main(process.argv.slice(2));

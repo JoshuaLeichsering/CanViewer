@@ -25,7 +25,9 @@ page summarizes how it fits together. The choices behind it are in
   run the self-test, uninstall, delete the app's data, and check that nothing is left
   behind.
 - The publish job joins the three systems' packages, checks each against the checksum
-  its build job recorded, adds `SHA256SUMS`, `THIRD_PARTY_NOTICES.md` and `demo.dbc`,
+  its build job recorded, adds `THIRD_PARTY_NOTICES.md`, `demo.dbc` and the source
+  archives of GNU libiconv and the WiX Toolset (each checked against the SHA-256 that
+  [`license-policy.mjs`](../../scripts/license-policy.mjs) pins), writes `SHA256SUMS`,
   and writes the notes with each package's size
   ([`desktop-release.mjs`](../../scripts/desktop-release.mjs)). It creates a
   **pre-release** for a version with `-rc.N` and a **draft** for a final version, which

@@ -3,18 +3,20 @@
 // Run with: node --test "scripts/*.test.mjs"
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { RUNBOOK } from './release-version.mjs';
-import { LICENSE_FILES } from './license-policy.mjs';
+import { LICENSE_FILES, SOURCE_ARCHIVES } from './license-policy.mjs';
 import {
   NOTICES,
   PACKAGES,
   RESOURCES,
   SUMS,
   collect,
+  fetchSources,
   finish,
   formatSize,
   formatSums,
@@ -153,14 +155,58 @@ test('collect fails when a package is missing or ambiguous', () => {
   assert.throws(() => collect({ root, system: 'beos', bundleDir: dir, out: tmp('out') }), /unknown system/);
 });
 
-/** The three parts as the build jobs upload them. */
+/** The three parts as the build jobs upload them, and the source archives as `sources` leaves them. */
 function parts(version, root) {
   const dir = tmp('parts');
   for (const system of ['windows', 'macos', 'linux']) {
     collect({ root, system, bundleDir: bundle(system, version), out: join(dir, `packages-${system}`) });
   }
+  mkdirSync(join(dir, 'sources'));
+  for (const a of SOURCE_ARCHIVES) writeFileSync(join(dir, 'sources', a.name), `source of ${a.name}`);
+  writeFileSync(
+    join(dir, 'sources', SUMS),
+    formatSums(SOURCE_ARCHIVES.map((a) => ({ name: a.name, sha256: sha256(join(dir, 'sources', a.name)) }))),
+  );
   return dir;
 }
+
+/** A fetch that answers each URL from `pages`, and 404 for any other. */
+const fakeFetch = (pages) => async (url) => (url in pages ? new Response(pages[url]) : new Response('not found', { status: 404 }));
+const hashOf = (text) => createHash('sha256').update(text).digest('hex');
+
+test('sources downloads each archive, checks it against its pinned SHA-256, and writes a part', async () => {
+  const archives = [
+    { name: 'a-1.0.tar.gz', url: 'https://example.test/a-1.0.tar.gz', sha256: hashOf('a') },
+    { name: 'b-2.0.tar.gz', url: 'https://example.test/b', sha256: hashOf('b') },
+  ];
+  const out = tmp('sources');
+  const entries = await fetchSources({ out, archives, fetch: fakeFetch({ 'https://example.test/a-1.0.tar.gz': 'a', 'https://example.test/b': 'b' }) });
+  assert.deepEqual(entries, [
+    { name: 'a-1.0.tar.gz', size: 1, sha256: hashOf('a') },
+    { name: 'b-2.0.tar.gz', size: 1, sha256: hashOf('b') },
+  ]);
+  assert.deepEqual(readdirSync(out).sort(), ['a-1.0.tar.gz', 'b-2.0.tar.gz', SUMS].sort());
+  const check = execFileSync('sha256sum', ['--check', '--strict', SUMS], { cwd: out, encoding: 'utf8' });
+  assert.equal(check, 'a-1.0.tar.gz: OK\nb-2.0.tar.gz: OK\n');
+
+  // A changed file is refused and not written; so is an address that fails.
+  const changed = tmp('sources');
+  await assert.rejects(
+    fetchSources({ out: changed, archives, fetch: fakeFetch({ 'https://example.test/a-1.0.tar.gz': 'A', 'https://example.test/b': 'b' }) }),
+    new RegExp(`a-1\\.0\\.tar\\.gz: SHA-256 ${hashOf('A')}, but scripts/license-policy\\.mjs pins ${hashOf('a')}`),
+  );
+  assert.deepEqual(readdirSync(changed), []);
+  await assert.rejects(fetchSources({ out: tmp('sources'), archives, fetch: fakeFetch({}) }), /a-1\.0\.tar\.gz: https:\/\/example\.test\/a-1\.0\.tar\.gz answered 404/);
+});
+
+test('the source archives are pinned: an https address, a SHA-256, and a label for the notes', () => {
+  assert.deepEqual(SOURCE_ARCHIVES.map((a) => a.name), ['libiconv-1.16.tar.gz', 'wix3-wix3141rtm.tar.gz']);
+  for (const a of SOURCE_ARCHIVES) {
+    assert.match(a.url, /^https:\/\//, a.name);
+    assert.match(a.sha256, /^[0-9a-f]{64}$/, a.name);
+    assert.ok(a.label, a.name);
+  }
+});
 
 test('finish joins the parts into exactly the release, with one SHA256SUMS that sha256sum accepts', () => {
   const root = repo('0.2.0', { notices: true, license: true });
@@ -197,6 +243,11 @@ test('finish refuses a changed file, a file outside its SHA256SUMS, and an incom
   // A dry run may be partial.
   assert.equal(finish({ root, parts: dir, out: tmp('r') }).length, 3);
 
+  // A release never goes out without the source archives its notices name.
+  dir = parts('0.2.0', root);
+  rmSync(join(dir, 'sources'), { recursive: true });
+  assert.throws(() => finish({ root, parts: dir, out: tmp('r'), release: true }), /missing: libiconv-1\.16\.tar\.gz, wix3-wix3141rtm\.tar\.gz;/);
+
   const bare = repo('0.2.0');
   assert.throws(() => finish({ root: bare, parts: parts('0.2.0', bare), out: tmp('r'), release: true }), /must carry THIRD_PARTY_NOTICES\.md/);
 });
@@ -217,6 +268,7 @@ test('the notes name each package with its size, the guide and the run', () => {
     const a = assets.find((x) => x.name === p.name('0.2.0-rc.1'));
     assert.ok(notes.includes(`| \`${a.name}\` | ${formatSize(a.size)} |`), a.name);
   }
+  for (const a of SOURCE_ARCHIVES) assert.ok(notes.includes(`\`${a.name}\`, ${a.label}`), a.name);
   assert.match(notes, /\[this workflow run\]\(https:\/\/github\.com\/o\/r\/actions\/runs\/1\)/);
   assert.equal(formatSize(11050584), '11,050,584 bytes (10.5 MiB)');
 });
