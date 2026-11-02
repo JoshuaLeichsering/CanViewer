@@ -16,13 +16,13 @@ first visit it reloaded and opened a DBC and an ARXML file with the network swit
 
 | Piece | Where |
 |---|---|
-| Worker: starts Pyodide on the first non-DBC import, loads format packages on demand, runs `canviewer_adapter.read()` | `src/lib/canmatrix/worker.ts` |
-| Client: creates the worker on first use, transfers the file bytes, reports the loading stage | `src/lib/canmatrix/client.ts` |
+| Worker: starts Pyodide on the first non-DBC import, loads format packages on demand, runs `canviewer_adapter.read()` | `app/src/lib/canmatrix/worker.ts` |
+| Client: creates the worker on first use, transfers the file bytes, reports the loading stage | `app/src/lib/canmatrix/client.ts` |
 | Assets: runtime from `node_modules/pyodide`, wheels from `vendor/pyodide` (see `scripts/fetch-wheels.mjs`), served under `<base>pyodide/` in dev and copied to `dist/pyodide/` in the build | `scripts/vite-plugins.ts` |
-| Service worker: precaches the app shell, caches `pyodide/*` when first fetched | `src/service-worker.js`, built to `dist/sw.js` |
+| Service worker: precaches the app shell, caches `pyodide/*` when first fetched | `app/src/service-worker.js`, built to `dist/sw.js` |
 
 There is **no micropip**, a deliberate change from the handover's wording. The worker
-passes the custom lock file (`src/lib/canmatrix/wheels.lock.json`, minus its download URLs)
+passes the custom lock file (`app/src/lib/canmatrix/wheels.lock.json`, minus its download URLs)
 to `loadPyodide` as `lockFileContents`, sets `packageBaseUrl` to `<base>pyodide/`, and
 calls `loadPackage`. Pyodide resolves dependencies from that lock alone and checks each
 wheel against its SHA-256. In the browser there is no CDN fallback (in
@@ -36,7 +36,7 @@ in the worker chunk, which is not used because `packageBaseUrl` is always set.
 
 ## Evidence
 
-`network-check.mjs` drives the build in Chromium 1243 (Playwright 1.63.0). (Since the
+[`e2e/network-check.mjs`](../../../e2e/network-check.mjs) drives the build in Chromium 1243 (Playwright 1.63.0). (Since the
 Material redesign the script waits on the document title and the `[role=alert]` snackbar
 instead of the old toolbar's `.file-info`; the run quoted below predates that change.) Chromium was
 started with `--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE localhost`, so any other
@@ -45,14 +45,14 @@ host would have failed to resolve. The run below is the build of commit `4af2d5c
 ```sh
 npm run build
 npx vite preview --port 4173 --strictPort &
-PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS=1 node docs/spikes/2026-11-01-pyodide-worker/network-check.mjs \
+PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS=1 node e2e/network-check.mjs \
   http://localhost:4173/ /tmp/out \
   third_party/canmatrix/tests/files/arxml/test.arxml \
   third_party/canmatrix/tests/files/arxml/ARXMLContainerTest.arxml \
   examples/demo.dbc dist
 ```
 
-[network-check.log](network-check.log), verbatim:
+The script's output, verbatim:
 
 ```
 # phase A: online, cold (http://localhost:4173/)
@@ -86,18 +86,21 @@ HAR: 46 entries, origins ["http://localhost:4173"]
 net-log: 152 url entries, origins ["http://localhost:4173"]
 ```
 
-- [requests.json](requests.json): every request of all four phases, with its source
-  (page or worker, or service worker), status, whether the service worker answered it,
-  and any failure. Playwright reports the dedicated worker's requests as the page's.
-- [requests.har](requests.har): HAR of phases A to C (phase D runs in a second browser
-  context without one).
-- [netlog-urls.txt](netlog-urls.txt): every `url` and `host` value in Chromium's net-log
-  for the whole run, which covers every context including the service worker. The only
-  host values are `localhost` and `http://localhost:4173`.
-- [A-online-arxml.png](A-online-arxml.png): `test.arxml` open in the existing views.
-  The screenshot after the offline open in phase C is byte-identical (same MD5).
-- [D-offline-import-error.png](D-offline-import-error.png): the message when a profile
-  that never imported anything tries an import offline.
+The run also wrote its raw records, which were removed from the repository before it
+went public; the last three lines above summarise them, and running the check again
+writes them anew into its output directory:
+
+- `requests.json`: every request of all four phases, with its source (page or worker,
+  or service worker), status, whether the service worker answered it, and any failure.
+  Playwright reports the dedicated worker's requests as the page's.
+- `requests.har`: a HAR of phases A to C (phase D runs in a second browser context
+  without one).
+- the `url` and `host` values of Chromium's net-log for the whole run, which covers
+  every context including the service worker. The only host values were `localhost`
+  and `http://localhost:4173`.
+- screenshots of `test.arxml` open in the views of the time (byte-identical after the
+  offline open in phase C), and of the message shown when a profile that never imported
+  anything tries an import offline.
 
 ## What the numbers say
 
@@ -127,9 +130,8 @@ net-log: 152 url entries, origins ["http://localhost:4173"]
   canmatrix format), the first cluster with messages is shown, a stage line replaces the
   file info while loading, and canmatrix's log lines are listed as problems. An imported
   file is not restored on reload. Task 5 covers the UI properly.
-- In the sidebar, 8-digit hex IDs run into long message names (visible in
-  `A-online-arxml.png`). That is the existing layout, but ARXML files with extended IDs
-  and long names will show it more often.
+- In the sidebar of the time, 8-digit hex IDs ran into long message names. ARXML files
+  with extended IDs and long names show such layout limits more often.
 - `vite build` logs `Module "node:…" has been externalized for browser compatibility`
   for `pyodide.mjs`'s Node-only branches. Those branches never run in the browser.
 - The service worker is registered only in production builds. It ignores `Vary` when

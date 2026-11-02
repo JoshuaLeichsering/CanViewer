@@ -1,0 +1,64 @@
+/* SPDX-License-Identifier: GPL-2.0-or-later */
+/* Export: the menu button of the overview's export menu and the message
+   page's copy menu. Colours and shapes come from the tokens in styles.css. */
+
+.exp-menu {
+  position: relative;
+  flex: none;
+}
+.exp-menu.exp-push {
+  margin-left: auto;
+}
+.exp-menu-button {
+  padding-right: 12px;
+}
+.exp-menu-button .exp-menu-caret {
+  margin-left: -4px;
+}
+.exp-menu-button.exp-ok .icon:first-child {
+  color: var(--primary);
+}
+.exp-menu-button.exp-error {
+  border-color: var(--error);
+  color: var(--error);
+}
+.exp-menu-popover {
+  /* Placed by ExpMenuButton (top and left), relative to the viewport. */
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 30;
+  min-width: 240px;
+  max-width: calc(100vw - 16px);
+  padding: 8px 0;
+  border-radius: 4px;
+  background: var(--sc-high);
+  color: var(--on-surface);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15), 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+.exp-menu-popover .menu-item {
+  white-space: nowrap;
+}
+.exp-menu-popover .menu-item:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+}
+
+/* The overview's header: the export menu beside the title, or below it
+   when the title needs the room (narrow windows, long file names). */
+.page-header.exp-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 16px;
+}
+.page-header.exp-header > * {
+  flex: 1 0 100%;
+}
+.page-header.exp-header > h1 {
+  flex: 1 1 240px;
+  min-width: 0;
+}
+.page-header.exp-header > .exp-menu {
+  flex: none;
+}

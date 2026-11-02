@@ -1,0 +1,145 @@
+# The documentation site and the web app on GitHub Pages: the site at the root,
+# the app under /app/ (docs/decisions/0006-documentation-site.md).
+#
+# Every run builds both, checks every link, runs the network check against the
+# app as it will be published, and crawls the whole site in Chromium; both
+# browser checks fail on any request outside the origin. Only a push to main
+# deploys, and only once the repository is public: GitHub Pages for a private
+# repository needs a paid plan. Pull requests build and check, nothing more.
+# There is no path filter: the job runs on Linux only, and what it is built and
+# checked from reaches further than the site's own sources (the network check
+# opens files from the canmatrix submodule, the site's icon is the desktop
+# app's), so every change runs it.
+name: Pages
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-${{ github.ref }}
+  # Never cancel a deployment half way; superseded pull request runs may go.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build:
+    name: build and check the site and the app
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      # As GitHub Pages serves a project site: https://<owner>.github.io/<repository>/
+      BASE: /${{ github.event.repository.name }}/
+      SITE: _pages/${{ github.event.repository.name }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # The network check opens two of canmatrix's test files; no other corpus is needed.
+      - name: Check out canmatrix's test files
+        run: git submodule update --init --depth 1 third_party/canmatrix
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Cache the Pyodide wheels
+        uses: actions/cache@v4
+        with:
+          path: vendor/pyodide
+          key: pyodide-wheels-${{ hashFiles('app/src/lib/canmatrix/wheels.lock.json') }}
+
+      - name: Fetch and verify the Pyodide wheels
+        run: npm run fetch-wheels
+
+      - name: Type-check the site's configuration
+        run: npx tsc -p docs/.vitepress
+
+      - name: Links in every Markdown file
+        run: node scripts/docs/check-links.mjs --sources
+
+      - name: Generated tables match the baselines
+        run: node scripts/docs/fidelity-tables.mjs --check
+
+      - name: Build the web app with a relative base
+        run: npm run build -- --base ./
+
+      - name: Build the documentation site
+        run: DOCS_BASE="$BASE" npm run docs:build
+
+      - name: Assemble the site as Pages will serve it
+        run: |
+          mkdir -p "$SITE"
+          cp -R docs/.vitepress/dist/. "$SITE/"
+          cp -R dist "$SITE/app"
+          du -sh "$SITE"
+          # GitHub Pages refuses files over 100 MB.
+          large=$(find "$SITE" -type f -size +100M)
+          if [ -n "$large" ]; then echo "files over 100 MB: $large"; exit 1; fi
+
+      - name: Links in the built site
+        run: node scripts/docs/check-links.mjs --site "$SITE" --base "$BASE"
+
+      # Playwright itself comes with npm ci (a pinned dev dependency), as in
+      # ci.yml; its Chromium is downloaded here only, in CI.
+      - name: Install Playwright's Chromium for the browser checks
+        run: npx playwright install --with-deps chromium
+
+      - name: Serve the site the way GitHub Pages does
+        run: |
+          node e2e/static-server.mjs _pages 4174 > static-server.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf "http://localhost:4174$BASE" > /dev/null && break; sleep 1; done
+          curl -sfI "http://localhost:4174${BASE}app/"
+
+      - name: Network check of the app under /app/ (no request outside the origin, works offline)
+        env:
+          PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS: '1'
+        run: |
+          node e2e/network-check.mjs \
+            "http://localhost:4174${BASE}app/" network-check \
+            third_party/canmatrix/tests/files/arxml/test.arxml \
+            third_party/canmatrix/tests/files/arxml/ARXMLContainerTest.arxml \
+            examples/demo.dbc _pages
+
+      - name: Crawl of every page of the site (no request outside the origin, nothing broken)
+        run: |
+          node e2e/docs-crawl.mjs \
+            "http://localhost:4174$BASE" docs-crawl
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pages-evidence
+          path: |
+            network-check/
+            docs-crawl/
+            static-server.log
+          if-no-files-found: ignore
+
+      - name: Upload the site for deployment
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && github.event.repository.private == false
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ${{ env.SITE }}
+
+  deploy:
+    name: deploy to GitHub Pages
+    needs: build
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && github.event.repository.private == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,18 +1,27 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /**
  * Vite plugins that keep the canmatrix import adapter self-hosted.
  *
  * pyodideAssets: the Pyodide runtime (from the `pyodide` npm package) and the
- * wheels in src/lib/canmatrix/wheels.lock.json (from vendor/pyodide, filled by
+ * wheels in app/src/lib/canmatrix/wheels.lock.json (from vendor/pyodide, filled by
  * scripts/fetch-wheels.mjs) are served under `<base>pyodide/` by the dev
  * server and copied to dist/pyodide/ by the build. Nothing else is published
  * there, and the build fails if a file is missing. The worker imports the lock
  * as `virtual:canviewer-pyodide-lock`, without the `tool.canviewer` download
  * sources, so that the app bundle names no host but its own.
  *
- * serviceWorker: emits sw.js (from src/service-worker.js) with the list of
+ * serviceWorker: emits sw.js (from app/src/service-worker.js) with the list of
  * built files to precache, so the app opens offline after the first visit.
- * The Pyodide files are not precached: they are cached when first used, so a
- * DBC-only visitor never downloads them.
+ * That list includes the license files and notices (scripts/vite-legal.ts),
+ * which the About dialog opens. The Pyodide files are not precached: they are
+ * cached when first used, so a DBC-only visitor never downloads them. The
+ * worker's version is a hash of the precached files' names and contents, so
+ * that a changed file whose name stays the same (index.html, the notices)
+ * still replaces the cached copy.
+ *
+ * favicon: the browser tab's icon, made from desktop/app-icon.svg at build
+ * time (and served by the dev server), so that it cannot drift from the
+ * desktop app's icon; the docs site takes its icon from the same file.
  */
 import { createHash } from 'node:crypto';
 import { createReadStream, existsSync, readFileSync, statSync } from 'node:fs';
@@ -21,7 +30,7 @@ import { fileURLToPath } from 'node:url';
 import type { Plugin, ResolvedConfig } from 'vite';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const lock = JSON.parse(readFileSync(join(root, 'src/lib/canmatrix/wheels.lock.json'), 'utf8')) as {
+const lock = JSON.parse(readFileSync(join(root, 'app/src/lib/canmatrix/wheels.lock.json'), 'utf8')) as {
   info: Record<string, string>;
   packages: Record<string, { file_name: string; tool?: unknown }>;
 };
@@ -106,20 +115,64 @@ export function pyodideAssets(): Plugin {
   };
 }
 
+const APP_ICON = join(root, 'desktop/app-icon.svg');
+
+/**
+ * desktop/app-icon.svg cropped to its rounded square (96 to 928 on both
+ * axes), so that it fills a browser tab: only the root element's size and
+ * viewBox change, the shapes stay as they are.
+ */
+export function faviconSvg(appIcon: string): string {
+  let found = false;
+  const svg = appIcon.replace(/<svg\b[^>]*>/, (tag) => {
+    found = /\bviewBox="0 0 1024 1024"/.test(tag);
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="96 96 832 832">';
+  });
+  if (!found) throw new Error('desktop/app-icon.svg: expected an <svg> with viewBox="0 0 1024 1024"');
+  return svg.endsWith('\n') ? svg : `${svg}\n`;
+}
+
+export function favicon(): Plugin {
+  let build = false;
+  const source = () => faviconSvg(readFileSync(APP_ICON, 'utf8'));
+  return {
+    name: 'canviewer:favicon',
+    configResolved(config: ResolvedConfig) {
+      build = config.command === 'build';
+    },
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        if (req.url?.split('?')[0] !== `${server.config.base}favicon.svg`) return next();
+        res.setHeader('Content-Type', 'image/svg+xml');
+        res.end(source());
+      });
+    },
+    // In buildStart, so that the service worker's list of files to precache has it.
+    buildStart() {
+      if (build) this.emitFile({ type: 'asset', fileName: 'favicon.svg', source: source() });
+    },
+    transformIndexHtml() {
+      return [{ tag: 'link', attrs: { rel: 'icon', type: 'image/svg+xml', href: './favicon.svg' }, injectTo: 'head' }];
+    },
+  };
+}
+
 export function serviceWorker(): Plugin {
   return {
     name: 'canviewer:service-worker',
     apply: 'build',
     enforce: 'post',
     generateBundle(_options, bundle) {
-      const precache = ['./', ...Object.keys(bundle).filter((f) => !f.startsWith('pyodide/'))].sort();
-      const version = createHash('sha256')
-        .update(precache.join('\n'))
-        .update(JSON.stringify(lock))
-        .digest('hex')
-        .slice(0, 12);
+      const files = Object.keys(bundle).filter((f) => !f.startsWith('pyodide/')).sort();
+      const precache = ['./', ...files].sort();
+      const hash = createHash('sha256').update(precache.join('\n'));
+      for (const f of files) {
+        const item = bundle[f];
+        hash.update(`\0${f}\0`).update(item.type === 'chunk' ? item.code : item.source);
+      }
+      const version = hash.update(JSON.stringify(lock)).digest('hex').slice(0, 12);
       const pyodideVersion = createHash('sha256').update(JSON.stringify(lock)).digest('hex').slice(0, 12);
-      const source = readFileSync(join(root, 'src/service-worker.js'), 'utf8')
+      const source = readFileSync(join(root, 'app/src/service-worker.js'), 'utf8')
         .replace('__SHELL_VERSION__', version)
         .replace('__PYODIDE_VERSION__', pyodideVersion)
         .replace('__PRECACHE__', JSON.stringify(precache));

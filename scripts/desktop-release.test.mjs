@@ -1,0 +1,243 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Tests for scripts/desktop-release.mjs, with fake bundle directories.
+// Run with: node --test "scripts/*.test.mjs"
+import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { test } from 'node:test';
+import { RUNBOOK } from './release-version.mjs';
+import { LICENSE_FILES } from './license-policy.mjs';
+import {
+  NOTICES,
+  PACKAGES,
+  RESOURCES,
+  SUMS,
+  collect,
+  finish,
+  formatSize,
+  formatSums,
+  parseSums,
+  releaseAssets,
+  releaseNotes,
+  sha256,
+  tauriOverlay,
+} from './desktop-release.mjs';
+import { parseRunbook } from './runbook.mjs';
+
+const tmp = (name) => mkdtempSync(join(tmpdir(), `${name}-`));
+
+/** A repository root with package.json, the sample file, and optionally the license files. */
+function repo(version, { notices = false, license = false } = {}) {
+  const root = tmp('repo');
+  writeFileSync(join(root, 'package.json'), JSON.stringify({ version }));
+  mkdirSync(join(root, 'examples'));
+  writeFileSync(join(root, 'examples/demo.dbc'), 'VERSION ""\n');
+  if (notices) writeFileSync(join(root, NOTICES), '# Third-party notices\n');
+  if (license) for (const name of LICENSE_FILES) writeFileSync(join(root, name), `${name}\n`);
+  return root;
+}
+
+/** A Tauri bundle directory as each system's build leaves it. */
+function bundle(system, version) {
+  const dir = tmp(`bundle-${system}`);
+  const files = {
+    windows: { [`msi/CanViewer_${version}_x64_en-US.msi`]: 'msi', [`nsis/CanViewer_${version}_x64-setup.exe`]: 'nsis' },
+    macos: { [`dmg/CanViewer_${version}_universal.dmg`]: 'dmg', 'macos/CanViewer.app/Contents/Info.plist': 'app' },
+    linux: { [`deb/CanViewer_${version}_amd64.deb`]: 'deb' },
+  }[system];
+  for (const [path, content] of Object.entries(files)) {
+    mkdirSync(join(dir, path, '..'), { recursive: true });
+    writeFileSync(join(dir, path), `${content} ${version}`);
+  }
+  return dir;
+}
+
+test('SHA256SUMS: sha256sum format, sorted, and parsed back', () => {
+  const text = formatSums([
+    { name: 'b.deb', sha256: 'b'.repeat(64) },
+    { name: 'a.msi', sha256: 'a'.repeat(64) },
+  ]);
+  assert.equal(text, `${'a'.repeat(64)}  a.msi\n${'b'.repeat(64)}  b.deb\n`);
+  assert.deepEqual([...parseSums(text)], [['a.msi', 'a'.repeat(64)], ['b.deb', 'b'.repeat(64)]]);
+  assert.throws(() => parseSums('nonsense\n'), /line 1/);
+  assert.throws(() => parseSums(text + text), /twice/);
+});
+
+test('every package bundles the notices, the copyright notice and both GPL texts', () => {
+  assert.deepEqual(RESOURCES, [NOTICES, 'COPYRIGHT', 'LICENSE', 'LICENSE-GPL-3.0']);
+  // The repository has them all.
+  assert.doesNotThrow(() => tauriOverlay({ release: true }));
+  // The workflows' checks of an installed package read the same list.
+  const listed = execFileSync(process.execPath, [new URL('./desktop-release.mjs', import.meta.url).pathname, 'resources'], { encoding: 'utf8' });
+  assert.deepEqual(listed.trim().split('\n'), RESOURCES);
+  const workflow = readFileSync(new URL('../.github/workflows/desktop.yml', import.meta.url), 'utf8');
+  assert.equal(workflow.match(/desktop-release\.mjs resources/g)?.length, 4, 'each system checks the installed files against the list');
+  assert.doesNotMatch(workflow, /'THIRD_PARTY_NOTICES\.md', 'LICENSE'|THIRD_PARTY_NOTICES\.md LICENSE;/, 'no check keeps a list of its own');
+});
+
+test('the overlay bundles the license files that exist, and a release needs them all', () => {
+  assert.deepEqual(tauriOverlay({ root: repo('0.2.0') }), { build: { beforeBuildCommand: '' } });
+  assert.deepEqual(tauriOverlay({ root: repo('0.2.0', { notices: true }) }), {
+    build: { beforeBuildCommand: '' },
+    bundle: { resources: { [`../${NOTICES}`]: NOTICES } },
+  });
+  assert.throws(
+    () => tauriOverlay({ root: repo('0.2.0', { notices: true }), release: true }),
+    /must bundle COPYRIGHT and LICENSE and LICENSE-GPL-3\.0/,
+  );
+  assert.deepEqual(tauriOverlay({ root: repo('0.2.0-rc.1', { notices: true, license: true }), release: true }), {
+    build: { beforeBuildCommand: '' },
+    bundle: {
+      resources: {
+        [`../${NOTICES}`]: NOTICES,
+        '../COPYRIGHT': 'COPYRIGHT',
+        '../LICENSE': 'LICENSE',
+        '../LICENSE-GPL-3.0': 'LICENSE-GPL-3.0',
+      },
+      windows: { wix: { version: '0.2.0.1' } },
+    },
+  });
+});
+
+test('every file in desktop/icons is one that bundle.icon lists, and the other way round', () => {
+  const config = JSON.parse(readFileSync(new URL('../desktop/tauri.conf.json', import.meta.url), 'utf8'));
+  const icons = readdirSync(new URL('../desktop/icons/', import.meta.url)).map((f) => `icons/${f}`).sort();
+  assert.deepEqual(icons, [...config.bundle.icon].sort());
+});
+
+test('the desktop config carries the license metadata, so a release cannot lack it', () => {
+  const config = JSON.parse(readFileSync(new URL('../desktop/tauri.conf.json', import.meta.url), 'utf8'));
+  const cargo = readFileSync(new URL('../desktop/Cargo.toml', import.meta.url), 'utf8');
+  assert.equal(config.bundle.license, 'GPL-2.0-or-later');
+  assert.match(cargo, /^license = "GPL-2\.0-or-later"$/m);
+  // The license page of the installers (WiX converts the text to RTF): the
+  // notice with the additional permission, which names both GPL texts.
+  assert.equal(config.bundle.licenseFile, '../COPYRIGHT');
+  const notice = readFileSync(new URL('../COPYRIGHT', import.meta.url), 'utf8');
+  assert.match(notice, /either version 2 of the License, or \(at your option\)\s+any later version/);
+  assert.match(notice, /Additional permission under GNU GPL version 3 section 7/);
+  assert.match(notice, /WITHOUT\s+ANY WARRANTY/);
+  // ASCII only: WiX's RTF conversion reads it as Windows-1252.
+  assert.match(notice, /^[\x09\x0a\x20-\x7e]*$/);
+  assert.match(config.bundle.copyright, /^Copyright \(C\) \d{4} The CanViewer authors$/);
+  assert.equal(config.bundle.publisher, 'The CanViewer authors');
+  assert.ok(config.bundle.longDescription.length > config.bundle.shortDescription.length);
+  // The .deb carries the notice where Debian keeps it.
+  assert.deepEqual(config.bundle.linux.deb.files, { '/usr/share/doc/can-viewer/copyright': '../COPYRIGHT' });
+  // Both GPL texts as published by the FSF.
+  assert.match(readFileSync(new URL('../LICENSE', import.meta.url), 'utf8'), /^\s+GNU GENERAL PUBLIC LICENSE\n\s+Version 2, June 1991\n/);
+  assert.match(readFileSync(new URL('../LICENSE-GPL-3.0', import.meta.url), 'utf8'), /^\s+GNU GENERAL PUBLIC LICENSE\n\s+Version 3, 29 June 2007\n/);
+});
+
+test('collect copies each system\'s packages under their release names, with demo.dbc and SHA256SUMS', () => {
+  for (const system of ['windows', 'macos', 'linux']) {
+    const root = repo('0.2.0-rc.1');
+    const out = tmp('out');
+    const entries = collect({ root, system, bundleDir: bundle(system, '0.2.0-rc.1'), out });
+    const names = PACKAGES[system].map((p) => p.name('0.2.0-rc.1'));
+    assert.deepEqual(entries.map((e) => e.name), [...names, 'demo.dbc']);
+    assert.deepEqual(readdirSync(out).sort(), [...names, 'demo.dbc', SUMS].sort());
+    const sums = parseSums(readFileSync(join(out, SUMS), 'utf8'));
+    for (const e of entries) assert.equal(sums.get(e.name), sha256(join(out, e.name)));
+  }
+});
+
+test('collect fails when a package is missing or ambiguous', () => {
+  const root = repo('0.2.0');
+  const dir = bundle('linux', '0.2.0');
+  writeFileSync(join(dir, 'deb/CanViewer_0.1.0_amd64.deb'), 'old');
+  assert.throws(() => collect({ root, system: 'linux', bundleDir: dir, out: tmp('out') }), /expected one file .* found CanViewer_0\.1\.0_amd64\.deb, CanViewer_0\.2\.0_amd64\.deb$/);
+  assert.throws(() => collect({ root, system: 'windows', bundleDir: tmp('empty'), out: tmp('out') }), /found none/);
+  assert.throws(() => collect({ root, system: 'beos', bundleDir: dir, out: tmp('out') }), /unknown system/);
+});
+
+/** The three parts as the build jobs upload them. */
+function parts(version, root) {
+  const dir = tmp('parts');
+  for (const system of ['windows', 'macos', 'linux']) {
+    collect({ root, system, bundleDir: bundle(system, version), out: join(dir, `packages-${system}`) });
+  }
+  return dir;
+}
+
+test('finish joins the parts into exactly the release, with one SHA256SUMS that sha256sum accepts', () => {
+  const root = repo('0.2.0', { notices: true, license: true });
+  const out = tmp('release');
+  const assets = finish({ root, parts: parts('0.2.0', root), out, release: true });
+  assert.deepEqual(readdirSync(out).sort(), releaseAssets('0.2.0').sort());
+  assert.equal(assets.length, releaseAssets('0.2.0').length - 1);
+  // The runbook's own check, on Linux: sha256sum --check.
+  const check = execFileSync('sha256sum', ['--check', '--strict', SUMS], { cwd: out, encoding: 'utf8' });
+  assert.equal(check.trim().split('\n').length, assets.length);
+  assert.ok(check.trim().split('\n').every((l) => l.endsWith(': OK')), check);
+});
+
+test('finish refuses a changed file, a file outside its SHA256SUMS, and an incomplete release', () => {
+  const root = repo('0.2.0', { notices: true, license: true });
+  let dir = parts('0.2.0', root);
+  writeFileSync(join(dir, 'packages-linux/CanViewer_0.2.0_amd64.deb'), 'tampered');
+  assert.throws(() => finish({ root, parts: dir, out: tmp('r') }), /packages-linux\/CanViewer_0\.2\.0_amd64\.deb: SHA-256 .* says/);
+
+  dir = parts('0.2.0', root);
+  writeFileSync(join(dir, 'packages-macos/extra.txt'), 'x');
+  assert.throws(() => finish({ root, parts: dir, out: tmp('r') }), /packages-macos\/extra\.txt is not in its SHA256SUMS/);
+
+  dir = parts('0.2.0', root);
+  writeFileSync(join(dir, 'packages-macos/demo.dbc'), 'different');
+  const sums = parseSums(readFileSync(join(dir, 'packages-macos', SUMS), 'utf8'));
+  sums.set('demo.dbc', sha256(join(dir, 'packages-macos/demo.dbc')));
+  writeFileSync(join(dir, 'packages-macos', SUMS), formatSums([...sums].map(([name, h]) => ({ name, sha256: h }))));
+  assert.throws(() => finish({ root, parts: dir, out: tmp('r') }), /demo\.dbc differs between/);
+
+  dir = tmp('parts');
+  collect({ root, system: 'linux', bundleDir: bundle('linux', '0.2.0'), out: join(dir, 'packages-linux') });
+  assert.throws(() => finish({ root, parts: dir, out: tmp('r'), release: true }), /missing: CanViewer_0\.2\.0_x64-setup\.exe/);
+  // A dry run may be partial.
+  assert.equal(finish({ root, parts: dir, out: tmp('r') }).length, 3);
+
+  const bare = repo('0.2.0');
+  assert.throws(() => finish({ root: bare, parts: parts('0.2.0', bare), out: tmp('r'), release: true }), /must carry THIRD_PARTY_NOTICES\.md/);
+});
+
+test('the notes name each package with its size, the guide and the run', () => {
+  const root = repo('0.2.0-rc.1', { notices: true, license: true });
+  const out = tmp('release');
+  const assets = finish({ root, parts: parts('0.2.0-rc.1', root), out, release: true });
+  const notes = releaseNotes({
+    version: '0.2.0-rc.1',
+    assets,
+    repoUrl: 'https://github.com/o/r',
+    runUrl: 'https://github.com/o/r/actions/runs/1',
+  });
+  assert.match(notes, /^CanViewer 0\.2\.0-rc\.1, a release candidate for testing\.\n/);
+  assert.match(notes, /\[the install guide\]\(https:\/\/github\.com\/o\/r\/blob\/v0\.2\.0-rc\.1\/docs\/guide\/install\.md\)/);
+  for (const p of Object.values(PACKAGES).flat()) {
+    const a = assets.find((x) => x.name === p.name('0.2.0-rc.1'));
+    assert.ok(notes.includes(`| \`${a.name}\` | ${formatSize(a.size)} |`), a.name);
+  }
+  assert.match(notes, /\[this workflow run\]\(https:\/\/github\.com\/o\/r\/actions\/runs\/1\)/);
+  assert.equal(formatSize(11050584), '11,050,584 bytes (10.5 MiB)');
+});
+
+test('the runbook names the files the release has', () => {
+  const version = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version;
+  const runbook = readFileSync(new URL(`../${RUNBOOK}`, import.meta.url), 'utf8');
+  const code = [...parseRunbook(runbook).values()].map((b) => b.code).join('\n');
+  for (const name of releaseAssets(version).filter((n) => n.endsWith('.exe') || n.endsWith('.msi') || n.endsWith('.dmg') || n.endsWith('.deb'))) {
+    assert.ok(code.includes(name), `the runbook's commands do not use ${name}`);
+  }
+  const named = new Set([...runbook.matchAll(/CanViewer_[0-9][^\s`'"\\)]*\.(?:exe|msi|dmg|deb)/g)].map((m) => m[0]));
+  assert.deepEqual([...named].filter((n) => !releaseAssets(version).includes(n)), [], 'the runbook names files the release does not have');
+});
+
+test('the DMG carries no license agreement: macOS drops licenseFile', () => {
+  // Tauri passes bundle.licenseFile to the DMG builder as --eula, which makes
+  // "hdiutil attach" (and Finder) ask the user to agree first. The GPL is not
+  // an agreement a user accepts, and the runbook's scripted install cannot
+  // answer the prompt. Tauri merges tauri.macos.conf.json over the config on
+  // macOS only, so the Windows installers keep their license page.
+  const macos = JSON.parse(readFileSync(new URL('../desktop/tauri.macos.conf.json', import.meta.url), 'utf8'));
+  assert.deepEqual(macos.bundle, { licenseFile: null });
+});

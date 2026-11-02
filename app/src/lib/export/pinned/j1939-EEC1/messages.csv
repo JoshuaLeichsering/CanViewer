@@ -1,0 +1,2 @@
+id,idHex,isExtended,name,dlc,canFd,j1939Pgn,sender,transmitters,signalCount,comment,attr.VFrameFormat
+15729664,0x00F00400,true,EEC1,8,false,61444,,,8,,J1939PG

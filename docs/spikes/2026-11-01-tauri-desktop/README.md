@@ -22,13 +22,13 @@ all went to the app's own origin ([below](#windows-request-recording)).
 
 | Piece | Where |
 |---|---|
-| Tauri 2 shell: one window showing the production build (`dist/`, embedded in the binary); no plugins, no permissions; HTML5 drag and drop kept working in WebView2 (`dragDropEnabled: false`) | `src-tauri/` |
-| Strict Content Security Policy: `default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self' ipc: http://ipc.localhost; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'` | `src-tauri/tauri.conf.json` |
-| Self-test, active only when `CANVIEWER_SMOKE_FILES` is set (see below) | `src-tauri/src/smoke.rs`, `smoke.js` |
-| No service worker in the desktop app (the build is served from inside the binary) | `src/main.tsx` |
-| CI: build, install, self-test and uninstall on `windows-latest`, `macos-latest` and `ubuntu-latest` | `.github/workflows/desktop-spike.yml` |
-| Request recording on Windows over CDP | `smoke.mjs`, `cdp.conf.json` |
-| Placeholder icon from the bit-layout motif | `src-tauri/app-icon.svg`, `src-tauri/icons/` |
+| Tauri 2 shell: one window showing the production build (`dist/`, embedded in the binary); no plugins, no permissions; HTML5 drag and drop kept working in WebView2 (`dragDropEnabled: false`) | `desktop/` |
+| Strict Content Security Policy: `default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self' ipc: http://ipc.localhost; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'` | `desktop/tauri.conf.json` |
+| Self-test, active only when `CANVIEWER_SMOKE_FILES` is set (see below) | `desktop/src/smoke.rs`, `smoke.js` |
+| No service worker in the desktop app (the build is served from inside the binary) | `app/src/main.tsx` |
+| CI: build, install, self-test and uninstall on `windows-latest`, `macos-latest` and `ubuntu-latest` | `.github/workflows/desktop.yml` |
+| Request recording on Windows over CDP | `e2e/desktop-cdp-smoke.mjs`, `e2e/desktop-cdp.conf.json` |
+| Placeholder icon from the bit-layout motif | `desktop/app-icon.svg`, `desktop/icons/` |
 
 ### The self-test
 
@@ -125,7 +125,7 @@ wry always passes its own browser arguments when it creates the WebView2 environ
 (wry 0.57.1, `src/webview2/mod.rs`, `options.set_additional_browser_arguments(…)`, by
 default `--disable-features=msWebOOUI,msPdfOOUI,msSmartScreenProtection`), and the
 variable did not take effect alongside them. CI therefore builds a second binary, used
-only for this check, whose window config adds the flag (`cdp.conf.json`, built with
+only for this check, whose window config adds the flag (`e2e/desktop-cdp.conf.json`, built with
 `--no-bundle`), and drives that one.
 
 In run [41314152587](https://github.com/JoshuaLeichsering/CanViewer/actions/runs/41314152587)
@@ -172,6 +172,8 @@ artifact (`cdp-windows/report.json`).
   - What keeps the worker local is the app's own code, which the network checks verify.
     Creating the worker from a `blob:` URL would make it inherit the page's policy, at
     the price of `worker-src blob:`.
+  - Since resolved: the desktop app now starts the worker that way
+    ([decision 0009](../../decisions/0009-desktop-shell.md)).
 - **The missing favicon shows up here too**: the page requests
   `http://tauri.localhost/favicon.ico`. That is W6 in the goal.
 - **Size.** LTO and single-unit codegen were turned off to speed up CI. With them
@@ -187,8 +189,11 @@ artifact (`cdp-windows/report.json`).
 
 ## Run it again
 
-The workflow runs on pushes to the spike branch and on demand (`workflow_dispatch`). To
-try the self-test locally with any installed build:
+The workflow ([desktop.yml](../../../.github/workflows/desktop.yml)) runs on pull requests
+that change the desktop shell, its checks, its runbook or the workflow itself, on `v*` tags
+through the release workflow ([release.yml](../../../.github/workflows/release.yml)), and
+on demand (`workflow_dispatch`). It now follows the install runbook,
+[docs/guide/install.md](../../guide/install.md). To try the self-test locally with any installed build:
 
 ```sh
 CANVIEWER_SMOKE_FILES="$PWD/examples/demo.dbc:$PWD/third_party/canmatrix/tests/files/arxml/test.arxml" \

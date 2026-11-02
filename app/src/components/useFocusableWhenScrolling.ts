@@ -1,0 +1,32 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+import { useCallback, useRef } from 'react';
+
+/**
+ * A ref for a container that may scroll sideways, such as a wide table on a
+ * narrow screen. While its content overflows, the container takes the keyboard
+ * focus, so that it can be scrolled with the arrow keys; otherwise Tab skips
+ * it. Tables whose rows are focusable do not need this.
+ *
+ * A tabindex the container is rendered with stays while the content fits:
+ * the overview's problem list has tabindex -1, so that the import note's link
+ * can move the focus to it (ImportSource.tsx).
+ */
+export function useFocusableWhenScrolling<T extends HTMLElement>() {
+  const observer = useRef<ResizeObserver | null>(null);
+  return useCallback((el: T | null) => {
+    observer.current?.disconnect();
+    observer.current = null;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const own = el.getAttribute('tabindex');
+    const update = () => {
+      if (el.scrollWidth > el.clientWidth) el.tabIndex = 0;
+      else if (own === null) el.removeAttribute('tabindex');
+      else el.setAttribute('tabindex', own);
+    };
+    observer.current = new ResizeObserver(update);
+    // The container changes size with the window, its table with the data.
+    observer.current.observe(el);
+    for (const child of el.children) observer.current.observe(child);
+    update();
+  }, []);
+}

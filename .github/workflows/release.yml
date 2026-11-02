@@ -1,0 +1,132 @@
+# Releases are built here, and only here. A tag v<version> builds the desktop
+# packages on Windows, macOS and Linux, tests each one by following the install
+# runbook (docs/guide/install.md) on its system, and publishes them as a GitHub
+# release with SHA256SUMS, THIRD_PARTY_NOTICES.md, demo.dbc, and notes that give
+# each package's size. The maintainer's steps are in that runbook's last
+# section.
+#
+#   v0.2.0-rc.1   a pre-release, published at once
+#   v0.2.0        a draft, which the maintainer checks and then publishes
+#
+# The tag must be v followed by package.json's version, which must agree with
+# every other place that holds it (scripts/release-version.mjs); otherwise
+# nothing is built. A release for the tag must not exist yet: delete a failed
+# draft or pre-release first (gh release delete <tag> --yes keeps the tag).
+#
+# Run on demand (workflow_dispatch), it is a dry run on the chosen branch: the
+# same build and tests, with the release it would publish uploaded as the
+# `release` artifact instead.
+#
+# Unsigned by decision; macOS keeps Tauri's ad-hoc signature. Where signing
+# goes later is marked in desktop.yml; its secrets would reach it through
+# `secrets: inherit` on the packages job below.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  version:
+    name: tag matches the version
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      version: ${{ steps.check.outputs.version }}
+      prerelease: ${{ steps.check.outputs.prerelease }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: The tag is v<package.json's version>, and every place agrees
+        id: check
+        env:
+          TAG: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
+        run: node scripts/release-version.mjs check $TAG | tee -a "$GITHUB_OUTPUT"
+
+  packages:
+    name: build and test the packages
+    needs: version
+    uses: ./.github/workflows/desktop.yml
+    with:
+      release: true
+
+  publish:
+    name: publish the release
+    needs: [version, packages]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      TAG: ${{ github.ref_name }}
+      VERSION: ${{ needs.version.outputs.version }}
+      PRERELEASE: ${{ needs.version.outputs.prerelease }}
+      PUBLISH: ${{ github.ref_type == 'tag' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: packages-*
+          path: parts
+
+      - name: Join the packages into the release, with SHA256SUMS and the notes
+        run: |
+          node scripts/desktop-release.mjs finish --release --parts parts --out release --notes notes.md \
+            --tag "v$VERSION" --repo-url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY" \
+            --run-url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          cat notes.md >> "$GITHUB_STEP_SUMMARY"
+          ls -l release
+
+      - name: 'Runbook: check the release (Linux)'
+        run: |
+          rm -rf ~/Downloads && mkdir -p ~/Downloads && cp release/* ~/Downloads/
+          node scripts/runbook.mjs run linux-verify --cwd ~/Downloads
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release
+          path: |
+            release/
+            notes.md
+          if-no-files-found: error
+
+      - name: Create the GitHub release
+        if: env.PUBLISH == 'true'
+        run: |
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            echo "::error::A release for $TAG exists already. Delete it (gh release delete $TAG --yes keeps the tag) and run this again."
+            exit 1
+          fi
+          kind=--draft
+          if [ "$PRERELEASE" = true ]; then kind=--prerelease; fi
+          gh release create "$TAG" release/* --verify-tag "$kind" --title "CanViewer $VERSION" --notes-file notes.md
+
+      - name: The release's assets match SHA256SUMS
+        if: env.PUBLISH == 'true'
+        run: |
+          mkdir -p "$RUNNER_TEMP/published"
+          gh release download "$TAG" --dir "$RUNNER_TEMP/published"
+          cd "$RUNNER_TEMP/published"
+          ls -l
+          diff <(ls | sort) <(ls "$GITHUB_WORKSPACE/release" | sort)
+          sha256sum --check --strict SHA256SUMS
+          gh release view "$TAG" --json url,isDraft,isPrerelease,assets --jq '{url, isDraft, isPrerelease, assets: [.assets[] | {name, size}]}'

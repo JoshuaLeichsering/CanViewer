@@ -1,0 +1,35 @@
+# cargo-deny configuration for the desktop shell. CI runs
+#   cargo deny --manifest-path desktop/Cargo.toml check licenses
+# so that every crate in Cargo.lock, for every target, carries a license that
+# CanViewer (GPL-2.0-or-later) may ship. The list follows
+# scripts/license-policy.mjs, which applies the same rules to the web app.
+#
+# Apache-2.0 is compatible with the GPL version 3 only: where an Apache-2.0
+# crate is compiled in (tao, for one), the desktop binary is distributed under
+# the terms of the GPL version 3, which "or any later version" allows.
+# MPL-2.0 is file-level copyleft and allows combination with the GPL (its
+# section 3.3).
+#
+# Before adding a license here, check that it is compatible with the GPL and
+# add it to ALLOWED in scripts/license-policy.mjs as well.
+
+[graph]
+# No targets listed: every target is checked, so the Windows and macOS crates are too.
+all-features = false
+no-default-features = false
+
+[licenses]
+allow = [
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-3-Clause",
+    "MIT",
+    "MPL-2.0",
+    "Unicode-3.0",
+    "Zlib",
+]
+confidence-threshold = 0.9
+
+[licenses.private]
+# The desktop shell itself (publish = false) is CanViewer's own code.
+ignore = true

@@ -1,0 +1,557 @@
+# The Tauri desktop app (desktop/) on Windows, macOS and Linux: build each
+# package, then follow the install runbook (docs/guide/install.md) with it:
+# check its checksum, install it, run the app's self-test, uninstall it, delete
+# the app's data, and check that nothing is left. The runbook's own command
+# blocks run here, exactly as the runbook shows them
+# (node scripts/runbook.mjs run <id>), in the shell its readers use: Windows
+# PowerShell 5.1, zsh on macOS, bash on Linux. Around them, CI checks what the
+# runbook promises, and runs the self-test once more with an ARXML file, which
+# goes through the Pyodide import worker.
+#
+# The self-test (desktop/src/smoke.rs and smoke.js) also checks that a worker
+# started from a blob: URL is held to the page's Content Security Policy, which
+# is how the app starts its import worker (docs/decisions/0009-desktop-shell.md).
+# CI's own self-test on each system, with demo.dbc and canmatrix's test.arxml,
+# also saves demo.dbc's message list through the export menu
+# (CANVIEWER_SMOKE_EXPORT=1, which the runbook's self-test leaves out): the
+# file must land in the Downloads folder and equal the browser's export, the
+# pinned app/src/lib/export/pinned/demo.messages.csv
+# (e2e/desktop-download-check.mjs).
+# Linux also runs the shell's unit tests (cargo test).
+# Windows also drives a CI-only variant with WebView2's DevTools port open and
+# records every request (e2e/desktop-cdp-smoke.mjs).
+#
+# The release workflow (release.yml) calls this one with release: true, which
+# builds with the release profile of desktop/Cargo.toml (LTO, one codegen
+# unit) and requires the license files that every package must carry. Other
+# runs build without LTO, which is faster; the packages of a release are
+# tested here like any other.
+#
+# Windows and macOS minutes are expensive, so this runs only for pull requests
+# that change the desktop shell, its checks, its runbook, what every package
+# bundles (the license files and the notices), the release workflow or this
+# one, when release.yml calls it (tags), and on demand.
+name: Desktop (Tauri)
+
+on:
+  pull_request:
+    paths:
+      - desktop/**
+      - e2e/desktop-*
+      - app/src/lib/desktop.ts
+      - app/src/lib/canmatrix/start-worker.ts
+      - app/src/lib/canmatrix/client.ts
+      - scripts/desktop-release.mjs
+      - scripts/release-version.mjs
+      - scripts/runbook.mjs
+      - scripts/license-policy.mjs
+      - docs/guide/install.md
+      - COPYRIGHT
+      - LICENSE
+      - LICENSE-GPL-3.0
+      - THIRD_PARTY_NOTICES.md
+      - .github/workflows/desktop.yml
+      - .github/workflows/release.yml
+  workflow_dispatch:
+    inputs:
+      release:
+        description: Build as for a release (LTO; the license files must exist)
+        type: boolean
+        default: false
+  workflow_call:
+    inputs:
+      release:
+        description: Build as for a release (LTO; the license files must exist)
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: desktop-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  SMOKE_DBC: examples/demo.dbc
+  SMOKE_ARXML: third_party/canmatrix/tests/files/arxml/test.arxml
+  RELEASE_FLAG: ${{ inputs.release && '--release' || '' }}
+  # A release uses desktop/Cargo.toml's release profile as it stands; other
+  # builds turn LTO off and use Cargo's default codegen units, for speed.
+  CARGO_PROFILE_RELEASE_LTO: ${{ inputs.release && 'true' || 'false' }}
+  CARGO_PROFILE_RELEASE_CODEGEN_UNITS: ${{ inputs.release && '1' || '16' }}
+  APP_ID: io.github.joshualeichsering.canviewer
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+      - name: Corpus submodule for the ARXML self-test file
+        run: git submodule update --init --depth 1 third_party/canmatrix
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - uses: actions/cache@v4
+        with:
+          path: vendor/pyodide
+          key: pyodide-wheels-${{ hashFiles('app/src/lib/canmatrix/wheels.lock.json') }}
+      - run: npm run fetch-wheels
+      - name: Build the web app
+        run: npm run build
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: desktop
+          cache-on-failure: true
+
+      - name: Tauri config for this build
+        run: node scripts/desktop-release.mjs config --out "$RUNNER_TEMP/tauri.ci.json" $RELEASE_FLAG
+
+      # Unsigned by decision. To sign later, give the overlay a
+      # bundle.windows.signCommand (or certificateThumbprint) that uses a
+      # certificate from this repository's secrets, passed to this workflow
+      # with `secrets: inherit` in release.yml.
+      - name: Build the installers (setup.exe and MSI)
+        run: npx tauri build --ci --bundles msi,nsis --config "$RUNNER_TEMP/tauri.ci.json"
+
+      - name: Collect the packages under their release names
+        run: node scripts/desktop-release.mjs collect --system windows --out release | tee -a "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: packages-windows
+          path: release/
+          if-no-files-found: error
+
+      - name: WebView2 runtime on the runner
+        shell: pwsh
+        run: |
+          $key = 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}'
+          if (Test-Path $key) { "WebView2 runtime $((Get-ItemProperty $key).pv)" } else { 'WebView2 runtime: not registered' }
+          [System.Environment]::OSVersion.VersionString
+          $PSVersionTable.PSVersion.ToString()
+          powershell.exe -NoProfile -Command '$PSVersionTable.PSVersion.ToString()'
+
+      - name: The release, as if downloaded
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force "$HOME\Downloads" | Out-Null
+          Copy-Item release\* "$HOME\Downloads\"
+          Get-ChildItem "$HOME\Downloads" | Format-Table Name, Length
+
+      - name: 'Runbook: check the download'
+        shell: pwsh
+        run: node scripts/runbook.mjs run windows-verify --cwd "$HOME\Downloads"
+
+      - name: 'Runbook: install for the user (setup.exe)'
+        shell: pwsh
+        run: node scripts/runbook.mjs run windows-nsis-install --cwd "$HOME\Downloads"
+      - name: Installed where the runbook says, with the license files
+        shell: pwsh
+        run: |
+          $dir = "$env:LOCALAPPDATA\CanViewer"
+          Get-ChildItem $dir | Format-Table Name, Length
+          if (-not (Test-Path "$dir\canviewer.exe")) { throw "canviewer.exe is not in $dir" }
+          foreach ($f in (node scripts/desktop-release.mjs resources)) {
+            if ((Test-Path $f) -and -not (Test-Path "$dir\$f")) { throw "$f is not installed with the app" }
+          }
+      - name: 'Runbook: self-test (setup.exe installation)'
+        shell: pwsh
+        run: node scripts/runbook.mjs run windows-self-test --cwd "$HOME\Downloads"
+      - name: 'Runbook: uninstall (setup.exe installation)'
+        shell: pwsh
+        run: |
+          node scripts/runbook.mjs run windows-nsis-uninstall --cwd "$HOME\Downloads"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          # The uninstaller copies itself away and finishes in the background.
+          $exe = "$env:LOCALAPPDATA\CanViewer\canviewer.exe"
+          for ($i = 0; $i -lt 60 -and (Test-Path $exe); $i++) { Start-Sleep 1 }
+          if (Test-Path $exe) { throw "$exe is still there after 60 s" }
+          "removed: $exe"
+      # The setup.exe uninstaller leaves its install folder recorded under
+      # HKCU\Software\<publisher>\<product>, and the MSI reads that key to choose
+      # its folder. Removing the leftovers, as the runbook says, lets the MSI
+      # install where it should.
+      - name: 'Runbook: remove the leftovers (setup.exe installation)'
+        shell: pwsh
+        run: |
+          $key = 'HKCU:\Software\The CanViewer authors\CanViewer'
+          "before: $key exists: $(Test-Path $key)"
+          node scripts/runbook.mjs run windows-remove-data --cwd "$HOME\Downloads"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          if (Test-Path $key) { throw "$key is still there" }
+          "removed: $key"
+
+      - name: 'Runbook: install for all users (MSI)'
+        shell: pwsh
+        run: node scripts/runbook.mjs run windows-msi-install --cwd "$HOME\Downloads"
+      - name: Installed where the runbook says, with the license files
+        shell: pwsh
+        run: |
+          $dir = "$env:ProgramFiles\CanViewer"
+          Get-ChildItem $dir | Format-Table Name, Length
+          if (-not (Test-Path "$dir\canviewer.exe")) { throw "canviewer.exe is not in $dir" }
+          foreach ($f in (node scripts/desktop-release.mjs resources)) {
+            if ((Test-Path $f) -and -not (Test-Path "$dir\$f")) { throw "$f is not installed with the app" }
+          }
+      - name: 'Runbook: self-test (MSI installation)'
+        shell: pwsh
+        run: node scripts/runbook.mjs run windows-self-test --cwd "$HOME\Downloads"
+      - name: Self-test with demo.dbc and an ARXML file (MSI installation)
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force smoke | Out-Null
+          $env:CANVIEWER_SMOKE_FILES = "$PWD\$env:SMOKE_DBC;$PWD\$env:SMOKE_ARXML"
+          $env:CANVIEWER_SMOKE_OUT = "$PWD\smoke\self-test-windows.json"
+          $env:CANVIEWER_SMOKE_EXPORT = '1'
+          # WebView2 saves downloads in the user's Downloads folder; start
+          # without an earlier export there, so that the name is not numbered.
+          $downloads = Join-Path $env:USERPROFILE 'Downloads'
+          Remove-Item "$downloads\demo*.csv" -ErrorAction SilentlyContinue
+          $p = Start-Process "$env:ProgramFiles\CanViewer\canviewer.exe" -Wait -PassThru
+          "self-test exit code: $($p.ExitCode)"
+          if (Test-Path $env:CANVIEWER_SMOKE_OUT) { Get-Content $env:CANVIEWER_SMOKE_OUT }
+          Copy-Item "$downloads\demo*.csv" smoke -ErrorAction SilentlyContinue
+          node e2e/desktop-download-check.mjs "$downloads\demo.messages.csv"
+          $check = $LASTEXITCODE
+          if ($p.ExitCode -ne 0) { exit $p.ExitCode }
+          exit $check
+      - name: 'Runbook: uninstall (MSI installation)'
+        shell: pwsh
+        run: |
+          Get-Process canviewer -ErrorAction SilentlyContinue | Stop-Process -Force
+          node scripts/runbook.mjs run windows-msi-uninstall --cwd "$HOME\Downloads"
+
+      - name: 'Runbook: delete the app data'
+        shell: pwsh
+        run: |
+          foreach ($d in "$env:APPDATA\$env:APP_ID", "$env:LOCALAPPDATA\$env:APP_ID") { "before: $d exists: $(Test-Path $d)" }
+          node scripts/runbook.mjs run windows-remove-data --cwd "$HOME\Downloads"
+      - name: Nothing left behind
+        shell: pwsh
+        run: |
+          $left = @()
+          foreach ($p in "$env:LOCALAPPDATA\CanViewer\canviewer.exe", "$env:ProgramFiles\CanViewer\canviewer.exe",
+                         "$env:APPDATA\$env:APP_ID", "$env:LOCALAPPDATA\$env:APP_ID") {
+            if (Test-Path $p) { $left += $p }
+          }
+          $uninstall = 'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*'
+          Get-ItemProperty "HKLM:\$uninstall", "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*", "HKCU:\$uninstall" -ErrorAction SilentlyContinue |
+            Where-Object { $_.DisplayName -like 'CanViewer*' } |
+            ForEach-Object { $left += "Installed apps: $($_.DisplayName) $($_.DisplayVersion)" }
+          'For information, anything else named like the app:'
+          Get-ChildItem $env:APPDATA, $env:LOCALAPPDATA, $env:ProgramFiles, "$env:ProgramData\Microsoft\Windows\Start Menu\Programs",
+                        "$env:APPDATA\Microsoft\Windows\Start Menu\Programs", ([Environment]::GetFolderPath('Desktop')), "$env:PUBLIC\Desktop" `
+                        -Filter '*canviewer*' -ErrorAction SilentlyContinue | ForEach-Object { "  $($_.FullName)" }
+          if ($left) { $left | ForEach-Object { "LEFT: $_" }; throw 'the uninstall left these behind' }
+          'nothing left behind'
+
+      # WebView2 ignores WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS here because wry
+      # always passes its own browser arguments, so the DevTools port needs a
+      # build that adds it to the window config. That build is for this check
+      # only; it differs from the shipped one in that flag alone.
+      - name: Build a CI-only variant with the DevTools port open
+        run: npx tauri build --ci --no-bundle --config e2e/desktop-cdp.conf.json
+
+      - name: Drive the CI-only variant over CDP and record every request
+        shell: pwsh
+        run: |
+          npm install --no-save --no-package-lock --prefix "$env:RUNNER_TEMP\pw" playwright-core@1.63.0 | Out-Null
+          $env:NODE_PATH = "$env:RUNNER_TEMP\pw\node_modules"
+          $app = Start-Process desktop/target/release/canviewer.exe -PassThru
+          node e2e/desktop-cdp-smoke.mjs --cdp http://127.0.0.1:9222 --out smoke/cdp-windows `
+            --dbc $env:SMOKE_DBC --arxml $env:SMOKE_ARXML
+          $code = $LASTEXITCODE
+          if (-not $app.HasExited) { Stop-Process -Id $app.Id -Force }
+          exit $code
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smoke-windows
+          path: smoke/
+          if-no-files-found: ignore
+
+  macos:
+    runs-on: macos-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+      - name: Corpus submodule for the ARXML self-test file
+        run: git submodule update --init --depth 1 third_party/canmatrix
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - uses: actions/cache@v4
+        with:
+          path: vendor/pyodide
+          key: pyodide-wheels-${{ hashFiles('app/src/lib/canmatrix/wheels.lock.json') }}
+      - run: npm run fetch-wheels
+      - name: Build the web app
+        run: npm run build
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: desktop
+          cache-on-failure: true
+
+      - name: Tauri config for this build
+        run: node scripts/desktop-release.mjs config --out "$RUNNER_TEMP/tauri.ci.json" $RELEASE_FLAG
+
+      # Unsigned by decision: Tauri gives the app an ad-hoc signature
+      # (bundle.macOS.signingIdentity "-" in desktop/tauri.conf.json). To sign
+      # and notarize later, put the Developer ID certificate and Apple account
+      # in this repository's secrets, pass them with `secrets: inherit` in
+      # release.yml, and set Tauri's variables on this step:
+      #   APPLE_CERTIFICATE, APPLE_CERTIFICATE_PASSWORD, APPLE_SIGNING_IDENTITY,
+      #   APPLE_ID, APPLE_PASSWORD, APPLE_TEAM_ID.
+      - name: Build the app bundle and a universal DMG (Apple silicon and Intel, ad-hoc signed)
+        run: npx tauri build --ci --target universal-apple-darwin --bundles app,dmg --config "$RUNNER_TEMP/tauri.ci.json"
+      - name: The binary holds both architectures
+        run: |
+          lipo -archs desktop/target/universal-apple-darwin/release/bundle/macos/CanViewer.app/Contents/MacOS/canviewer | tee "$RUNNER_TEMP/archs"
+          grep -qw arm64 "$RUNNER_TEMP/archs" && grep -qw x86_64 "$RUNNER_TEMP/archs"
+
+      - name: Collect the package under its release name
+        run: node scripts/desktop-release.mjs collect --system macos --out release | tee -a "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: packages-macos
+          path: release/
+          if-no-files-found: error
+
+      - name: The release, as if downloaded
+        run: |
+          sw_vers
+          zsh --version
+          mkdir -p ~/Downloads
+          cp release/* ~/Downloads/
+          ls -l ~/Downloads
+
+      - name: 'Runbook: check the download'
+        run: node scripts/runbook.mjs run macos-verify --cwd ~/Downloads
+      - name: 'Runbook: install'
+        run: node scripts/runbook.mjs run macos-install --cwd ~/Downloads
+      - name: Signature, and the quarantine a download would carry
+        run: |
+          codesign -dv /Applications/CanViewer.app 2>&1 | grep -E 'Identifier|Signature|Format' || true
+          # A browser marks a download with com.apple.quarantine, and the app
+          # copied from it carries the mark; this CI download has none, so set
+          # it the way a browser would.
+          xattr -w com.apple.quarantine "0083;$(printf %x "$(date +%s)");Safari;" /Applications/CanViewer.app
+          xattr -p com.apple.quarantine /Applications/CanViewer.app
+          spctl --assess --type execute -vv /Applications/CanViewer.app 2>&1 || echo "(Gatekeeper rejects it: expected for an unsigned app)"
+      - name: 'Runbook: allow the first start'
+        run: node scripts/runbook.mjs run macos-first-launch --cwd ~/Downloads
+      - name: No quarantine left, and the license files are in the app
+        run: |
+          if xattr -p com.apple.quarantine /Applications/CanViewer.app 2>/dev/null; then echo "still quarantined"; exit 1; fi
+          echo "no quarantine attribute"
+          ls /Applications/CanViewer.app/Contents/Resources/
+          for f in $(node scripts/desktop-release.mjs resources); do
+            if [ -e "$f" ] && [ ! -e "/Applications/CanViewer.app/Contents/Resources/$f" ]; then echo "$f is not in the app"; exit 1; fi
+          done
+      - name: 'Runbook: self-test'
+        run: node scripts/runbook.mjs run macos-self-test --cwd ~/Downloads
+      - name: Self-test with demo.dbc and an ARXML file (Apple silicon)
+        run: |
+          mkdir -p smoke
+          export CANVIEWER_SMOKE_FILES="$PWD/$SMOKE_DBC:$PWD/$SMOKE_ARXML"
+          export CANVIEWER_SMOKE_OUT="$PWD/smoke/self-test-macos-arm64.json"
+          export CANVIEWER_SMOKE_EXPORT=1
+          # The app saves downloads in $HOME/Downloads: here an empty one this
+          # job makes, outside the folders that macOS guards with a prompt.
+          export HOME="$RUNNER_TEMP/home"
+          downloads="$HOME/Downloads"
+          mkdir -p "$downloads"
+          set +e
+          /Applications/CanViewer.app/Contents/MacOS/canviewer > smoke/stdout-macos-arm64.txt 2> smoke/stderr-macos-arm64.txt
+          code=$?
+          set -e
+          echo "self-test exit code: $code"
+          cat "$CANVIEWER_SMOKE_OUT" 2>/dev/null || cat smoke/stderr-macos-arm64.txt
+          cp "$downloads"/demo*.csv smoke/ 2>/dev/null || true
+          node e2e/desktop-download-check.mjs "$downloads/demo.messages.csv" || { test "$code" -ne 0 || code=1; }
+          exit $code
+      - name: Self-test with demo.dbc and an ARXML file (Intel, under Rosetta 2)
+        run: |
+          if ! arch -x86_64 /usr/bin/true 2>/dev/null; then
+            sudo softwareupdate --install-rosetta --agree-to-license || true
+          fi
+          if ! arch -x86_64 /usr/bin/true 2>/dev/null; then
+            echo "::warning::Rosetta 2 is not available on this runner, so the Intel half of the universal binary did not run"
+            exit 0
+          fi
+          export CANVIEWER_SMOKE_FILES="$PWD/$SMOKE_DBC:$PWD/$SMOKE_ARXML"
+          export CANVIEWER_SMOKE_OUT="$PWD/smoke/self-test-macos-x86_64.json"
+          set +e
+          arch -x86_64 /Applications/CanViewer.app/Contents/MacOS/canviewer > smoke/stdout-macos-x86_64.txt 2> smoke/stderr-macos-x86_64.txt
+          code=$?
+          set -e
+          echo "self-test exit code: $code"
+          cat "$CANVIEWER_SMOKE_OUT" 2>/dev/null || cat smoke/stderr-macos-x86_64.txt
+          exit $code
+
+      - name: 'Runbook: uninstall'
+        run: node scripts/runbook.mjs run macos-uninstall --cwd ~/Downloads
+      - name: 'Runbook: delete the app data'
+        run: |
+          echo "before:"; ls -d ~/Library/*/"$APP_ID"* 2>/dev/null || echo "  (no data folder of the app)"
+          node scripts/runbook.mjs run macos-remove-data --cwd ~/Downloads
+      - name: Nothing left behind
+        run: |
+          shopt -s nullglob nocaseglob
+          left=(~/Library/*/*canviewer*)
+          if [ -e /Applications/CanViewer.app ]; then left+=(/Applications/CanViewer.app); fi
+          if [ ${#left[@]} -gt 0 ]; then printf 'LEFT: %s\n' "${left[@]}"; exit 1; fi
+          echo "nothing left behind"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smoke-macos
+          path: smoke/
+          if-no-files-found: ignore
+
+  linux:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+      - name: Corpus submodule for the ARXML self-test file
+        run: git submodule update --init --depth 1 third_party/canmatrix
+      - name: System libraries for Tauri, and Xvfb for the self-test
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev libxdo-dev libssl-dev patchelf file xvfb
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - uses: actions/cache@v4
+        with:
+          path: vendor/pyodide
+          key: pyodide-wheels-${{ hashFiles('app/src/lib/canmatrix/wheels.lock.json') }}
+      - run: npm run fetch-wheels
+      - name: Build the web app
+        run: npm run build
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: desktop
+          cache-on-failure: true
+
+      # The shell's own unit tests (desktop/src/smoke.rs). Linux only: it has
+      # the system libraries already, and its minutes are the cheapest.
+      - name: Unit tests of the desktop shell
+        run: cargo test --manifest-path desktop/Cargo.toml --locked
+
+      - name: Tauri config for this build
+        run: node scripts/desktop-release.mjs config --out "$RUNNER_TEMP/tauri.ci.json" $RELEASE_FLAG
+      - name: Build the package (deb; no AppImage, see the license audit)
+        run: npx tauri build --ci --bundles deb --config "$RUNNER_TEMP/tauri.ci.json"
+
+      - name: Collect the package under its release name
+        run: node scripts/desktop-release.mjs collect --system linux --out release | tee -a "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: packages-linux
+          path: release/
+          if-no-files-found: error
+
+      - name: The release, as if downloaded; apt answers yes by itself
+        run: |
+          mkdir -p ~/Downloads
+          cp release/* ~/Downloads/
+          ls -l ~/Downloads
+          # The runbook's apt commands ask before they change anything. A
+          # reader answers; here apt is told to assume yes.
+          echo 'APT::Get::Assume-Yes "true";' | sudo tee /etc/apt/apt.conf.d/90-runbook-assume-yes
+
+      - name: 'Runbook: check the download'
+        run: node scripts/runbook.mjs run linux-verify --cwd ~/Downloads
+      - name: 'Runbook: install'
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: node scripts/runbook.mjs run linux-install --cwd ~/Downloads
+      - name: Installed as the runbook says, with the license files
+        run: |
+          dpkg -s can-viewer | grep -E '^(Package|Status|Version|Depends):'
+          dpkg -L can-viewer
+          command -v canviewer
+          dpkg -s libwebkit2gtk-4.1-0 | grep -E '^Version'
+          . /etc/os-release
+          echo "built and installed on $PRETTY_NAME; $(ldd --version | head -1)"
+          echo "the binary needs glibc $(objdump -T /usr/bin/canviewer | grep -o 'GLIBC_[0-9.]*' | sort -uV | tail -1)"
+          for f in $(node scripts/desktop-release.mjs resources); do
+            if [ -e "$f" ] && ! dpkg -L can-viewer | grep -q "/$f\$"; then echo "$f is not in the package"; exit 1; fi
+          done
+          # Debian's place for the copyright notice (bundle.linux.deb.files).
+          dpkg -L can-viewer | grep -qx /usr/share/doc/can-viewer/copyright || { echo "no /usr/share/doc/can-viewer/copyright"; exit 1; }
+          cmp /usr/share/doc/can-viewer/copyright COPYRIGHT
+      - name: 'Runbook: self-test'
+        env:
+          # No GPU under Xvfb.
+          WEBKIT_DISABLE_DMABUF_RENDERER: '1'
+        run: xvfb-run -a node scripts/runbook.mjs run linux-self-test --cwd ~/Downloads
+      - name: Self-test with demo.dbc and an ARXML file
+        env:
+          WEBKIT_DISABLE_DMABUF_RENDERER: '1'
+        run: |
+          mkdir -p smoke
+          export CANVIEWER_SMOKE_FILES="$PWD/$SMOKE_DBC:$PWD/$SMOKE_ARXML"
+          export CANVIEWER_SMOKE_OUT="$PWD/smoke/self-test-linux.json"
+          export CANVIEWER_SMOKE_EXPORT=1
+          # The app saves downloads in the XDG Downloads folder that
+          # user-dirs.dirs names: here an empty one this job makes.
+          export XDG_CONFIG_HOME="$RUNNER_TEMP/xdg-config"
+          downloads="$RUNNER_TEMP/Downloads"
+          mkdir -p "$XDG_CONFIG_HOME" "$downloads"
+          printf 'XDG_DOWNLOAD_DIR="%s"\n' "$downloads" > "$XDG_CONFIG_HOME/user-dirs.dirs"
+          set +e
+          xvfb-run -a canviewer > smoke/stdout-linux.txt 2> smoke/stderr-linux.txt
+          code=$?
+          set -e
+          echo "self-test exit code: $code"
+          cat "$CANVIEWER_SMOKE_OUT" 2>/dev/null || tail -50 smoke/stderr-linux.txt
+          cp "$downloads"/demo*.csv smoke/ 2>/dev/null || true
+          node e2e/desktop-download-check.mjs "$downloads/demo.messages.csv" || { test "$code" -ne 0 || code=1; }
+          exit $code
+
+      - name: 'Runbook: uninstall'
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: node scripts/runbook.mjs run linux-uninstall --cwd ~/Downloads
+      - name: 'Runbook: delete the app data'
+        run: |
+          echo "before:"
+          for d in ~/.local/share/"$APP_ID" ~/.cache/"$APP_ID" ~/.config/"$APP_ID"; do echo "  $d exists: $([ -e "$d" ] && echo yes || echo no)"; done
+          node scripts/runbook.mjs run linux-remove-data --cwd ~/Downloads
+      - name: Nothing left behind
+        run: |
+          shopt -s nullglob nocaseglob
+          left=(~/.local/share/*canviewer* ~/.cache/*canviewer* ~/.config/*canviewer* /usr/share/applications/*canviewer*)
+          if [ -e /usr/lib/CanViewer ]; then left+=(/usr/lib/CanViewer); fi
+          if command -v canviewer; then left+=("$(command -v canviewer)"); fi
+          if dpkg-query -W -f='${db:Status-Abbrev}' can-viewer 2>/dev/null | grep -q '^ii'; then left+=("package can-viewer"); fi
+          if [ ${#left[@]} -gt 0 ]; then printf 'LEFT: %s\n' "${left[@]}"; exit 1; fi
+          echo "nothing left behind"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smoke-linux
+          path: smoke/
+          if-no-files-found: ignore

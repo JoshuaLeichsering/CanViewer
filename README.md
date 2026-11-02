@@ -1,121 +1,60 @@
 # CanViewer
 
-A viewer for DBC CAN database files, running entirely in the browser.
-No data leaves your machine — files are parsed locally.
+A viewer for CAN databases that runs in your browser or as a desktop app. Open a DBC
+file and browse its messages, signals, bit layouts, network and value tables. Decode
+and encode frames, replay a candump or Vector ASC log through the database, compare two
+versions, export the lists as CSV or JSON and a message as C code, and edit messages and
+signals and save the result as DBC. ARXML, KCD, SYM, Excel (`.xlsx`) and a few more
+formats are imported through canmatrix, with known limits that the
+[format reference](docs/reference/formats.md) measures for each. Files are read on your
+machine and never uploaded; the app makes no request outside its own origin and works
+offline.
 
-## Features
+![CanViewer showing a message of examples/demo.dbc: its signals, bit layout and details](docs/guide/images/message-en-light.webp#gh-light-mode-only)
+![CanViewer showing a message of examples/demo.dbc: its signals, bit layout and details](docs/guide/images/message-en-dark.webp#gh-dark-mode-only)
 
-- **Material 3 interface**: navigation rail (Overview, Messages, Network, Nodes, Tables),
-  list-detail layout, light and dark theme (follows the system until switched in the rail),
-  fonts and icons bundled with the app
-- **Message list** sorted by CAN ID with hex IDs, FD / J1939 / EXT tags, filter chips
-  (all, extended, CAN FD) and search across message names, IDs and signal names
-- **Signal table** per message: start bit, length, byte order (Intel/Motorola), type,
-  factor/offset, min/max, unit, receivers, multiplexing (incl. extended multiplexing
-  via `SG_MUL_VAL_`)
-- **Bit layout**: one row per byte, each signal one tonal block numbered on its start bit,
-  Motorola sawtooth layout, conflict detection (mux alternatives sharing bits are *not*
-  flagged); selecting a signal highlights it everywhere
-- **Frame decoder**: paste hex bytes, get physical values, value-table labels (the decoded
-  value is marked in the signal card) and multiplexer-aware activity
-- **CAN FD aware**: FD badge (via payload size or Vector's `VFrameFormat` attribute,
-  J1939 PGs exempt), frame-size validity hints (12/16/20/24/32/48/64 bytes, padding
-  note for odd sizes), bit matrix collapses the unused tail of large frames
-- **J1939 aware**: in J1939 databases (ProtocolType attribute or `J1939PG` messages),
-  extended IDs are decomposed into priority / PGN / PDU type / destination / source
-  address with well-known SAE PGN and address names; the overview gains a PGN column
-- **Node view**: transmitted messages and received signals per ECU
-- **ECU network graph**: interactive sender→receiver topology — arrows per direction,
-  line width scales with message count, click nodes/connections to drill into the
-  messages behind them
-- **Value tables**, with the signals that use the same values; comments (multi-line),
-  attributes (`BA_DEF_` / `BA_` incl. ENUM resolution), `SIG_VALTYPE_` float/double signals
-- **Robust parsing**: malformed lines are collected as warnings instead of failing the
-  whole file; Latin-1 fallback for files from Vector tools
-- Last opened file is restored on reload; views are deep-linkable (`#msg=…`, `#node=…`),
-  and **Copy link** on a message copies the link to it
-- **UI language switch** (English/German) in the rail's menu, persisted; defaults to
-  the browser language
+## Try it
 
-## Development
+Once the repository is public, the web app is published with GitHub Pages at
+[joshualeichsering.github.io/CanViewer/app](https://joshualeichsering.github.io/CanViewer/app/),
+next to the documentation at
+[joshualeichsering.github.io/CanViewer](https://joshualeichsering.github.io/CanViewer/).
+Open it and drop [`examples/demo.dbc`](examples/demo.dbc) onto the window. Until then,
+run it locally (see [Develop](#develop)) and read the documentation in
+[`docs/`](docs/), starting with the [user guide](docs/guide/index.md).
+
+## Install
+
+The desktop app for Windows, macOS and Linux is offline from the start. The
+[install guide](docs/guide/install.md) takes you from a release on the repository's
+GitHub Releases page to a running app, and back out.
+
+## Develop
 
 ```sh
-npm install
-npm run fetch-wheels   # Python wheels for the import adapter, into vendor/pyodide/
-npm run dev            # dev server on http://localhost:5173
-npm test               # unit tests + corpus suites
-npm run build          # typecheck + production build (dist/)
+git clone --recurse-submodules https://github.com/JoshuaLeichsering/CanViewer.git
+cd CanViewer
+npm ci
+npm run dev    # the app on http://localhost:5173
+npm test       # unit and component tests, and the corpus suites
 ```
 
-CI ([ci.yml](.github/workflows/ci.yml)) runs on every push to `main` and every pull
-request: typecheck, all tests, a check that every corpus suite ran over the expected
-number of files with nothing skipped ([check-test-report.mjs](scripts/check-test-report.mjs)),
-the production build, and the network check, which fails on any request outside the
-app's origin.
+The [developer guide](docs/develop/index.md) covers the setup, the repository layout,
+the [architecture](docs/develop/architecture.md), the
+[tests and baselines](docs/develop/testing.md) and the
+[release process](docs/develop/release.md). [CONTRIBUTING.md](CONTRIBUTING.md) lists the
+checks CI runs, to run them before you push; the [decision records](docs/decisions/index.md)
+explain why things are the way they are. Planned work is in [`BACKLOG.md`](BACKLOG.md).
 
-`dev`, `test` and `build` run `fetch-wheels` first. It downloads the wheels listed in
-[wheels.lock.json](src/lib/canmatrix/wheels.lock.json) from jsDelivr (the
-Pyodide-built ones) and PyPI, and checks each against its pinned SHA-256. Files
-already present are left alone, so it works offline once they are there. Where
-those hosts are unreachable, `node scripts/fetch-wheels.mjs --from <dir>` takes
-them from a local directory, such as an unpacked
-[Pyodide release](https://github.com/pyodide/pyodide/releases/tag/314.0.7).
+## License
 
-A production build carries the Pyodide runtime and those wheels in `dist/pyodide/`
-(about 16 MB, fetched only when a non-DBC file is opened) and a service worker
-(`dist/sw.js`, production only) that keeps the app usable offline after the first
-visit. See the [worker spike notes](docs/spikes/2026-11-01-pyodide-worker/README.md).
-
-An example database ships with the repository: open
-[examples/demo.dbc](examples/demo.dbc) via **Open DBC…** or drag & drop it into
-the window.
-
-## Tested against real-world files
-
-Two OEM database collections are vendored as git submodules under `third_party/`:
-[commaai/opendbc](https://github.com/commaai/opendbc) and
-[joshwardell/model3dbc](https://github.com/joshwardell/model3dbc) — 58 databases from
-Toyota, Tesla, BMW, Mercedes, VW, Ford, GM, Hyundai, Mazda, Chrysler, Volvo, PSA,
-Nissan, Rivian and more (~4,200 messages, ~33,700 signals). Fetch them with:
-
-```sh
-git submodule update --init
-```
-
-`npm test` then runs the corpus suite ([corpus.test.ts](src/lib/dbc/corpus.test.ts)):
-every file must parse with zero problems except for a pinned allowlist of genuine
-upstream inconsistencies (stale comments referencing renamed signals). Each file's
-parse result is also pinned in [corpus-baseline.json](src/lib/dbc/corpus-baseline.json)
-(counts plus a SHA-256 of the whole parsed model), so any change to how a corpus file
-parses fails the suite; regenerate it after an intended change with
-`UPDATE_CORPUS_BASELINE=1 npx vitest run src/lib/dbc/corpus.test.ts`. Without the
-submodules the corpus suite is skipped automatically.
-
-Two more submodules hold files in other formats, for the canmatrix import adapter
-that is being built (see [the handover](docs/handover/2026-11-01-multi-format-import.md)):
-the test files of [ebroecker/canmatrix](https://github.com/ebroecker/canmatrix)
-(tag 1.3.3.1, BSD-2-Clause) and [cantools/cantools](https://github.com/cantools/cantools)
-(tag 45.1.2, MIT), 122 ARXML, KCD, SYM, DBF, FIBEX, JSON, YAML, XLS and XLSX files.
-[import-corpus.test.ts](src/lib/canmatrix/import-corpus.test.ts) reads each one
-through canmatrix under Pyodide in Node, the same runtime the app will use, with
-the network blocked. Where a file has a DBC twin (78 of them), it compares the two
-through CanViewer's model. What the readers produce, including every difference
-from the twin, is pinned in
-[import-corpus-baseline.json](src/lib/canmatrix/import-corpus-baseline.json);
-regenerate it with `UPDATE_IMPORT_BASELINE=1 npx vitest run src/lib/canmatrix/import-corpus.test.ts`.
-The suite is skipped without the submodules and fails without the wheels.
-
-[mapper.test.ts](src/lib/canmatrix/mapper.test.ts) checks the mapping from canmatrix's model
-to CanViewer's (`canviewer_adapter.py`) the direct way: it reads DBC files through
-canmatrix and compares the result with CanViewer's own parser. `examples/demo.dbc`
-must come out identical. For the 58 opendbc and Model 3 files, what canmatrix's DBC
-reader does differently (it drops dangling comments and lines it cannot read, applies
-long names, creates nodes for undeclared senders) and the problems reported for it are
-pinned in [mapper-dbc-baseline.json](src/lib/canmatrix/mapper-dbc-baseline.json).
-
-## Supported DBC statements
-
-`VERSION`, `BU_`, `BO_`, `SG_` (incl. `M`/`m<N>` multiplexing), `BO_TX_BU_`, `CM_`
-(network/node/message/signal), `VAL_`, `VAL_TABLE_`, `BA_DEF_`, `BA_DEF_DEF_`, `BA_`,
-`SIG_VALTYPE_`, `SG_MUL_VAL_`. Statements that are recognized but not modeled
-(`EV_`, `SIG_GROUP_`, relation attributes, …) are counted and listed in the overview.
+CanViewer is free software under the GNU General Public License, version 2 or (at your
+option) any later version, with no warranty. [COPYRIGHT](COPYRIGHT) holds the notice and
+an additional permission for the Windows build, which links Microsoft's WebView2 loader
+and Visual C++ runtime; [LICENSE](LICENSE) is the text of version 2, and
+[LICENSE-GPL-3.0](LICENSE-GPL-3.0) that of version 3, under which the web app and the
+desktop packages are distributed because they include Apache-2.0 parts. The third-party
+components CanViewer ships, and their licenses, are listed in
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md); the app shows all of these under
+**About CanViewer** in its settings menu. To report a vulnerability, see
+[SECURITY.md](SECURITY.md).

@@ -1,0 +1,113 @@
+/* SPDX-License-Identifier: GPL-2.0-or-later */
+/* Import UI: the progress of an import (ImportProgress.tsx), and where an
+   imported database came from (ImportSource.tsx). Uses the tokens in
+   app/src/styles.css. */
+
+/* ---------- progress, where the snackbar sits ---------- */
+
+.imp-progress {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  z-index: 60;
+  transform: translateX(-50%);
+  width: min(400px, calc(100vw - 32px));
+  padding: 14px 16px 12px;
+  border-radius: 12px;
+  background: var(--inverse-surface);
+  color: var(--inverse-on-surface);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(0, 0, 0, 0.14);
+}
+.imp-progress-title {
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.imp-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.imp-step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 24px;
+}
+.imp-step-mark {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  color: var(--inverse-primary);
+}
+.imp-step.pending .imp-step-mark::before {
+  content: '';
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--inverse-on-surface);
+  border-radius: 50%;
+  opacity: 0.7;
+}
+.imp-step.pending .imp-step-label {
+  opacity: 0.8;
+}
+.imp-step.active .imp-step-label {
+  font-weight: 500;
+}
+.imp-step-detail {
+  margin-left: auto;
+  padding-left: 8px;
+  font-size: 12px;
+  text-align: right;
+  opacity: 0.85;
+}
+
+/* ---------- source of an imported database, on the overview ---------- */
+
+.imp-source {
+  margin-bottom: 16px;
+}
+.imp-source .banner {
+  margin-bottom: 0;
+}
+.imp-source-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 0;
+}
+.imp-source-title {
+  font-weight: 500;
+}
+.imp-problems-link.btn.text {
+  margin: 4px 0 -4px -12px;
+  white-space: normal;
+  text-align: left;
+}
+.imp-clusters {
+  margin-top: 12px;
+  padding: 0 4px;
+}
+.imp-clusters-hint {
+  font-size: 13px;
+  color: var(--on-surface-var);
+}
+.imp-clusters .chips {
+  margin-top: 8px;
+}
+.imp-cluster.chip {
+  max-width: 100%;
+}
+.imp-cluster-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.imp-cluster-count {
+  font-weight: 400;
+}

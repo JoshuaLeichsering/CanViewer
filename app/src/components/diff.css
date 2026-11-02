@@ -1,0 +1,258 @@
+/* SPDX-License-Identifier: GPL-2.0-or-later */
+/*
+ * Diff mode (DiffView.tsx). Built from the tokens in app/src/styles.css, so it
+ * follows the light and dark themes. Added uses the primary container, removed
+ * the error container, changed the tertiary container that tags use.
+ *
+ * The bundle loads this file before styles.css, so a rule here that overrides
+ * one there needs a more specific selector (.card.dif-empty, table.m3 ...).
+ */
+
+.card.dif-empty {
+  max-width: 720px;
+  padding: 32px;
+}
+.dif-empty-icon {
+  color: var(--primary);
+  margin-bottom: 12px;
+}
+.card.dif-empty h2 {
+  font-size: 22px;
+  line-height: 28px;
+  overflow-wrap: anywhere;
+}
+.dif-empty p {
+  margin: 12px 0 20px;
+  color: var(--on-surface-var);
+}
+.dif-empty .formats {
+  margin-bottom: 0;
+}
+.dif-spinner {
+  color: var(--primary);
+}
+
+/* the two versions */
+.dif-versions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+  padding: 16px 20px;
+  margin-bottom: 16px;
+  border-radius: 16px;
+  background: var(--sc-low);
+}
+.dif-version {
+  min-width: 0;
+  flex: 0 1 auto;
+}
+.dif-version-k {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  color: var(--on-surface-var);
+}
+.dif-version-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.dif-swap {
+  width: 40px;
+  height: 40px;
+  flex: none;
+  border: 0;
+  border-radius: 20px;
+  background: var(--sec-c);
+  color: var(--on-sec-c);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.dif-version-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+.dif-copy-status {
+  font-size: 13px;
+  color: var(--on-surface-var);
+}
+
+/* the message list */
+.dif-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  padding: 12px 20px 12px;
+}
+.dif-card-head h2 {
+  margin-right: 8px;
+}
+.dif-card-head .chips {
+  margin-top: 0;
+}
+table.m3 .dif-toggle-col {
+  width: 48px;
+  padding-right: 0;
+}
+.dif-toggle {
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 18px;
+  background: none;
+  color: var(--on-surface-var);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.dif-toggle .icon {
+  transition: transform 0.15s;
+}
+.dif-toggle[aria-expanded='true'] .icon {
+  transform: rotate(90deg);
+}
+.dif-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--primary);
+  font-weight: inherit;
+  text-align: left;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+}
+.dif-link:hover {
+  text-decoration-color: currentColor;
+}
+.dif-old-name {
+  color: var(--on-surface-var);
+  font-weight: 400;
+}
+table.m3 tr.dif-detail > td {
+  padding-top: 4px;
+  padding-bottom: 16px;
+  background: var(--surface);
+}
+.card .card-note.dif-note {
+  padding: 12px 20px 12px;
+}
+
+.dif-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 16px;
+  letter-spacing: 0.5px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+.dif-added {
+  background: var(--pc);
+  color: var(--on-pc);
+}
+.dif-removed {
+  background: var(--err-c);
+  color: var(--on-err-c);
+}
+.dif-changed {
+  background: var(--ter-c);
+  color: var(--on-ter-c);
+}
+
+/* field changes: before and after (also nested in a table.m3 row) */
+.dif-changes {
+  border-collapse: collapse;
+  margin: 8px 0 4px;
+  font-size: 13px;
+}
+.dif-changes th,
+table.m3 .dif-changes th,
+table.m3 .dif-changes th:first-child {
+  padding: 4px 24px 4px 0;
+  text-align: left;
+  font-weight: 500;
+  font-size: 12px;
+  color: var(--on-surface-var);
+}
+.dif-changes td,
+table.m3 .dif-changes td,
+table.m3 .dif-changes td:first-child,
+table.m3 .dif-changes td:last-child {
+  height: auto;
+  padding: 4px 24px 4px 0;
+  vertical-align: top;
+  border-top: 1px solid var(--outline-var);
+}
+.dif-field {
+  white-space: nowrap;
+  color: var(--on-surface-var);
+}
+.dif-before .dif-value,
+.dif-after .dif-value {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.dif-before .dif-value {
+  text-decoration: line-through;
+  text-decoration-color: color-mix(in srgb, var(--error) 60%, transparent);
+}
+.dif-after .dif-value {
+  font-weight: 500;
+}
+.dif-absent {
+  color: var(--on-surface-var);
+}
+
+/* lists of signals, nodes, value tables, attribute definitions */
+.dif-items {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+}
+.dif-items > li {
+  padding: 8px 0;
+}
+.dif-items > li + li {
+  border-top: 1px solid var(--outline-var);
+}
+.dif-item-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+}
+.dif-item-name {
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.dif-notation {
+  overflow-wrap: anywhere;
+}
+.dif-items .dif-changes {
+  margin-left: 0;
+}
+
+.dif-database section + section,
+.dif-database h2 + section {
+  margin-top: 16px;
+}
+.dif-database h3 {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--primary);
+}
+table.m3 td.dif-none {
+  color: var(--on-surface-var);
+}

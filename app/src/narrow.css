@@ -1,0 +1,205 @@
+/* SPDX-License-Identifier: GPL-2.0-or-later */
+/*
+ * Narrow screens. Below 840 px the list pane and the detail take turns instead
+ * of standing side by side (App sets .rgh-pane-list or .rgh-pane-detail, and
+ * the detail gets a back button). Below 600 px, Material's compact width, the
+ * navigation rail becomes a navigation bar at the bottom, and its menu, open
+ * file, Save as DBC and theme buttons move to a bar at the top.
+ */
+
+.rgh-back {
+  display: none;
+}
+
+@media (max-width: 839px) {
+  .app.with-list {
+    grid-template-columns: 88px minmax(0, 1fr);
+  }
+  .app.with-list.rgh-pane-detail .list-pane,
+  .app.with-list.rgh-pane-list .main {
+    display: none;
+  }
+  .app.with-list .rgh-back {
+    display: inline-flex;
+    margin: 8px 0 0 -12px;
+  }
+}
+
+@media (max-width: 599px) {
+  .app,
+  .app.with-list {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 56px 0 80px;
+  }
+
+  /* navigation bar */
+  .rail {
+    position: fixed;
+    z-index: 20;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 80px;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 0;
+    padding: 0;
+    background: var(--sc);
+  }
+  /* Seven destinations share 375 px or more: each takes the width its label needs
+     (Material's small label size, without the letter spacing), and the rest
+     is shared out, so that no label is cut off in either language. */
+  .rail-item {
+    flex: 1 1 auto;
+    min-width: 0;
+    justify-content: center;
+    padding: 0 1px;
+    font-size: 11px;
+    letter-spacing: 0;
+  }
+  .rail-item .pill {
+    width: 48px;
+  }
+  .rail-item .label {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .rail-spacer {
+    display: none;
+  }
+
+  /* top bar: the menu on the left; open file, Save as DBC (with a file open)
+     and theme on the right, in the order of the focus */
+  .rail > div:first-child,
+  .rail > .rail-icon-btn,
+  .rail-fab {
+    position: fixed;
+    top: 4px;
+  }
+  .rail > div:first-child {
+    left: 4px;
+  }
+  .rail > .rail-icon-btn {
+    right: 4px;
+  }
+  .rail > .rail-icon-btn.edt-save {
+    right: 56px;
+  }
+  .rail-fab {
+    right: 56px;
+    width: 48px;
+    height: 48px;
+    margin: 0;
+    border-radius: 24px;
+    background: none;
+    color: var(--on-surface-var);
+    box-shadow: none;
+  }
+  .rail.with-actions .rail-fab {
+    right: 108px;
+  }
+  .menu-popover {
+    position: fixed;
+    top: 52px;
+    left: 8px;
+  }
+
+  .list-pane {
+    margin: 0 8px;
+  }
+  .main {
+    padding: 0 16px 32px;
+  }
+  .page-header h1 {
+    font-size: 28px;
+    line-height: 36px;
+  }
+  .fact {
+    border-right: 0;
+  }
+
+  /* The bit layout shrinks its columns to fit. */
+  .bitlayout-card {
+    flex: 1 1 100%;
+    padding: 16px 12px;
+  }
+  .bitlayout {
+    grid-template-columns: 28px repeat(8, minmax(0, 1fr));
+  }
+
+  /* Text that may break anywhere (a problem's line) keeps a readable width;
+     the table scrolls sideways in its card instead. */
+  table.m3 .wrap-anywhere {
+    min-width: 240px;
+  }
+  /* So do comments and lists (enum values, receivers), the last column of
+     their tables, instead of a narrow column of very tall rows. */
+  table.m3 td.comment {
+    min-width: 240px;
+  }
+
+  /* The graph keeps a readable size and scrolls sideways inside its card. */
+  .graph-card {
+    overflow-x: auto;
+  }
+  .graph-wrap {
+    min-width: 480px;
+  }
+  .graph-note {
+    position: sticky;
+    left: 0;
+  }
+
+  .welcome {
+    padding: 16px;
+  }
+  .welcome-card {
+    padding: 32px 20px 24px;
+  }
+
+  .snackbar {
+    bottom: 88px;
+    min-width: 0;
+    width: calc(100vw - 32px);
+  }
+}
+
+/* Below 375 px (360 px is a common Android width) seven 48 px pills no
+   longer fit beside the longer German labels. The items then share the width
+   equally, except that none is narrower than its label with a 2 px margin on
+   either side, and each pill takes what its item gets, up to 48 px. Below
+   350 px the labels drop to 10 px, the size of iOS tab bar labels, with a
+   1.5 px margin, which is what all seven need down to about 310 px. Below
+   312 px, where even that is too wide, a label is cut off with an ellipsis
+   again rather than pushing the last destinations off the screen. */
+@media (max-width: 374px) {
+  .rail-item {
+    flex: 1 1 0;
+    min-width: auto;
+    padding: 0;
+  }
+  .rail-item .pill {
+    width: 100%;
+    max-width: 48px;
+  }
+  .rail-item .label {
+    padding: 0 2px;
+  }
+}
+
+@media (max-width: 349px) {
+  .rail-item {
+    font-size: 10px;
+  }
+  .rail-item .label {
+    padding: 0 1.5px;
+  }
+}
+
+@media (max-width: 311px) {
+  .rail-item {
+    min-width: 0;
+  }
+}

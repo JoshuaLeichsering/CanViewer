@@ -1,0 +1,22 @@
+[package]
+name = "canviewer"
+version = "0.2.0-rc.1"
+description = "CanViewer: a viewer for CAN database files"
+license = "GPL-2.0-or-later"
+edition = "2021"
+publish = false
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+serde_json = "1"
+
+# The profile releases are built with: about 4.5 % smaller, slower to build
+# (docs/decisions/0009-desktop-shell.md). CI builds other than a release turn
+# LTO off through CARGO_PROFILE_RELEASE_* (.github/workflows/desktop.yml).
+[profile.release]
+codegen-units = 1
+lto = true
+strip = true

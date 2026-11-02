@@ -1,6 +1,13 @@
 # CI for every push and pull request: typecheck, all tests with the corpus
-# suites (which must run, never skip), the production build, and the network
-# check that proves the build makes no request outside its own origin.
+# suites (which must run, never skip) and the coverage thresholds of
+# vite.config.ts, the production build, the network check that proves the
+# build makes no request outside its own origin, the end-to-end flows, the UI
+# checks in a browser (e2e/ui-checks.mjs), the import UI's end-to-end checks
+# (e2e/import-ui.test.mjs), the browser checks of the signal table and of a
+# 5000-message database, the export check, and the end-to-end checks of diff
+# mode, of the Traces view with the frame encoder, of editing and Save as
+# DBC, and the desktop CSP check (the import worker under the desktop app's
+# Content Security Policy).
 name: CI
 
 on:
@@ -37,7 +44,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: vendor/pyodide
-          key: pyodide-wheels-${{ hashFiles('src/lib/canmatrix/wheels.lock.json') }}
+          key: pyodide-wheels-${{ hashFiles('app/src/lib/canmatrix/wheels.lock.json') }}
 
       - name: Fetch and verify the Pyodide wheels
         run: npm run fetch-wheels
@@ -45,19 +52,36 @@ jobs:
       - name: Typecheck
         run: npx tsc --noEmit
 
-      - name: Tests (verbose)
-        run: npx vitest run --reporter=verbose --reporter=json --outputFile.json=test-report.json
+      # The export tests compile the generated C structs with cc -fsyntax-only;
+      # in CI they fail rather than skip without a compiler.
+      - name: C compiler for the export tests
+        run: cc --version
+
+      - name: Tests (verbose) with coverage and its thresholds
+        run: npx vitest run --coverage --reporter=verbose --reporter=json --outputFile.json=test-report.json
 
       - name: Every corpus suite ran in full, nothing skipped
         run: node scripts/check-test-report.mjs test-report.json
 
+      - name: Coverage summary
+        if: always() && hashFiles('coverage/coverage-summary.json') != ''
+        run: |
+          { echo '### Coverage'; echo; node scripts/coverage-summary.mjs; echo; echo 'Full report: the `coverage-report` artifact of this run.'; } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: coverage/
+          if-no-files-found: ignore
+
       - name: Production build
         run: npm run build
 
-      - name: Install Playwright's Chromium for the network check
-        run: |
-          npm install --no-save --no-package-lock --prefix "$RUNNER_TEMP/pw" playwright@1.63.0
-          "$RUNNER_TEMP/pw/node_modules/.bin/playwright" install --with-deps chromium
+      # Playwright itself comes with npm ci (a pinned dev dependency); its
+      # Chromium is downloaded here only, in CI.
+      - name: Install Playwright's Chromium
+        run: npx playwright install --with-deps chromium
 
       - name: Network check (no request outside the app's origin, works offline)
         env:
@@ -65,11 +89,69 @@ jobs:
         run: |
           npx vite preview --port 4173 --strictPort > vite-preview.log 2>&1 &
           for i in $(seq 1 30); do curl -sf http://localhost:4173/ > /dev/null && break; sleep 1; done
-          NODE_PATH="$RUNNER_TEMP/pw/node_modules" node docs/spikes/2026-11-01-pyodide-worker/network-check.mjs \
+          node e2e/network-check.mjs \
             http://localhost:4173/ network-check \
             third_party/canmatrix/tests/files/arxml/test.arxml \
             third_party/canmatrix/tests/files/arxml/ARXMLContainerTest.arxml \
             examples/demo.dbc dist
+
+      - name: End-to-end flows (open, navigate, decode, theme, language, deep links, offline)
+        env:
+          # The network check's server still holds 4173.
+          E2E_PORT: '4174'
+        run: npm run e2e
+
+      # Playwright comes from the dev dependencies (npm ci), its Chromium from
+      # the install step above.
+      - name: UI checks (axe-core accessibility, keyboard, error boundary, narrow layout)
+        run: node e2e/ui-checks.mjs
+
+      - name: Import UI end-to-end checks (every format, clusters, source note, restore, cold start)
+        run: |
+          npx vite preview --port 4175 --strictPort > vite-preview-import-ui.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:4175/ > /dev/null && break; sleep 1; done
+          CANVIEWER_URL=http://localhost:4175/ CANVIEWER_E2E_OUT=import-ui \
+            node --test --test-reporter=spec e2e/import-ui.test.mjs
+
+      # Each browser check below serves the build on a port of its own: the
+      # servers started in earlier steps keep running until the job ends.
+      - name: Signal table and large database checks (sorting, filtering, 5000 messages)
+        run: |
+          npx vite preview --port 4176 --strictPort > vite-preview-tbl.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:4176/ > /dev/null && break; sleep 1; done
+          node e2e/signal-table.mjs http://localhost:4176/ tbl-checks examples/demo.dbc
+          node e2e/large-database.mjs http://localhost:4176/ tbl-checks
+
+      - name: Export check (downloads and copies equal the pinned files)
+        run: |
+          npx vite preview --port 4177 --strictPort > vite-preview-export.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:4177/ > /dev/null && break; sleep 1; done
+          node e2e/export-check.mjs http://localhost:4177/ export-check examples/demo.dbc
+
+      - name: Diff mode end to end (the Compare page, DBC and ARXML)
+        run: |
+          npx vite preview --port 4178 --strictPort > vite-preview-diff.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:4178/ > /dev/null && break; sleep 1; done
+          node e2e/diff-check.mjs http://localhost:4178/ diff-check
+
+      - name: Traces and frame encoder, end to end (no request outside the origin)
+        run: |
+          npx vite preview --port 4179 --strictPort > vite-preview-trc.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:4179/ > /dev/null && break; sleep 1; done
+          node e2e/trc-traces-encoder.mjs http://localhost:4179/ trc-traces-encoder
+
+      - name: Editing end-to-end check (edit, save as DBC, open the saved file)
+        run: |
+          npx vite preview --port 4180 --strictPort > vite-preview-editing.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:4180/ > /dev/null && break; sleep 1; done
+          node e2e/editing.mjs \
+            http://localhost:4180/ editing-check examples/demo.dbc \
+            third_party/cantools/tests/files/dbc/foobar.dbc
+
+      - name: Desktop CSP check (the import worker under the desktop app's policy, in Chromium)
+        run: |
+          node e2e/desktop-csp-check.mjs dist desktop-csp \
+            examples/demo.dbc third_party/canmatrix/tests/files/arxml/test.arxml
 
       - uses: actions/upload-artifact@v4
         if: always()
@@ -78,5 +160,74 @@ jobs:
           path: |
             test-report.json
             network-check/
+            desktop-csp/
             vite-preview.log
+            playwright-report/
+            test-results/
+            import-ui/
+            vite-preview-import-ui.log
+            tbl-checks/
+            vite-preview-tbl.log
+            export-check/
+            vite-preview-export.log
+            diff-check/
+            vite-preview-diff.log
+            trc-traces-encoder/
+            vite-preview-trc.log
+            editing-check/
+            vite-preview-editing.log
           if-no-files-found: ignore
+
+  licenses:
+    # What the repository needs to be public: no identifying information in the
+    # tree, no broken relative link in its Markdown, a license header on every
+    # source file, only allowed licenses among the npm packages, the wheels and
+    # the Rust crates, and third-party notices that match what ships.
+    name: licenses, notices, identifying information
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Cache the Pyodide wheels
+        uses: actions/cache@v4
+        with:
+          path: vendor/pyodide
+          key: pyodide-wheels-${{ hashFiles('app/src/lib/canmatrix/wheels.lock.json') }}
+
+      - name: Fetch and verify the Pyodide wheels
+        run: npm run fetch-wheels
+
+      - name: No identifying information in the working tree
+        run: node scripts/check-identifying-info.mjs
+
+      # On every push and pull request: pages.yml runs it too, but only for
+      # changes to what the site is built from.
+      - name: Relative links in every Markdown file
+        run: node scripts/docs/check-links.mjs --sources
+
+      - name: Tests of the scripts (licenses, notices, release tooling, the install runbook)
+        run: npm run test:scripts
+
+      - name: SPDX headers, npm and wheel licenses
+        run: npm run check:licenses
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Install cargo-deny
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-deny@0.20.2
+
+      - name: Crate licenses
+        run: cargo deny --manifest-path desktop/Cargo.toml check licenses
+
+      - name: THIRD_PARTY_NOTICES.md matches what ships
+        run: node scripts/third-party-notices.mjs --check

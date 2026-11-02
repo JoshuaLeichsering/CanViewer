@@ -1,0 +1,41 @@
+CanViewer - a viewer for CAN database files
+
+Copyright (C) 2026 The CanViewer authors
+
+This program is free software: you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the Free
+Software Foundation, either version 2 of the License, or (at your option)
+any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+more details.
+
+The text of version 2 of the GNU General Public License is in the file
+LICENSE, and the text of version 3 in the file LICENSE-GPL-3.0. Both come
+with the source code, the web app (as LICENSE.txt and LICENSE-GPL-3.0.txt)
+and every desktop package.
+
+The web app and the desktop packages contain third-party components under
+the Apache License 2.0, which is compatible with version 3 of the GNU GPL
+but not with version 2. Where such a component is included, the combined
+program is distributed under the terms of the GNU GPL version 3. Every
+third-party component and its license is listed in THIRD_PARTY_NOTICES.md.
+
+Additional permission under GNU GPL version 3 section 7
+
+If you modify this Program, or any covered work, by linking or combining it
+with the Microsoft Edge WebView2 loader library or the Microsoft Visual C++
+runtime libraries (or a modified version of those libraries), containing
+parts covered by the terms of their Microsoft licenses, the licensors of
+this Program grant you additional permission to convey the resulting work.
+Corresponding Source for a non-source form of such a combination shall not
+include the source code for the parts of those libraries used.
+
+The licensors grant the same permission, as an exception to the terms of
+version 2 of the GNU General Public License, to anyone who uses this
+Program under that version.
+
+The source code of CanViewer, at every release, is at
+https://github.com/JoshuaLeichsering/CanViewer

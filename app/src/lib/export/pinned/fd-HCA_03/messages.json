@@ -1,0 +1,152 @@
+{
+  "source": "vw_meb.dbc",
+  "databaseVersion": "",
+  "messages": [
+    {
+      "id": 771,
+      "idHex": "0x303",
+      "isExtended": false,
+      "name": "HCA_03",
+      "dlc": 24,
+      "canFd": true,
+      "sender": "XXX",
+      "transmitters": [],
+      "attributes": {},
+      "signals": [
+        {
+          "name": "RequestStatus",
+          "startBit": 12,
+          "length": 4,
+          "byteOrder": "intel",
+          "valueType": "unsigned",
+          "factor": 1,
+          "offset": 0,
+          "min": 0,
+          "max": 15,
+          "unit": "",
+          "receivers": [
+            "XXX"
+          ],
+          "multiplex": {
+            "role": "none"
+          },
+          "attributes": {}
+        },
+        {
+          "name": "Power",
+          "startBit": 16,
+          "length": 8,
+          "byteOrder": "intel",
+          "valueType": "unsigned",
+          "factor": 0.4,
+          "offset": 0,
+          "min": 0,
+          "max": 100,
+          "unit": "percent",
+          "receivers": [
+            "XXX"
+          ],
+          "multiplex": {
+            "role": "none"
+          },
+          "attributes": {}
+        },
+        {
+          "name": "Curvature",
+          "startBit": 24,
+          "length": 15,
+          "byteOrder": "intel",
+          "valueType": "unsigned",
+          "factor": 0.0000067,
+          "offset": 0,
+          "min": 0,
+          "max": 0.219,
+          "unit": "Unit_rad/m",
+          "receivers": [
+            "XXX"
+          ],
+          "multiplex": {
+            "role": "none"
+          },
+          "attributes": {}
+        },
+        {
+          "name": "Curvature_VZ",
+          "startBit": 39,
+          "length": 1,
+          "byteOrder": "intel",
+          "valueType": "unsigned",
+          "factor": 1,
+          "offset": 0,
+          "min": 0,
+          "max": 1,
+          "unit": "",
+          "receivers": [
+            "XXX"
+          ],
+          "multiplex": {
+            "role": "none"
+          },
+          "attributes": {}
+        },
+        {
+          "name": "Unknown_01",
+          "startBit": 53,
+          "length": 1,
+          "byteOrder": "motorola",
+          "valueType": "unsigned",
+          "factor": 1,
+          "offset": 0,
+          "min": 0,
+          "max": 1,
+          "unit": "",
+          "receivers": [
+            "XXX"
+          ],
+          "multiplex": {
+            "role": "none"
+          },
+          "attributes": {}
+        },
+        {
+          "name": "Vibration",
+          "startBit": 56,
+          "length": 1,
+          "byteOrder": "motorola",
+          "valueType": "unsigned",
+          "factor": 1,
+          "offset": 0,
+          "min": 0,
+          "max": 1,
+          "unit": "",
+          "receivers": [
+            "XXX"
+          ],
+          "multiplex": {
+            "role": "none"
+          },
+          "attributes": {}
+        },
+        {
+          "name": "HighSendRate",
+          "startBit": 66,
+          "length": 1,
+          "byteOrder": "intel",
+          "valueType": "unsigned",
+          "factor": 1,
+          "offset": 0,
+          "min": 0,
+          "max": 1,
+          "unit": "",
+          "receivers": [
+            "XXX"
+          ],
+          "multiplex": {
+            "role": "none"
+          },
+          "attributes": {}
+        }
+      ]
+    }
+  ]
+}

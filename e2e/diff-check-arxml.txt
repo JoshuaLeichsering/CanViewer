@@ -1,0 +1,47 @@
+--- test.dbc
++++ test.arxml
+database: version "created by canmatrix" -> ""
+definition BO_ GenMsgCycleTime: removed
+definition BU_ NetworkNode: removed
+definition BU_ NWM-Stationsadresse: added
+definition BU_ NWM-Knoten: added
+definition BO_ GenMsgDelayTime: added
+definition BO_ GenMsgNrOfRepetitions: added
+definition BO_ GenMsgStartValue: added
+definition BO_ FrameTriggeringName: added
+definition BO_ PduName: added
+definition BO_ GenMsgStartDelayTime: added
+definition BO_ GenMsgSendType: added
+definition SG_ LongName: added
+definition SG_ CompuMethodName: added
+definition SG_ ISignalName: added
+definition SG_ SysSignalName: added
+node testBU: attr[NWM-Knoten] (none) -> "nein"
+node testBU: attr[NWM-Stationsadresse] (none) -> 0
+node testBU: attr[NetworkNode] 273 -> (none)
+node recBU: attr[NWM-Knoten] (none) -> "nein"
+node recBU: attr[NWM-Stationsadresse] (none) -> 0
+message 0x00000012 extendedFrame: name "extendedFrame" -> "FRAME_extendedFrame"
+message 0x00000012 extendedFrame: attr[FrameTriggeringName] (none) -> "extendedFrame"
+message 0x00000012 extendedFrame: attr[GenMsgSendType] (none) -> "spontanX"
+message 0x00000012 extendedFrame: attr[GenMsgStartValue] (none) -> "0000000000000000"
+message 0x00000012 extendedFrame: attr[PduName] (none) -> "PDU_extendedFrame"
+message 0x123 testFrame1: name "testFrame1" -> "FRAME_testFrame1"
+message 0x123 testFrame1: comment "Multi \n Line \n Frame comment" -> "Multi\nLine\nFrame comment"
+message 0x123 testFrame1: attr[FrameTriggeringName] (none) -> "testFrame1"
+message 0x123 testFrame1: attr[GenMsgCycleTime] 100 -> (none)
+message 0x123 testFrame1: attr[GenMsgSendType] (none) -> "spontanX"
+message 0x123 testFrame1: attr[GenMsgStartValue] (none) -> "0000000000000000"
+message 0x123 testFrame1: attr[PduName] (none) -> "PDU_testFrame1"
+message 0x123 testFrame1 / someTestSignal: min 0 -> 1
+message 0x123 testFrame1 / someTestSignal: max 500 -> 10236
+message 0x123 testFrame1 / someTestSignal: unit "specialCharUnit°$" -> ""
+message 0x123 testFrame1 / someTestSignal: comment "Multi \n Line \n Signal comment with a-umlaut: ä" -> "Multi\nLine\nSignal comment with a-umlaut: ä"
+message 0x123 testFrame1 / someTestSignal: attr[CompuMethodName] (none) -> "someTestSignal"
+message 0x123 testFrame1 / someTestSignal: attr[ISignalName] (none) -> "someTestSignal"
+message 0x123 testFrame1 / someTestSignal: attr[SysSignalName] (none) -> "someTestSignal"
+message 0x123 testFrame1 / Signal: max 6 -> 7
+message 0x123 testFrame1 / Signal: unit "someUnit" -> ""
+message 0x123 testFrame1 / Signal: attr[CompuMethodName] (none) -> "Signal"
+message 0x123 testFrame1 / Signal: attr[ISignalName] (none) -> "Signal"
+message 0x123 testFrame1 / Signal: attr[SysSignalName] (none) -> "Signal"

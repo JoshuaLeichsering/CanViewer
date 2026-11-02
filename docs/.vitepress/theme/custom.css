@@ -1,0 +1,41 @@
+/* SPDX-License-Identifier: GPL-2.0-or-later */
+/*
+ * The site in CanViewer's colours (the Material 3 teal of app/src/styles.css)
+ * and fonts. Classes are prefixed doc- so they never meet the app's.
+ */
+:root {
+  --vp-font-family-base: 'Roboto Flex Variable', 'Roboto Flex', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --vp-font-family-mono: 'Roboto Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  --vp-c-brand-1: #006a6a;
+  --vp-c-brand-2: #1a7f7f;
+  --vp-c-brand-3: #006a6a;
+  --vp-c-brand-soft: rgba(0, 106, 106, 0.14);
+
+  --vp-home-hero-name-color: #006a6a;
+}
+
+.dark {
+  --vp-c-brand-1: #80d5d4;
+  --vp-c-brand-2: #9cf1f0;
+  --vp-c-brand-3: #004f4f;
+  --vp-c-brand-soft: rgba(128, 213, 212, 0.16);
+
+  --vp-home-hero-name-color: #80d5d4;
+}
+
+/* Screenshots for one theme only follow the site's theme switch. */
+.dark img.doc-light-only,
+html:not(.dark) img.doc-dark-only {
+  display: none;
+}
+
+.vp-doc img {
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 12px;
+}
+
+/* Numbers in tables line up, the generated counts of the format reference above all. */
+.vp-doc table {
+  font-variant-numeric: tabular-nums;
+}
