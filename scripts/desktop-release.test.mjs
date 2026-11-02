@@ -231,3 +231,13 @@ test('the runbook names the files the release has', () => {
   const named = new Set([...runbook.matchAll(/CanViewer_[0-9][^\s`'"\\)]*\.(?:exe|msi|dmg|deb)/g)].map((m) => m[0]));
   assert.deepEqual([...named].filter((n) => !releaseAssets(version).includes(n)), [], 'the runbook names files the release does not have');
 });
+
+test('the DMG carries no license agreement: macOS drops licenseFile', () => {
+  // Tauri passes bundle.licenseFile to the DMG builder as --eula, which makes
+  // "hdiutil attach" (and Finder) ask the user to agree first. The GPL is not
+  // an agreement a user accepts, and the runbook's scripted install cannot
+  // answer the prompt. Tauri merges tauri.macos.conf.json over the config on
+  // macOS only, so the Windows installers keep their license page.
+  const macos = JSON.parse(readFileSync(new URL('../desktop/tauri.macos.conf.json', import.meta.url), 'utf8'));
+  assert.deepEqual(macos.bundle, { licenseFile: null });
+});
